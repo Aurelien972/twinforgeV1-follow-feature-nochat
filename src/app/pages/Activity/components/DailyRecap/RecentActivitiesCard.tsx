@@ -3,6 +3,7 @@ import { fr } from 'date-fns/locale';
 import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
+import WearableConnectionBadge from '../shared/WearableConnectionBadge';
 import React from 'react';
 
 interface Activity {
@@ -128,9 +129,12 @@ const RecentActivitiesCard: React.FC<RecentActivitiesCardProps> = ({
                         style={{ color: getIntensityColor(activity.intensity) }}
                       />
                     </div>
-                    <div>
-                      <div className="recent-activity-item-type">
-                        {activity.type}
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="recent-activity-item-type">
+                          {activity.type}
+                        </div>
+                        <WearableConnectionBadge activityId={activity.id} />
                       </div>
                       <div className="recent-activity-item-time">
                         {activity.duration_min} min • {format(new Date(activity.timestamp), 'dd MMM HH:mm', { locale: fr })}

@@ -9,6 +9,7 @@ import type {
 import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
+import WearableConnectionBadge from '../shared/WearableConnectionBadge';
 import logger from '../../../../../lib/utils/logger';
 
 interface BiometricInsightsSectionProps {
@@ -80,22 +81,27 @@ const BiometricInsightsSection: React.FC<BiometricInsightsSectionProps> = ({ per
 
   if (!hasData) {
     return (
-      <GlassCard className="p-8 text-center">
-        <div
-          className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-          style={{
-            background: 'linear-gradient(135deg, color-mix(in srgb, #F59E0B 20%, transparent), color-mix(in srgb, #F59E0B 10%, transparent))',
-            border: '1px solid color-mix(in srgb, #F59E0B 30%, transparent)',
-          }}
-        >
-          <SpatialIcon Icon={ICONS.Activity} size={32} style={{ color: '#F59E0B' }} />
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <WearableConnectionBadge />
         </div>
-        <h3 className="text-xl font-bold text-white mb-2">Insights Biométriques</h3>
-        <p className="text-white/70 text-base max-w-md mx-auto leading-relaxed">
-          Connectez un objet et enregistrez des activités avec données biométriques pour débloquer des analyses
-          avancées de corrélation FC/Performance, détection de surentraînement et fenêtres optimales.
-        </p>
-      </GlassCard>
+        <GlassCard className="p-8 text-center">
+          <div
+            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, color-mix(in srgb, #F59E0B 20%, transparent), color-mix(in srgb, #F59E0B 10%, transparent))',
+              border: '1px solid color-mix(in srgb, #F59E0B 30%, transparent)',
+            }}
+          >
+            <SpatialIcon Icon={ICONS.Activity} size={32} style={{ color: '#F59E0B' }} />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Insights Biométriques</h3>
+          <p className="text-white/70 text-base max-w-md mx-auto leading-relaxed">
+            Connectez un objet et enregistrez des activités avec données biométriques pour débloquer des analyses
+            avancées de corrélation FC/Performance, détection de surentraînement et fenêtres optimales.
+          </p>
+        </GlassCard>
+      </div>
     );
   }
 
@@ -126,6 +132,10 @@ const BiometricInsightsSection: React.FC<BiometricInsightsSectionProps> = ({ per
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <WearableConnectionBadge />
+      </div>
+
       {correlation && (
         <GlassCard className="p-6">
           <div className="flex items-start gap-4 mb-6">
