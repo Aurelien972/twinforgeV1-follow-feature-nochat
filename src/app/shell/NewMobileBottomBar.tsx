@@ -6,7 +6,6 @@ import { ICONS } from '../../ui/icons/registry';
 import { useFeedback } from '../../hooks/useFeedback';
 import { bottomBarClick, centralButtonClick } from '../../audio/effects/forgeronSounds';
 import { useOverlayStore } from '../../system/store/overlayStore';
-import { useGlobalChatStore } from '../../system/store/globalChatStore';
 import { Haptics } from '../../utils/haptics';
 import CentralActionsMenu from './CentralActionsMenu';
 import { usePerformanceMode } from '../../system/context/PerformanceModeContext';

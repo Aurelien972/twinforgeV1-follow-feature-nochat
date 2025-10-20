@@ -6,11 +6,11 @@
 import { useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { unifiedNotificationService, type NotificationId } from '../system/services/unifiedNotificationService';
-import { useGlobalChatStore } from '../system/store/globalChatStore';
 
 export function useNotifications() {
   const location = useLocation();
-  const { isOpen, currentNotification } = useGlobalChatStore();
+  const isOpen = false;
+  const currentNotification = null;
 
   const scheduleContextualNotification = useCallback(() => {
     if (isOpen) return;
