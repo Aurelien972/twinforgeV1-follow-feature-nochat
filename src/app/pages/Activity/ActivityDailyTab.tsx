@@ -14,6 +14,7 @@ import CalorieProgressCard from './components/DailyRecap/CalorieProgressCard';
 import ActivitySummaryCard from './components/DailyRecap/ActivitySummaryCard';
 import RecentActivitiesCard from './components/DailyRecap/RecentActivitiesCard';
 import WearableEnrichedSection from './components/DailyRecap/WearableEnrichedSection';
+import EmptyActivityDailyState from './components/DailyRecap/EmptyActivityDailyState';
 import './styles/index.css';
 
 /**
@@ -132,6 +133,11 @@ const ActivityDailyTab: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // Afficher l'empty state si aucune activité du tout
+  if (!hasAnyActivityHistory && todayStats?.totalActivities === 0) {
+    return <EmptyActivityDailyState />;
   }
 
   return (

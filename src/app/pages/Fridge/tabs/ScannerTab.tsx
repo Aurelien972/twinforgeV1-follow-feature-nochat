@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { useUserStore } from '../../../../system/store/userStore';
 import ProfileCompletenessAlert from '../../../../ui/components/profile/ProfileCompletenessAlert';
 import FridgeScanMainCTA from '../components/FridgeScanMainCTA';
 import RecentScansCard from '../components/RecentScansCard';
 import ScannerStatsCard from '../components/ScannerStatsCard';
+import EmptyFridgeScannerState from './ScannerTab/EmptyFridgeScannerState';
 import { useFridgeScanPipeline } from '../../../../system/store/fridgeScan';
 
 /**
@@ -12,13 +14,38 @@ import { useFridgeScanPipeline } from '../../../../system/store/fridgeScan';
  * Affiche le CTA principal pour scanner un frigo et les composants illustratifs
  */
 const ScannerTab: React.FC = () => {
-  const { profile } = useUserStore();
+  const { profile, session } = useUserStore();
   const { loadRecentSessions } = useFridgeScanPipeline();
 
   // Charger les sessions récentes au montage du composant
   useEffect(() => {
     loadRecentSessions();
   }, [loadRecentSessions]);
+
+  // Vérification si l'utilisateur a déjà des sessions de scan de frigo
+  const { data: hasAnyFridgeScanHistory = false, isLoading } = useQuery({
+    queryKey: ['fridge-scan-sessions', 'has-history', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return false;
+
+      const { supabase } = await import('../../../../system/supabase/client');
+      const { data, error } = await supabase
+        .from('fridge_scan_sessions')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .limit(1);
+
+      if (error) return false;
+      return (data?.length || 0) > 0;
+    },
+    enabled: !!session?.user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Afficher l'empty state si aucun historique
+  if (!isLoading && !hasAnyFridgeScanHistory) {
+    return <EmptyFridgeScannerState />;
+  }
 
   return (
     <motion.div
