@@ -14,6 +14,7 @@ import ActivityInsightCards from './components/Progression/ActivityInsightCards'
 import GlobalStatsCard from './components/Progression/GlobalStatsCard';
 import ProgressionPeriodSelector from './components/Insights/ProgressionPeriodSelector';
 import BiometricInsightsSection from './components/Insights/BiometricInsightsSection';
+import EmptyActivityInsightsState from './components/Insights/EmptyActivityInsightsState';
 import { useFeedback } from '../../../hooks/useFeedback';
 import logger from '../../../lib/utils/logger';
 import './styles/index.css';
@@ -137,51 +138,7 @@ const ActivityInsightsTab: React.FC = () => {
 
   // Affichage si pas d'historique d'activité
   if (!hasActivityHistory) {
-    return (
-      <div className="space-y-6">
-        <GlassCard
-          className="p-8 text-center"
-          style={{
-            background: `
-              radial-gradient(circle at 30% 20%, color-mix(in srgb, #F59E0B 15%, transparent) 0%, transparent 60%),
-              radial-gradient(circle at 70% 80%, color-mix(in srgb, #D97706 12%, transparent) 0%, transparent 50%),
-              linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%),
-              var(--glass-opacity)
-            `,
-            borderColor: 'color-mix(in srgb, #F59E0B 30%, transparent)',
-            boxShadow: `
-              0 12px 40px rgba(0, 0, 0, 0.25),
-              0 0 30px color-mix(in srgb, #F59E0B 20%, transparent),
-              inset 0 2px 0 rgba(255, 255, 255, 0.15)
-            `
-          }}
-        >
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{
-                background: `
-                  radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
-                  linear-gradient(135deg, color-mix(in srgb, #F59E0B 30%, transparent), color-mix(in srgb, #F59E0B 20%, transparent))
-                `,
-                border: '2px solid color-mix(in srgb, #F59E0B 40%, transparent)',
-                boxShadow: '0 0 30px color-mix(in srgb, #F59E0B 30%, transparent)'
-              }}
-            >
-              <SpatialIcon Icon={ICONS.Lightbulb} size={40} style={{ color: '#F59E0B' }} />
-            </div>
-            <div className="text-left">
-              <h3 className="text-2xl font-bold text-white">Forge d'Insights Vierge</h3>
-              <p className="text-white/70 text-base">Vos conseils personnalisés vous attendent</p>
-            </div>
-          </div>
-          <p className="text-white/70 text-base max-w-lg mx-auto leading-relaxed">
-            Enregistrez au moins {periodThresholds.week} activités pour débloquer vos conseils personnalisés
-            et découvrir des insights IA sur votre progression énergétique.
-          </p>
-        </GlassCard>
-      </div>
-    );
+    return <EmptyActivityInsightsState />;
   }
 
   // Affichage si données insuffisantes

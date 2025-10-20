@@ -12,6 +12,7 @@ import { InsightCards } from './components/MealInsights/AIInsightCards';
 import AnalysisLoadingSkeleton from './components/MealInsights/AILoadingSkeleton';
 import MacroDistributionChart from './components/MealInsights/MacroDistributionChart';
 import { getChartData } from './components/MealInsights/chartDataUtils';
+import EmptyMealInsightsState from './components/MealInsights/EmptyMealInsightsState';
 
 /**
  * Meal Insights Tab - Intelligence Nutritionnelle
@@ -92,54 +93,7 @@ const MealInsightsTab: React.FC<MealInsightsTabProps> = ({ onLoadingChange }) =>
 
   // État vide - Pas assez de données pour l'IA
   if (!weekMeals || weekMeals.length < 3) {
-    return (
-      <div className="space-y-6">
-        <GlassCard className="p-8 text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-orange-500/20 flex items-center justify-center">
-            <SpatialIcon Icon={ICONS.Zap} size={40} className="text-orange-400" />
-          </div>
-          <h3 className="text-2xl font-bold text-white mb-4">
-            Analyse Avancée en Préparation
-          </h3>
-          <div className="text-orange-200 mb-6">
-            Scannez au moins 3 repas pour débloquer l'analyse complète
-            et vos insights nutritionnels personnalisés.
-          </div>
-          <div className="text-orange-300 text-sm mb-6">
-            {weekMeals?.length || 0} / 3 repas minimum
-          </div>
-          
-          {/* CTA pour scanner un repas */}
-          <div className="flex justify-center">
-            <button
-              onClick={() => navigate('/meals/scan')}
-              className="btn-glass--primary px-8 py-4 text-lg font-semibold"
-              style={{
-                background: `
-                  linear-gradient(135deg,
-                    color-mix(in srgb, #F59E0B 80%, transparent),
-                    color-mix(in srgb, #F97316 60%, transparent)
-                  )
-                `,
-                backdropFilter: 'blur(20px) saturate(160%)',
-                boxShadow: `
-                  0 12px 40px color-mix(in srgb, #F59E0B 40%, transparent),
-                  0 0 60px color-mix(in srgb, #F59E0B 30%, transparent),
-                  inset 0 3px 0 rgba(255,255,255,0.4),
-                  inset 0 -3px 0 rgba(0,0,0,0.2)
-                `,
-                border: '2px solid color-mix(in srgb, #F59E0B 60%, transparent)',
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <SpatialIcon Icon={ICONS.Camera} size={20} className="text-white" />
-                <span>Scanner un Repas</span>
-              </div>
-            </button>
-          </div>
-        </GlassCard>
-      </div>
-    );
+    return <EmptyMealInsightsState />;
   }
 
   // Afficher le squelette de chargement seulement si l'analyse est en cours ET qu'on n'a pas encore de résultats
