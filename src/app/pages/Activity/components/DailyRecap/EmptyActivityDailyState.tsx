@@ -38,12 +38,12 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
         className="p-8"
         style={{
           background: `radial-gradient(ellipse at center,
-            rgba(6, 182, 212, 0.15) 0%,
-            rgba(34, 211, 238, 0.08) 50%,
+            rgba(59, 130, 246, 0.15) 0%,
+            rgba(96, 165, 250, 0.08) 50%,
             rgba(0, 0, 0, 0.4) 100%)`,
-          borderColor: 'rgba(6, 182, 212, 0.3)',
+          borderColor: 'rgba(59, 130, 246, 0.3)',
           boxShadow: `
-            0 0 30px rgba(6, 182, 212, 0.2),
+            0 0 30px rgba(59, 130, 246, 0.2),
             0 8px 32px rgba(0, 0, 0, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.1)
           `,
@@ -56,12 +56,12 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
             className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center"
             style={{
               background: `radial-gradient(circle,
-                rgba(6, 182, 212, 0.3) 0%,
-                rgba(34, 211, 238, 0.15) 70%,
+                rgba(59, 130, 246, 0.3) 0%,
+                rgba(96, 165, 250, 0.15) 70%,
                 transparent 100%)`,
-              border: '1px solid rgba(6, 182, 212, 0.4)',
+              border: '1px solid rgba(59, 130, 246, 0.4)',
               boxShadow: `
-                0 0 25px rgba(6, 182, 212, 0.3),
+                0 0 25px rgba(59, 130, 246, 0.3),
                 0 4px 20px rgba(0, 0, 0, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2)
               `
@@ -70,9 +70,9 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
             <SpatialIcon
               Icon={ICONS.Activity}
               size={48}
-              className="text-cyan-400"
+              className="text-blue-400"
               style={{
-                filter: `drop-shadow(0 0 12px rgba(6, 182, 212, 0.8))
+                filter: `drop-shadow(0 0 12px rgba(59, 130, 246, 0.8))
                          drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))`
               }}
             />
@@ -95,12 +95,12 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
                 className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center"
                 style={{
                   background: `radial-gradient(circle,
-                    rgba(6, 182, 212, 0.3) 0%,
-                    rgba(34, 211, 238, 0.1) 70%,
+                    rgba(59, 130, 246, 0.3) 0%,
+                    rgba(96, 165, 250, 0.1) 70%,
                     transparent 100%)`,
-                  border: '1px solid rgba(6, 182, 212, 0.4)',
+                  border: '1px solid rgba(59, 130, 246, 0.4)',
                   boxShadow: `
-                    0 0 20px rgba(6, 182, 212, 0.3),
+                    0 0 20px rgba(59, 130, 246, 0.3),
                     0 4px 15px rgba(0, 0, 0, 0.2),
                     inset 0 1px 0 rgba(255, 255, 255, 0.2)
                   `
@@ -109,9 +109,9 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
                 <SpatialIcon
                   Icon={ICONS.Mic}
                   size={24}
-                  className="text-cyan-400"
+                  className="text-blue-400"
                   style={{
-                    filter: `drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))
+                    filter: `drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))
                              drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))`
                   }}
                 />
@@ -127,12 +127,12 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
                 className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center"
                 style={{
                   background: `radial-gradient(circle,
-                    rgba(6, 182, 212, 0.3) 0%,
-                    rgba(34, 211, 238, 0.1) 70%,
+                    rgba(59, 130, 246, 0.3) 0%,
+                    rgba(96, 165, 250, 0.1) 70%,
                     transparent 100%)`,
-                  border: '1px solid rgba(6, 182, 212, 0.4)',
+                  border: '1px solid rgba(59, 130, 246, 0.4)',
                   boxShadow: `
-                    0 0 20px rgba(6, 182, 212, 0.3),
+                    0 0 20px rgba(59, 130, 246, 0.3),
                     0 4px 15px rgba(0, 0, 0, 0.2),
                     inset 0 1px 0 rgba(255, 255, 255, 0.2)
                   `
@@ -141,9 +141,9 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
                 <SpatialIcon
                   Icon={ICONS.Brain}
                   size={24}
-                  className="text-cyan-400"
+                  className="text-blue-400"
                   style={{
-                    filter: `drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))
+                    filter: `drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))
                              drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))`
                   }}
                 />
@@ -159,12 +159,12 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
                 className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center"
                 style={{
                   background: `radial-gradient(circle,
-                    rgba(6, 182, 212, 0.3) 0%,
-                    rgba(34, 211, 238, 0.1) 70%,
+                    rgba(59, 130, 246, 0.3) 0%,
+                    rgba(96, 165, 250, 0.1) 70%,
                     transparent 100%)`,
-                  border: '1px solid rgba(6, 182, 212, 0.4)',
+                  border: '1px solid rgba(59, 130, 246, 0.4)',
                   boxShadow: `
-                    0 0 20px rgba(6, 182, 212, 0.3),
+                    0 0 20px rgba(59, 130, 246, 0.3),
                     0 4px 15px rgba(0, 0, 0, 0.2),
                     inset 0 1px 0 rgba(255, 255, 255, 0.2)
                   `
@@ -173,9 +173,9 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
                 <SpatialIcon
                   Icon={ICONS.Target}
                   size={24}
-                  className="text-cyan-400"
+                  className="text-blue-400"
                   style={{
-                    filter: `drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))
+                    filter: `drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))
                              drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))`
                   }}
                 />
@@ -194,11 +194,11 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
               className="group relative px-8 py-4 text-white font-semibold rounded-2xl transform hover:scale-105 transition-all duration-300"
               style={{
                 background: `linear-gradient(135deg,
-                  rgba(6, 182, 212, 0.8) 0%,
-                  rgba(34, 211, 238, 0.9) 100%)`,
-                border: '2px solid rgba(6, 182, 212, 0.6)',
+                  rgba(59, 130, 246, 0.8) 0%,
+                  rgba(96, 165, 250, 0.9) 100%)`,
+                border: '2px solid rgba(59, 130, 246, 0.6)',
                 boxShadow: `
-                  0 0 30px rgba(6, 182, 212, 0.4),
+                  0 0 30px rgba(59, 130, 246, 0.4),
                   0 8px 25px rgba(0, 0, 0, 0.3),
                   inset 0 1px 0 rgba(255, 255, 255, 0.2),
                   inset 0 -1px 0 rgba(0, 0, 0, 0.2)
@@ -213,7 +213,7 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
                   className="group-hover:rotate-90 transition-transform duration-300"
                   style={{
                     color: 'white',
-                    filter: `drop-shadow(0 0 10px rgba(6, 182, 212, 0.8))
+                    filter: `drop-shadow(0 0 10px rgba(59, 130, 246, 0.8))
                              drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3))`
                   }}
                 />
@@ -225,8 +225,8 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
                 className="absolute inset-0 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 -z-10"
                 style={{
                   background: `linear-gradient(135deg,
-                    rgba(6, 182, 212, 0.6) 0%,
-                    rgba(34, 211, 238, 0.6) 100%)`
+                    rgba(59, 130, 246, 0.6) 0%,
+                    rgba(96, 165, 250, 0.6) 100%)`
                 }}
               ></div>
             </button>
@@ -237,19 +237,19 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
             className="text-white/50 text-sm p-3 rounded-xl"
             style={{
               background: `radial-gradient(ellipse at center,
-                rgba(6, 182, 212, 0.1) 0%,
+                rgba(59, 130, 246, 0.1) 0%,
                 transparent 70%)`,
-              border: '1px solid rgba(6, 182, 212, 0.2)',
-              boxShadow: `0 0 15px rgba(6, 182, 212, 0.1)`
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              boxShadow: `0 0 15px rgba(59, 130, 246, 0.1)`
             }}
           >
             <div className="flex items-center justify-center gap-2">
               <SpatialIcon
                 Icon={ICONS.Lightbulb}
                 size={16}
-                className="text-cyan-400"
+                className="text-blue-400"
                 style={{
-                  filter: `drop-shadow(0 0 6px rgba(6, 182, 212, 0.6))`
+                  filter: `drop-shadow(0 0 6px rgba(59, 130, 246, 0.6))`
                 }}
               />
               <span>

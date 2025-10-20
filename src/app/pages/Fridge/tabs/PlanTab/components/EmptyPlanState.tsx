@@ -90,9 +90,9 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
                 backdropFilter: 'blur(16px) saturate(150%)'
               }}
             >
-              <SpatialIcon 
-                Icon={hasContext ? ICONS.Calendar : ICONS.Scan} 
-                size={40} 
+              <SpatialIcon
+                Icon={hasContext ? ICONS.Calendar : ICONS.Scan}
+                size={48} 
                 style={{ 
                   color: '#8B5CF6',
                   filter: `

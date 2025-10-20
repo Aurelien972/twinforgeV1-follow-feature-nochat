@@ -113,9 +113,11 @@ const FastingHistoryTab: React.FC = () => {
       {/* History Content */}
       {historyData && !isLoading && (
         <div className="space-y-6">
-          {/* Statistics Card */}
-          <FastingHistoryStatsCard stats={historyData.stats} />
-          
+          {/* Statistics Card - Only show when there are sessions */}
+          {historyData.sessions.length > 0 && (
+            <FastingHistoryStatsCard stats={historyData.stats} />
+          )}
+
           {/* Sessions List */}
           {historyData.sessions.length > 0 ? (
             <div className="space-y-4">
