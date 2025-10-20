@@ -24,6 +24,7 @@ import GlassCard from '../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../ui/icons/registry';
 import MealDetailModal from './components/shared/MealDetailModal';
+import EmptyMealsScannerState from './components/DailyRecap/EmptyMealsScannerState';
 
 /**
  * Daily Recap Tab - Récap Nutritionnel TwinForge
@@ -266,6 +267,11 @@ const DailyRecapTab: React.FC<DailyRecapTabProps> = ({ onLoadingChange }) => {
     return <DailyRecapSkeleton />;
   }
 
+  // Show empty state if no meals history at all
+  if (todayStats.mealsCount === 0 && !hasAnyMealHistory) {
+    return <EmptyMealsScannerState />;
+  }
+
   return (
     <>
       <MotionDiv
@@ -284,7 +290,7 @@ const DailyRecapTab: React.FC<DailyRecapTabProps> = ({ onLoadingChange }) => {
       />
 
       {/* CTA Principal Dynamique - Remonté en haut */}
-      <DynamicScanCTA 
+      <DynamicScanCTA
         todayStats={todayStats}
         profile={profile}
         calorieStatus={calorieStatus}
