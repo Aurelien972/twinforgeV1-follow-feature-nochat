@@ -2,9 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePerformanceMode } from '../../../../../system/context/PerformanceModeContext';
+import { useUserStore } from '../../../../../system/store/userStore';
+import { calculateActivityTrackingCompletion } from '../../../../../system/profile/profileCompletionService';
 import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
+import ProfileNudgeCTA from '../../../../../ui/components/ProfileNudgeCTA';
 
 interface EmptyActivityDailyStateProps {
   onStartTracking?: () => void;
@@ -16,6 +19,9 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
   const navigate = useNavigate();
   const { isPerformanceMode } = usePerformanceMode();
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
+  const { profile } = useUserStore();
+
+  const profileCompletion = calculateActivityTrackingCompletion(profile);
 
   const handleStartActivity = () => {
     if (onStartTracking) {
@@ -34,6 +40,16 @@ const EmptyActivityDailyState: React.FC<EmptyActivityDailyStateProps> = ({
       })}
       className="text-center py-12 py-1"
     >
+      {!profileCompletion.isSufficient && (
+        <div className="mb-6">
+          <ProfileNudgeCTA
+            completion={profileCompletion}
+            forgeName="le suivi d'activité"
+            forgeColor="#3B82F6"
+          />
+        </div>
+      )}
+
       <GlassCard
         className="p-8"
         style={{

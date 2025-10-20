@@ -2,14 +2,20 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePerformanceMode } from '../../../../../system/context/PerformanceModeContext';
+import { useUserStore } from '../../../../../system/store/userStore';
+import { calculateMealTrackingCompletion } from '../../../../../system/profile/profileCompletionService';
 import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
+import ProfileNudgeCTA from '../../../../../ui/components/ProfileNudgeCTA';
 
 const EmptyMealsScannerState: React.FC = () => {
   const navigate = useNavigate();
   const { isPerformanceMode } = usePerformanceMode();
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
+  const { profile } = useUserStore();
+
+  const profileCompletion = calculateMealTrackingCompletion(profile);
 
   const handleStartScan = () => {
     navigate('/meals/scan');
@@ -24,6 +30,16 @@ const EmptyMealsScannerState: React.FC = () => {
       })}
       className="text-center py-12 py-1"
     >
+      {!profileCompletion.isSufficient && (
+        <div className="mb-6">
+          <ProfileNudgeCTA
+            completion={profileCompletion}
+            forgeName="le suivi nutritionnel"
+            forgeColor="#10B981"
+          />
+        </div>
+      )}
+
       <GlassCard
         className="p-8"
         style={{

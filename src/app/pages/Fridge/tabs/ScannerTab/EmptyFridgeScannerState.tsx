@@ -3,15 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePerformanceMode } from '../../../../../system/context/PerformanceModeContext';
 import { useFridgeScanPipeline } from '../../../../../system/store/fridgeScan';
+import { useUserStore } from '../../../../../system/store/userStore';
+import { calculateRecipeWorkshopCompletion } from '../../../../../system/profile/profileCompletionService';
 import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
+import ProfileNudgeCTA from '../../../../../ui/components/ProfileNudgeCTA';
 
 const EmptyFridgeScannerState: React.FC = () => {
   const navigate = useNavigate();
   const { isPerformanceMode } = usePerformanceMode();
   const { startScan } = useFridgeScanPipeline();
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
+  const { profile } = useUserStore();
+
+  const profileCompletion = calculateRecipeWorkshopCompletion(profile);
 
   const handleStartFridgeScan = () => {
     startScan();
@@ -27,6 +33,16 @@ const EmptyFridgeScannerState: React.FC = () => {
       })}
       className="text-center py-12 py-1"
     >
+      {!profileCompletion.isSufficient && (
+        <div className="mb-6">
+          <ProfileNudgeCTA
+            completion={profileCompletion}
+            forgeName="la forge culinaire"
+            forgeColor="#EC4899"
+          />
+        </div>
+      )}
+
       <GlassCard
         className="p-8"
         style={{

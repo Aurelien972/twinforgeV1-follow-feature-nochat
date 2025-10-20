@@ -2,9 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePerformanceMode } from '../../../../system/context/PerformanceModeContext';
+import { useUserStore } from '../../../../system/store/userStore';
+import { calculateAvatarScanCompletion } from '../../../../system/profile/profileCompletionService';
 import GlassCard from '../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../ui/icons/registry';
+import ProfileNudgeCTA from '../../../../ui/components/ProfileNudgeCTA';
 
 interface EmptyAvatarScannerStateProps {
   onStartScan?: () => void;
@@ -16,6 +19,9 @@ const EmptyAvatarScannerState: React.FC<EmptyAvatarScannerStateProps> = ({
   const navigate = useNavigate();
   const { isPerformanceMode } = usePerformanceMode();
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
+  const { profile } = useUserStore();
+
+  const profileCompletion = calculateAvatarScanCompletion(profile);
 
   const handleStartBodyScan = () => {
     if (onStartScan) {
@@ -34,6 +40,16 @@ const EmptyAvatarScannerState: React.FC<EmptyAvatarScannerStateProps> = ({
       })}
       className="text-center py-12 py-1"
     >
+      {!profileCompletion.isSufficient && (
+        <div className="mb-6">
+          <ProfileNudgeCTA
+            completion={profileCompletion}
+            forgeName="l'avatar 3D"
+            forgeColor="#8B5CF6"
+          />
+        </div>
+      )}
+
       <GlassCard
         className="p-8"
         style={{
