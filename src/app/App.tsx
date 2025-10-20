@@ -9,6 +9,7 @@ import { useToast } from '../ui/components/ToastProvider';
 import React, { Suspense, useEffect } from 'react';
 import InstallPrompt from '../ui/components/InstallPrompt';
 import UpdateNotification from '../ui/components/UpdateNotification';
+import WelcomeTokensNotification from '../ui/components/WelcomeTokensNotification';
 import { Outlet, useLocation } from 'react-router-dom';
 import logger from '../lib/utils/logger';
 import { useOverlayStore } from '../system/store/overlayStore';
@@ -247,6 +248,9 @@ function AppContent() {
 
       <NewMobileBottomBar />
       <GlobalExitModal />
+
+      {/* Welcome Tokens Notification - Shows to new users after account creation */}
+      <WelcomeTokensNotification />
 
       {/* Central Actions Menu - Accessible depuis mobile (via bottom bar) et desktop (via header) */}
       <CentralActionsMenu

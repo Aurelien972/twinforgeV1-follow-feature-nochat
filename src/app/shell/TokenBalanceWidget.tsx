@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TokenIcon from '../../ui/icons/TokenIcon';
 import SpatialIcon from '../../ui/icons/SpatialIcon';
@@ -6,39 +6,94 @@ import { ICONS } from '../../ui/icons/registry';
 import { TokenService, type TokenBalance } from '../../system/services/tokenService';
 import { useFeedback } from '@/hooks';
 import { useOverlayStore } from '../../system/store/overlayStore';
+import { supabase } from '../../system/supabase/client';
+import logger from '../../lib/utils/logger';
 
 const TokenBalanceWidget: React.FC = () => {
   const [balance, setBalance] = useState<TokenBalance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
   const { sidebarClick } = useFeedback();
   const { close } = useOverlayStore();
 
-  useEffect(() => {
-    loadBalance();
-
-    const unsubscribe = TokenService.subscribeToTokenBalance(
-      '',
-      (newBalance) => {
-        setBalance(newBalance);
-      }
-    );
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  const loadBalance = async () => {
+  const loadBalance = useCallback(async (isRetry = false) => {
     try {
       const result = await TokenService.getTokenBalance();
-      setBalance(result);
+
+      if (result) {
+        setBalance(result);
+        setRetryCount(0);
+
+        if (isRetry) {
+          logger.info('TOKEN_BALANCE_WIDGET', 'Token balance loaded successfully after retry', {
+            retryCount,
+            balance: result.balance
+          });
+        }
+      } else {
+        if (retryCount < 3) {
+          const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+
+          logger.warn('TOKEN_BALANCE_WIDGET', 'Token balance not found, scheduling retry', {
+            retryCount: retryCount + 1,
+            delayMs: delay
+          });
+
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+            loadBalance(true);
+          }, delay);
+        } else {
+          logger.error('TOKEN_BALANCE_WIDGET', 'Failed to load token balance after retries', {
+            maxRetriesReached: true
+          });
+        }
+      }
     } catch (error) {
-      console.error('Error loading token balance:', error);
+      logger.error('TOKEN_BALANCE_WIDGET', 'Error loading token balance', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        retryCount
+      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [retryCount]);
+
+  useEffect(() => {
+    loadBalance();
+
+    const getUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user?.id || '';
+    };
+
+    let unsubscribe: (() => void) | undefined;
+
+    getUserId().then(userId => {
+      if (userId) {
+        unsubscribe = TokenService.subscribeToTokenBalance(
+          userId,
+          (newBalance) => {
+            if (newBalance) {
+              setBalance(newBalance);
+              setRetryCount(0);
+
+              logger.info('TOKEN_BALANCE_WIDGET', 'Token balance updated via subscription', {
+                balance: newBalance.balance
+              });
+            }
+          }
+        );
+      }
+    });
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [loadBalance]);
 
   const handleClick = () => {
     sidebarClick();

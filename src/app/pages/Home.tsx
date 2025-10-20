@@ -8,10 +8,13 @@ import { Link } from '../nav/Link';
 import { useUserStore } from '../../system/store/userStore';
 import PageHeader from '../../ui/page/PageHeader';
 import { useToast } from '../../ui/components/ToastProvider';
+import { useWelcomeTokensToast } from '@/hooks';
 
 const Home: React.FC = () => {
   const { profile } = useUserStore();
   const { showToast } = useToast();
+
+  useWelcomeTokensToast();
 
   return (
     <div className="space-y-6 w-full max-w-none">
