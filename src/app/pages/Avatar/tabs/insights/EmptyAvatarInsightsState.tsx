@@ -12,7 +12,7 @@ const EmptyAvatarInsightsState: React.FC = () => {
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
 
   const handleStartScan = () => {
-    navigate('/bodyscan');
+    navigate('/body-scan');
   };
 
   return (

@@ -12,6 +12,7 @@ import SpatialIcon from '../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../ui/icons/registry';
 import { getActivityIcon, getIntensityColor, getIntensityLabel } from './components/ReviewStage/ActivityUtils';
 import ActivityDetailModal from './components/History/ActivityDetailModal';
+import EmptyActivityHistoryState from './components/History/EmptyActivityHistoryState';
 import logger from '../../../lib/utils/logger';
 import './styles/index.css';
 
@@ -135,50 +136,7 @@ const ActivityHistoryTab: React.FC = () => {
 
   // État vide
   if (!activities || activities.length === 0) {
-    return (
-      <div className="space-y-6">
-        <GlassCard 
-          className="p-8 text-center"
-          style={{
-            background: `
-              radial-gradient(circle at 30% 20%, color-mix(in srgb, #8B5CF6 12%, transparent) 0%, transparent 60%),
-              radial-gradient(circle at 70% 80%, color-mix(in srgb, #A855F7 8%, transparent) 0%, transparent 50%),
-              var(--glass-opacity)
-            `,
-            borderColor: 'color-mix(in srgb, #8B5CF6 25%, transparent)',
-            boxShadow: `
-              0 12px 40px rgba(0, 0, 0, 0.25),
-              0 0 30px color-mix(in srgb, #8B5CF6 15%, transparent),
-              inset 0 2px 0 rgba(255, 255, 255, 0.15)
-            `
-          }}
-        >
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div 
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{
-                background: `
-                  radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
-                  linear-gradient(135deg, color-mix(in srgb, #8B5CF6 30%, transparent), color-mix(in srgb, #8B5CF6 20%, transparent))
-                `,
-                border: '2px solid color-mix(in srgb, #8B5CF6 40%, transparent)',
-                boxShadow: '0 0 30px color-mix(in srgb, #8B5CF6 30%, transparent)'
-              }}
-            >
-              <SpatialIcon Icon={ICONS.History} size={40} style={{ color: '#8B5CF6' }} />
-            </div>
-            <div className="text-left">
-              <h3 className="text-2xl font-bold text-white">Forge Énergétique Vierge</h3>
-              <p className="text-white/70 text-base">Votre historique d'activités vous attend</p>
-            </div>
-          </div>
-          <p className="text-white/70 text-base max-w-lg mx-auto leading-relaxed">
-            Aucune activité enregistrée pour le moment. Commencez à enregistrer vos activités 
-            pour construire votre historique énergétique et suivre votre progression.
-          </p>
-        </GlassCard>
-      </div>
-    );
+    return <EmptyActivityHistoryState />;
   }
 
   return (

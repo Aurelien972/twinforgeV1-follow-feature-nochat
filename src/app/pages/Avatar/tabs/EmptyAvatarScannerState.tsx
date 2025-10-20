@@ -21,7 +21,7 @@ const EmptyAvatarScannerState: React.FC<EmptyAvatarScannerStateProps> = ({
     if (onStartScan) {
       onStartScan();
     } else {
-      navigate('/bodyscan');
+      navigate('/body-scan');
     }
   };
 
