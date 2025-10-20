@@ -136,7 +136,7 @@ const ActivityDailyTab: React.FC = () => {
   }
 
   // Afficher l'empty state si aucune activité du tout
-  if (!hasAnyActivityHistory && todayStats?.totalActivities === 0) {
+  if (!statsLoading && !hasAnyActivityHistory) {
     return <EmptyActivityDailyState />;
   }
 
