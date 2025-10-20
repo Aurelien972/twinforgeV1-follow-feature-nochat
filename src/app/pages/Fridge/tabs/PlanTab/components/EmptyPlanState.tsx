@@ -121,8 +121,8 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
             {/* Génération IA */}
             <div className="text-center space-y-3">
-              <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center mx-auto"
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
                 style={{
                   background: `
                     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
@@ -136,9 +136,9 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
                   backdropFilter: 'blur(12px) saturate(140%)'
                 }}
               >
-                <SpatialIcon 
-                  Icon={ICONS.Sparkles} 
-                  size={24} 
+                <SpatialIcon
+                  Icon={ICONS.Sparkles}
+                  size={32} 
                   style={{ 
                     color: '#8B5CF6',
                     filter: 'drop-shadow(0 0 8px #8B5CF6)'
@@ -151,8 +151,8 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
 
             {/* Sauvegarde */}
             <div className="text-center space-y-3">
-              <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center mx-auto"
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
                 style={{
                   background: `
                     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
@@ -166,9 +166,9 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
                   backdropFilter: 'blur(12px) saturate(140%)'
                 }}
               >
-                <SpatialIcon 
-                  Icon={ICONS.Save} 
-                  size={24} 
+                <SpatialIcon
+                  Icon={ICONS.Save}
+                  size={32} 
                   style={{ 
                     color: '#8B5CF6',
                     filter: 'drop-shadow(0 0 8px #8B5CF6)'
@@ -181,8 +181,8 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
 
             {/* Organisation */}
             <div className="text-center space-y-3">
-              <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center mx-auto"
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
                 style={{
                   background: `
                     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
@@ -196,9 +196,9 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
                   backdropFilter: 'blur(12px) saturate(140%)'
                 }}
               >
-                <SpatialIcon 
-                  Icon={ICONS.Search} 
-                  size={24} 
+                <SpatialIcon
+                  Icon={ICONS.Search}
+                  size={32} 
                   style={{ 
                     color: '#8B5CF6',
                     filter: 'drop-shadow(0 0 8px #8B5CF6)'
