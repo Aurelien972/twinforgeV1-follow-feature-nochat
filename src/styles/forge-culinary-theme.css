@@ -363,7 +363,7 @@
   }
 }
 
-@keyframes fridge-ai-focus {
+@keyframes fridge-ai-focus-scan {
   0%, 100% {
     box-shadow: 0 0 50px color-mix(in srgb, var(--fridge-scan-primary) 80%, transparent),
       0 0 100px color-mix(in srgb, var(--fridge-scan-primary) 60%, transparent);
@@ -371,6 +371,17 @@
   50% {
     box-shadow: 0 0 70px color-mix(in srgb, var(--fridge-scan-primary) 90%, transparent),
       0 0 120px color-mix(in srgb, var(--fridge-scan-primary) 70%, transparent);
+  }
+}
+
+@keyframes fridge-ai-focus-inventory {
+  0%, 100% {
+    box-shadow: 0 0 50px color-mix(in srgb, var(--fridge-inventory-primary) 80%, transparent),
+      0 0 100px color-mix(in srgb, var(--fridge-inventory-primary) 60%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 70px color-mix(in srgb, var(--fridge-inventory-primary) 90%, transparent),
+      0 0 120px color-mix(in srgb, var(--fridge-inventory-primary) 70%, transparent);
   }
 }
 
@@ -391,7 +402,11 @@
 }
 
 .fridge-ai-focus {
-  animation: fridge-ai-focus 3s ease-in-out infinite;
+  animation: fridge-ai-focus-scan 3s ease-in-out infinite;
+}
+
+.fridge-ai-focus-inventory {
+  animation: fridge-ai-focus-inventory 3s ease-in-out infinite;
 }
 
 /* ========================================
@@ -402,7 +417,8 @@
 [data-performance-mode="true"] .fridge-grid-pulse,
 [data-performance-mode="true"] .fridge-scan-analysis-line,
 [data-performance-mode="true"] .fridge-data-particle,
-[data-performance-mode="true"] .fridge-ai-focus {
+[data-performance-mode="true"] .fridge-ai-focus,
+[data-performance-mode="true"] .fridge-ai-focus-inventory {
   animation: none !important;
 }
 
@@ -429,7 +445,8 @@
   .fridge-grid-pulse,
   .fridge-scan-analysis-line,
   .fridge-data-particle,
-  .fridge-ai-focus {
+  .fridge-ai-focus,
+  .fridge-ai-focus-inventory {
     animation: none !important;
   }
 
