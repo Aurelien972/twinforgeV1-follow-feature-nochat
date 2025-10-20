@@ -543,6 +543,58 @@ function calculateCompletion(
 }
 
 /**
+ * Calculate profile completion for Training/Coaching
+ */
+export function calculateTrainingCompletion(profile: UserProfile | null): ProfileCompletionResult {
+  const requiredFields: CriticalField[] = [
+    {
+      key: 'sex',
+      label: 'Genre',
+      description: 'Pour des programmes d\'entraînement adaptés',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'weight_kg',
+      label: 'Poids',
+      description: 'Essentiel pour calibrer les charges',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'height_cm',
+      label: 'Taille',
+      description: 'Pour adapter les mouvements',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'objective',
+      label: 'Objectif fitness',
+      description: 'Pour construire le programme optimal',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'trainingPreferences.experienceLevel',
+      label: 'Niveau d\'expérience',
+      description: 'Pour adapter la complexité des exercices',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'trainingPreferences.availableEquipment',
+      label: 'Équipement disponible',
+      description: 'Pour générer des séances réalisables',
+      profileTab: 'identity',
+      priority: 'high'
+    }
+  ];
+
+  return calculateCompletion(profile, requiredFields, 'Démarrez votre coaching');
+}
+
+/**
  * Profile Completion Service Object
  * Convenient wrapper for all profile completion functions
  */
@@ -553,5 +605,6 @@ export const profileCompletionService = {
   checkMealTracking: calculateMealTrackingCompletion,
   checkActivityTracking: calculateActivityTrackingCompletion,
   checkFastingTracking: calculateFastingTrackingCompletion,
-  checkAvatarScan: calculateAvatarScanCompletion
+  checkAvatarScan: calculateAvatarScanCompletion,
+  checkTraining: calculateTrainingCompletion
 };
