@@ -209,19 +209,41 @@ const ActivityInputPage: React.FC = () => {
 
       if (!analysisResponse.ok) {
         let errorMessage = `Analysis failed: ${analysisResponse.statusText}`;
+        let isNetworkError = false;
         try {
           const errorData = await analysisResponse.json();
           errorMessage = errorData.message || errorData.error || errorMessage;
+
+          // Detect network/DNS errors
+          if (errorMessage.includes('dns error') ||
+              errorMessage.includes('name resolution') ||
+              errorMessage.includes('Network error') ||
+              errorMessage.includes('Unable to reach OpenAI API')) {
+            isNetworkError = true;
+          }
 
           logger.error('ACTIVITY_INPUT', 'API Error Details (Audio Path)', {
             status: analysisResponse.status,
             statusText: analysisResponse.statusText,
             errorData,
+            isNetworkError,
             timestamp: new Date().toISOString()
           });
         } catch {
           // Unable to parse error JSON
         }
+
+        // Show user-friendly message for network errors
+        if (isNetworkError) {
+          errorSound();
+          showToast({
+            type: 'error',
+            title: 'Erreur de Connexion',
+            message: 'Impossible de contacter le service d\'analyse. Vérifiez votre connexion internet ou réessayez plus tard.',
+            duration: 6000
+          });
+        }
+
         throw new Error(errorMessage);
       }
 
@@ -312,19 +334,41 @@ const ActivityInputPage: React.FC = () => {
 
       if (!analysisResponse.ok) {
         let errorMessage = `Analysis failed: ${analysisResponse.statusText}`;
+        let isNetworkError = false;
         try {
           const errorData = await analysisResponse.json();
           errorMessage = errorData.message || errorData.error || errorMessage;
+
+          // Detect network/DNS errors
+          if (errorMessage.includes('dns error') ||
+              errorMessage.includes('name resolution') ||
+              errorMessage.includes('Network error') ||
+              errorMessage.includes('Unable to reach OpenAI API')) {
+            isNetworkError = true;
+          }
 
           logger.error('ACTIVITY_INPUT', 'API Error Details (Text Path)', {
             status: analysisResponse.status,
             statusText: analysisResponse.statusText,
             errorData,
+            isNetworkError,
             timestamp: new Date().toISOString()
           });
         } catch {
           // Unable to parse error JSON
         }
+
+        // Show user-friendly message for network errors
+        if (isNetworkError) {
+          errorSound();
+          showToast({
+            type: 'error',
+            title: 'Erreur de Connexion',
+            message: 'Impossible de contacter le service d\'analyse. Vérifiez votre connexion internet ou réessayez plus tard.',
+            duration: 6000
+          });
+        }
+
         throw new Error(errorMessage);
       }
 

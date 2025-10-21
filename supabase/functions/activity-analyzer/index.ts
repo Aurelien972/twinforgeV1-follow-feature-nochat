@@ -206,29 +206,52 @@ RÉPONSE REQUISE (JSON uniquement):
   ]
 }`;
     // Appel à gpt-5-mini pour l'analyse
-    const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'gpt-5-mini',
-        messages: [
-          {
-            role: 'user',
-            content: analysisPrompt
+    let analysisResponse;
+    try {
+      analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-5-mini',
+          messages: [
+            {
+              role: 'user',
+              content: analysisPrompt
+            }
+          ],
+          reasoning_effort: 'low',
+          max_completion_tokens: 2000,
+          response_format: {
+            type: 'json_object'
           }
-        ],
-        reasoning_effort: 'low',
-        max_completion_tokens: 2000,
-        response_format: {
-          type: 'json_object'
-        }
-      })
-    });
+        })
+      });
+    } catch (fetchError) {
+      // Check for DNS/network errors common in local dev environments
+      const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
+      if (errorMessage.includes('dns error') || errorMessage.includes('name resolution') || errorMessage.includes('ENOTFOUND')) {
+        console.error('❌ [ACTIVITY_ANALYZER] Network/DNS Error - Cannot reach OpenAI API', {
+          error: errorMessage,
+          environment: Deno.env.get('ENVIRONMENT') || 'unknown',
+          timestamp: new Date().toISOString()
+        });
+        throw new Error('Network error: Unable to reach OpenAI API. This usually happens in local development environments without external network access. Please ensure you are running in a properly configured Supabase environment with network access, or use Supabase CLI for local development.');
+      }
+      throw fetchError;
+    }
+
     if (!analysisResponse.ok) {
-      throw new Error(`Activity analysis failed: ${analysisResponse.statusText}`);
+      const errorBody = await analysisResponse.text();
+      console.error('❌ [ACTIVITY_ANALYZER] OpenAI API Error', {
+        status: analysisResponse.status,
+        statusText: analysisResponse.statusText,
+        errorBody,
+        timestamp: new Date().toISOString()
+      });
+      throw new Error(`Activity analysis failed: ${analysisResponse.statusText} - ${errorBody}`);
     }
     const analysisData = await analysisResponse.json();
     const analysisResult = JSON.parse(analysisData.choices[0]?.message?.content || '{}');

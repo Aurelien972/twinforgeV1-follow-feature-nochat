@@ -23,6 +23,7 @@ const ScannerTab: React.FC = () => {
   }, [loadRecentSessions]);
 
   // Vérification si l'utilisateur a déjà des sessions de scan de frigo
+  // Utilise recipe_sessions comme l'onglet Inventaire pour la cohérence
   const { data: hasAnyFridgeScanHistory = false, isLoading } = useQuery({
     queryKey: ['fridge-scan-sessions', 'has-history', session?.user?.id],
     queryFn: async () => {
@@ -30,16 +31,17 @@ const ScannerTab: React.FC = () => {
 
       const { supabase } = await import('../../../../system/supabase/client');
       const { data, error } = await supabase
-        .from('fridge_scan_sessions')
+        .from('recipe_sessions')
         .select('id')
         .eq('user_id', session.user.id)
+        .not('inventory_final', 'is', null)
         .limit(1);
 
       if (error) return false;
       return (data?.length || 0) > 0;
     },
     enabled: !!session?.user?.id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // Réduit à 30 secondes pour une meilleure réactivité
   });
 
   // Afficher l'empty state si aucun historique
