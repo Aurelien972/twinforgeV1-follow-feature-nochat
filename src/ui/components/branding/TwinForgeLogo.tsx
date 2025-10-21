@@ -16,16 +16,14 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
   const isDesktop = variant === 'desktop';
   const { mode } = usePerformanceMode();
 
-  // Use simplified gradient in high-performance mode for better compatibility
+  // In high-performance mode, use solid color instead of gradient
   const isHighPerformance = mode === 'high-performance';
 
-  // Simplified 2-color gradient for ultra performance mode
-  const gradientStyle = isHighPerformance
-    ? 'linear-gradient(135deg, #FF6B35 0%, #FDC830 100%)'
-    : 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)';
+  // Solid orange color for ultra performance mode (no gradient)
+  const solidColor = '#FF8C42';
 
-  // Fallback solid color for maximum compatibility
-  const fallbackColor = '#FF8C42';
+  // Gradient for normal/balanced modes
+  const gradientStyle = 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)';
 
   if (isDesktop) {
     return (
@@ -52,18 +50,18 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
           >
             TWIN
           </span>
-          {/* Gradient statique pour tous les modes - sans animation */}
+          {/* Ultra performance: solid color | Normal: gradient */}
           <span
             style={{
               fontFamily: "'Montserrat', sans-serif",
               fontSize: '25px',
               fontWeight: 800,
               letterSpacing: '1.2px',
-              color: fallbackColor,
-              background: gradientStyle,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: isHighPerformance ? solidColor : 'transparent',
+              background: isHighPerformance ? 'none' : gradientStyle,
+              WebkitBackgroundClip: isHighPerformance ? 'unset' : 'text',
+              WebkitTextFillColor: isHighPerformance ? solidColor : 'transparent',
+              backgroundClip: isHighPerformance ? 'unset' : 'text',
               lineHeight: 1,
               textTransform: 'uppercase',
               filter: 'none',
@@ -121,18 +119,18 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
         >
           TWIN
         </span>
-        {/* Gradient statique pour tous les modes - sans animation */}
+        {/* Ultra performance: solid color | Normal: gradient */}
         <span
           style={{
             fontFamily: "'Montserrat', sans-serif",
             fontSize: '15px',
             fontWeight: 800,
             letterSpacing: '0.8px',
-            color: fallbackColor,
-            background: gradientStyle,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: isHighPerformance ? solidColor : 'transparent',
+            background: isHighPerformance ? 'none' : gradientStyle,
+            WebkitBackgroundClip: isHighPerformance ? 'unset' : 'text',
+            WebkitTextFillColor: isHighPerformance ? solidColor : 'transparent',
+            backgroundClip: isHighPerformance ? 'unset' : 'text',
             lineHeight: 1,
             textTransform: 'uppercase',
             filter: 'none',
