@@ -123,7 +123,34 @@ function getDateRange(period) {
 }
 function processActivitiesForAnalysis(activities) {
   if (activities.length === 0) return "Aucune activité enregistrée sur cette période.";
-  return activities.map((activity)=>`${activity.type} - ${activity.duration_min}min - ${activity.intensity} - ${activity.calories_est}kcal - ${new Date(activity.timestamp).toLocaleDateString('fr-FR')}`).join('\n');
+
+  // Separate enriched and manual activities
+  const enrichedActivities = activities.filter(a => a.wearable_device_id || a.hr_avg);
+  const manualActivities = activities.filter(a => !a.wearable_device_id && !a.hr_avg);
+
+  let text = '';
+
+  if (enrichedActivities.length > 0) {
+    text += '=== ACTIVITÉS AVEC DONNÉES BIOMÉTRIQUES (haute fiabilité) ===\n';
+    text += enrichedActivities.map((activity) => {
+      const biometrics = [];
+      if (activity.hr_avg) biometrics.push(`FC:${activity.hr_avg}bpm`);
+      if (activity.hrv_pre_activity) biometrics.push(`HRV:${activity.hrv_pre_activity}ms`);
+      if (activity.vo2max_estimated) biometrics.push(`VO2max:${activity.vo2max_estimated}`);
+      const biometricsStr = biometrics.length > 0 ? ` [${biometrics.join(', ')}]` : '';
+      return `${activity.type} - ${activity.duration_min}min - ${activity.intensity} - ${activity.calories_est}kcal - ${new Date(activity.timestamp).toLocaleDateString('fr-FR')}${biometricsStr}`;
+    }).join('\n');
+    text += '\n\n';
+  }
+
+  if (manualActivities.length > 0) {
+    text += '=== ACTIVITÉS MANUELLES (estimation) ===\n';
+    text += manualActivities.map((activity) =>
+      `${activity.type} - ${activity.duration_min}min - ${activity.intensity} - ${activity.calories_est}kcal - ${new Date(activity.timestamp).toLocaleDateString('fr-FR')}`
+    ).join('\n');
+  }
+
+  return text;
 }
 Deno.serve(async (req)=>{
   // Handle CORS preflight
@@ -391,6 +418,10 @@ Deno.serve(async (req)=>{
     const activitiesText = processActivitiesForAnalysis(activities);
     const userAge = calculateAge(userProfile?.birthdate);
     const periodDays = period === 'last7Days' ? 7 : 30;
+
+    // Calculate enrichment stats
+    const enrichedCount = activities.filter(a => a.wearable_device_id || a.hr_avg).length;
+    const enrichmentRate = Math.round((enrichedCount / activities.length) * 100);
     // Prompt optimisé pour gpt-5-mini - Génération d'insights d'activité
     const insightsPrompt = `Tu es un expert en analyse d'activités physiques pour la Forge Énergétique TwinForge.
 
@@ -404,8 +435,18 @@ PROFIL UTILISATEUR:
 
 PÉRIODE D'ANALYSE: ${periodDays} derniers jours
 
+STATISTIQUES DE DONNÉES:
+- Total activités: ${activities.length}
+- Activités avec biométrie: ${enrichedCount} (${enrichmentRate}%)
+- Activités manuelles: ${activities.length - enrichedCount}
+
 DONNÉES D'ACTIVITÉS:
 ${activitiesText}
+
+IMPORTANT:
+- Les activités avec données biométriques sont plus fiables pour l'analyse
+- Accorde plus de poids aux métriques de fréquence cardiaque, HRV et VO2max dans tes insights
+- Mentionne le taux d'enrichissement si élevé (c'est un point positif)
 
 TÂCHE: Génère une analyse complète des patterns d'activité avec:
 

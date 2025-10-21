@@ -6,7 +6,7 @@
   Modèle: gpt-5-mini (optimisé pour le raisonnement et l'analyse)
 */
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
 // CORS Headers
 const corsHeaders = {
@@ -166,6 +166,9 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Import Supabase dynamically to avoid tslib issues
+    const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+
     const { cleanText, userId, userProfile, clientTraceId } = await req.json();
     const startTime = Date.now();
 
@@ -326,10 +329,14 @@ RÉPONSE REQUISE (JSON uniquement):
 
     // Store cost tracking in database
     try {
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Missing Supabase configuration');
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
       await supabase.from('ai_analysis_jobs').insert({
         user_id: userId,
