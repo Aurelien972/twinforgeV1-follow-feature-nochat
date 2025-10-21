@@ -7,6 +7,46 @@ import * as THREE from 'three';
 import logger from '../../utils/logger';
 import type { PerformanceLevel } from '../performance/mobileDetection';
 
+/**
+ * Crée un matériau haute qualité pour mobiles hauts de gamme
+ * Utilise MeshStandardMaterial avec meilleurs paramètres
+ */
+export function createHighEndMobileMaterial(
+  skinToneRGB: { r: number; g: number; b: number }
+): THREE.MeshStandardMaterial {
+  const color = new THREE.Color(
+    skinToneRGB.r / 255,
+    skinToneRGB.g / 255,
+    skinToneRGB.b / 255
+  );
+
+  const material = new THREE.MeshStandardMaterial({
+    color,
+    metalness: 0.0, // Pas de métal pour la peau
+    roughness: 0.5, // NOUVEAU: Plus lisse pour meilleur rendu
+    emissive: new THREE.Color(0x000000),
+    emissiveIntensity: 0,
+    envMapIntensity: 0.6, // NOUVEAU: Réflexions environnement plus fortes
+    side: THREE.FrontSide
+  });
+
+  // Désactiver les maps avancées pour performance
+  material.normalMap = null;
+  material.bumpMap = null;
+  material.displacementMap = null;
+
+  logger.info('MOBILE_MATERIALS', 'Created high-end mobile material (Standard enhanced)', {
+    colorRGB: skinToneRGB,
+    materialType: 'MeshStandardMaterial',
+    metalness: 0,
+    roughness: 0.5,
+    envMapIntensity: 0.6,
+    philosophy: 'high_end_mobile_material'
+  });
+
+  return material;
+}
+
 export interface MobileMaterialConfig {
   performanceLevel: PerformanceLevel;
   enableProceduralTextures: boolean;
@@ -61,10 +101,10 @@ export function createMediumMobileMaterial(
   const material = new THREE.MeshStandardMaterial({
     color,
     metalness: 0.0, // Pas de métal pour la peau
-    roughness: 0.7, // Peau mate
+    roughness: 0.6, // AMÉLIORÉ: Légèrement plus lisse (0.6 au lieu de 0.7)
     emissive: new THREE.Color(0x000000),
     emissiveIntensity: 0,
-    envMapIntensity: 0.3, // Réduit pour performance
+    envMapIntensity: 0.4, // AMÉLIORÉ: Augmenté pour plus de réflexions (0.4 au lieu de 0.3)
     side: THREE.FrontSide
   });
 
@@ -77,8 +117,8 @@ export function createMediumMobileMaterial(
     colorRGB: skinToneRGB,
     materialType: 'MeshStandardMaterial',
     metalness: 0,
-    roughness: 0.7,
-    envMapIntensity: 0.3,
+    roughness: 0.6,
+    envMapIntensity: 0.4,
     philosophy: 'balanced_mobile_material'
   });
 
@@ -119,6 +159,8 @@ export async function applyMobileMaterials(
 
         if (performanceLevel === 'low') {
           newMaterial = createLowEndMobileMaterial(skinToneRGB);
+        } else if (performanceLevel === 'high') {
+          newMaterial = createHighEndMobileMaterial(skinToneRGB);
         } else {
           newMaterial = createMediumMobileMaterial(skinToneRGB);
         }

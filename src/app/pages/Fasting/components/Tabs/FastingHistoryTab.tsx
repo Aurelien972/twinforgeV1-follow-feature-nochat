@@ -10,6 +10,7 @@ import FastingHistoryFilters from '../History/FastingHistoryFilters';
 import FastingHistoryStatsCard from '../History/FastingHistoryStatsCard';
 import FastingSessionCard from '../History/FastingSessionCard';
 import FastingHistoryLoadingSkeleton from '../History/FastingHistoryLoadingSkeleton';
+import EmptyFastingHistoryState from '../History/EmptyFastingHistoryState';
 
 /**
  * Fasting History Tab - Onglet Historique de la Forge du Temps
@@ -112,9 +113,11 @@ const FastingHistoryTab: React.FC = () => {
       {/* History Content */}
       {historyData && !isLoading && (
         <div className="space-y-6">
-          {/* Statistics Card */}
-          <FastingHistoryStatsCard stats={historyData.stats} />
-          
+          {/* Statistics Card - Only show when there are sessions */}
+          {historyData.sessions.length > 0 && (
+            <FastingHistoryStatsCard stats={historyData.stats} />
+          )}
+
           {/* Sessions List */}
           {historyData.sessions.length > 0 ? (
             <div className="space-y-4">
@@ -153,78 +156,54 @@ const FastingHistoryTab: React.FC = () => {
             </div>
           ) : (
             /* No Sessions State */
-            <GlassCard className="p-8 text-center" style={{
-              background: `
-                radial-gradient(circle at 30% 20%, color-mix(in srgb, #8B5CF6 15%, transparent) 0%, transparent 60%),
-                radial-gradient(circle at 70% 80%, color-mix(in srgb, #8B5CF6 12%, transparent) 0%, transparent 50%),
-                linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%),
-                var(--glass-opacity)
-              `,
-              borderColor: 'color-mix(in srgb, #8B5CF6 30%, transparent)',
-              boxShadow: isPerformanceMode
-                ? '0 12px 40px rgba(0, 0, 0, 0.25)'
-                : `
-                  0 12px 40px rgba(0, 0, 0, 0.25),
-                  0 0 30px color-mix(in srgb, #8B5CF6 20%, transparent),
-                  inset 0 2px 0 rgba(255, 255, 255, 0.15)
-                `
-            }}>
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-4 mb-6">
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center"
-                    style={{
-                      background: `
-                        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
-                        linear-gradient(135deg, color-mix(in srgb, #8B5CF6 30%, transparent), color-mix(in srgb, #8B5CF6 20%, transparent))
-                      `,
-                      border: '2px solid color-mix(in srgb, #8B5CF6 40%, transparent)',
-                      boxShadow: isPerformanceMode ? 'none' : '0 0 30px color-mix(in srgb, #8B5CF6 30%, transparent)'
-                    }}
-                  >
-                    <SpatialIcon Icon={ICONS.History} size={40} style={{ color: '#8B5CF6' }} />
+            Object.keys(filters).length === 0 ? (
+              <EmptyFastingHistoryState />
+            ) : (
+              <GlassCard className="p-8 text-center" style={{
+                background: `
+                  radial-gradient(circle at 30% 20%, color-mix(in srgb, #8B5CF6 15%, transparent) 0%, transparent 60%),
+                  radial-gradient(circle at 70% 80%, color-mix(in srgb, #8B5CF6 12%, transparent) 0%, transparent 50%),
+                  linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%),
+                  var(--glass-opacity)
+                `,
+                borderColor: 'color-mix(in srgb, #8B5CF6 30%, transparent)',
+                boxShadow: isPerformanceMode
+                  ? '0 12px 40px rgba(0, 0, 0, 0.25)'
+                  : `
+                    0 12px 40px rgba(0, 0, 0, 0.25),
+                    0 0 30px color-mix(in srgb, #8B5CF6 20%, transparent),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.15)
+                  `
+              }}>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <div
+                      className="w-20 h-20 rounded-full flex items-center justify-center"
+                      style={{
+                        background: `
+                          radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
+                          linear-gradient(135deg, color-mix(in srgb, #8B5CF6 30%, transparent), color-mix(in srgb, #8B5CF6 20%, transparent))
+                        `,
+                        border: '2px solid color-mix(in srgb, #8B5CF6 40%, transparent)',
+                        boxShadow: isPerformanceMode ? 'none' : '0 0 30px color-mix(in srgb, #8B5CF6 30%, transparent)'
+                      }}
+                    >
+                      <SpatialIcon Icon={ICONS.History} size={40} style={{ color: '#8B5CF6' }} />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-2xl font-bold text-white">Aucune Session Trouvée</h3>
+                      <p className="text-white/70 text-base">Aucun résultat</p>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <h3 className="text-2xl font-bold text-white">
-                      {Object.keys(filters).length > 0 ? 'Aucune Session Trouvée' : 'Commencez Votre Historique'}
-                    </h3>
-                    <p className="text-white/70 text-base">
-                      {Object.keys(filters).length > 0 ? 'Aucun résultat' : 'Vos sessions vous attendent'}
+
+                  <div>
+                    <p className="text-white/70 text-base leading-relaxed max-w-lg mx-auto">
+                      Aucune session ne correspond aux filtres sélectionnés. Essayez de modifier vos critères de recherche.
                     </p>
                   </div>
                 </div>
-
-                <div>
-                  <p className="text-white/70 text-base leading-relaxed max-w-lg mx-auto">
-                    {Object.keys(filters).length > 0 ?
-                      'Aucune session ne correspond aux filtres sélectionnés. Essayez de modifier vos critères de recherche.' :
-                      'Votre historique de jeûne apparaîtra ici après vos premières sessions. Commencez dès maintenant votre forge temporelle !'
-                    }
-                  </p>
-                </div>
-
-                {Object.keys(filters).length === 0 && (
-                  <button
-                    onClick={() => window.location.href = '/fasting/input'}
-                    className="px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200"
-                    style={{
-                      background: 'linear-gradient(135deg, color-mix(in srgb, #8B5CF6 80%, transparent), color-mix(in srgb, #8B5CF6 60%, transparent))',
-                      border: '2px solid color-mix(in srgb, #8B5CF6 60%, transparent)',
-                      boxShadow: isPerformanceMode
-                        ? '0 12px 40px rgba(0, 0, 0, 0.3)'
-                        : `0 12px 40px color-mix(in srgb, #8B5CF6 40%, transparent), 0 0 60px color-mix(in srgb, #8B5CF6 30%, transparent)`,
-                      color: '#fff',
-                      transition: isPerformanceMode ? 'all 0.15s ease' : 'all 0.2s ease'
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <SpatialIcon Icon={ICONS.Timer} size={16} />
-                      <span>Démarrer une Session</span>
-                    </div>
-                  </button>
-                )}
-              </div>
-            </GlassCard>
+              </GlassCard>
+            )
           )}
         </div>
       )}

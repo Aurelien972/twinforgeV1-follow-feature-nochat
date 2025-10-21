@@ -9,6 +9,7 @@ import { ICONS } from '../../../../ui/icons/registry';
 import { useUserStore } from '../../../../system/store/userStore';
 import { bodyScanRepo } from '../../../../system/data/repositories/bodyScanRepo';
 import HistoricalScanModal from './HistoricalScanModal';
+import EmptyAvatarHistoryState from './EmptyAvatarHistoryState';
 import { usePerformanceMode } from '../../../../system/context/PerformanceModeContext';
 import { ConditionalMotion } from '../../../../lib/motion/ConditionalMotion';
 
@@ -141,31 +142,7 @@ const HistoryTab: React.FC = () => {
   }
 
   if (!scans || scans.length === 0) {
-    return (
-      <GlassCard 
-        className="text-center p-8"
-        style={{
-          background: `
-            radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--color-body-scan-primary) 8%, transparent) 0%, transparent 60%),
-            var(--glass-opacity-base)
-          `,
-          borderColor: 'color-mix(in srgb, var(--color-body-scan-primary) 25%, transparent)',
-          boxShadow: `
-            var(--glass-shadow-sm),
-            0 0 16px color-mix(in srgb, var(--color-body-scan-primary) 10%, transparent)
-          `
-        }}
-      >
-        <SpatialIcon Icon={ICONS.Info} size={48} className="bodyscan-text-info mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-white mb-3">Aucun scan trouvé</h3>
-        <p className="text-white/70 text-sm mb-6">
-          Vous n'avez pas encore d'historique de scans corporels. Effectuez votre premier scan !
-        </p>
-        <button onClick={() => (window.location.href = '/body-scan')} className="btn-glass--primary">
-          Commencer un scan
-        </button>
-      </GlassCard>
-    );
+    return <EmptyAvatarHistoryState />;
   }
 
   // Filter scans to only include those with valid UUIDs

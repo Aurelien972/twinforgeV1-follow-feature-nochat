@@ -1,6 +1,7 @@
 import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
+import WearableConnectionBadge from '../shared/WearableConnectionBadge';
 import React from 'react';
 
 interface ActivitySummaryCardProps {
@@ -52,9 +53,14 @@ const ActivitySummaryCard: React.FC<ActivitySummaryCardProps> = ({ todayStats, p
         <div className="activity-summary-icon activity-icon-primary activity-icon-container-md">
           <SpatialIcon Icon={ICONS.BarChart3} size={20} style={{ color: 'var(--color-activity-primary)' }} />
         </div>
-        <div>
-          <h3 className="activity-summary-title">Résumé d'Aujourd'hui</h3>
-          <p className="activity-summary-subtitle">Aperçu de vos activités du jour</p>
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="activity-summary-title">Résumé d'Aujourd'hui</h3>
+              <p className="activity-summary-subtitle">Aperçu de vos activités du jour</p>
+            </div>
+            <WearableConnectionBadge />
+          </div>
         </div>
       </div>
 

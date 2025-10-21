@@ -10,6 +10,7 @@ import { ConditionalMotion } from '../../../../lib/motion/ConditionalMotion';
 import GlassCard from '../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../ui/icons/registry';
+import EmptyAvatarScannerState from './EmptyAvatarScannerState';
 import logger from '../../../../lib/utils/logger';
 
 /**
@@ -119,6 +120,11 @@ const ScanCTA: React.FC = () => {
 
   const daysSinceLastScan = calculateDaysSinceLastScan(latestScan?.created_at || null);
   const scanStatus = getScanStatus(daysSinceLastScan);
+
+  // Afficher l'empty state si jamais scanné
+  if (!isLoading && !error && scanStatus.status === 'never_scanned') {
+    return <EmptyAvatarScannerState />;
+  }
 
   const handleStartNewScan = () => {
     click();

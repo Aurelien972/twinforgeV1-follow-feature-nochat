@@ -50,8 +50,12 @@ export function createScene(options: SceneCreationOptions): SceneInstance {
   });
 
   // MOBILE OPTIMIZATION: Create renderer with adaptive settings
+  // AMÉLIORATION: Activer l'antialiasing sur mobiles hauts de gamme
+  const enableAntialias = deviceCapabilities.isDesktop ||
+    (deviceCapabilities.isMobile && deviceCapabilities.performanceLevel === 'high');
+
   const renderer = new THREE.WebGLRenderer({
-    antialias: !deviceCapabilities.isMobile, // Disable antialias on mobile for performance
+    antialias: enableAntialias, // AMÉLIORÉ: Antialiasing sur hauts de gamme
     alpha: true,
     powerPreference: deviceCapabilities.isMobile ? 'default' : 'high-performance', // Battery-friendly on mobile
     preserveDrawingBuffer: false,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { useFastingPipeline } from '../../hooks/useFastingPipeline';
 import { useUserStore } from '@/system/store/userStore';
 import { usePerformanceMode } from '@/system/context/PerformanceModeContext';
@@ -7,6 +8,7 @@ import ProfileCompletenessAlert from '@/ui/components/profile/ProfileCompletenes
 import DynamicFastingCTA from '../Cards/DynamicFastingCTA';
 import FastingDailySummaryCard from '../Cards/FastingDailySummaryCard';
 import FastingTipsCard from '../Cards/FastingTipsCard';
+import EmptyFastingTrackerState from '../Cards/EmptyFastingTrackerState';
 
 interface FastingDailyTabProps {
   onLoadingChange?: (isLoading: boolean) => void;
@@ -20,12 +22,37 @@ interface FastingDailyTabProps {
  * Pour les actions (démarrer/arrêter), l'utilisateur est redirigé vers /fasting/input
  */
 const FastingDailyTab: React.FC<FastingDailyTabProps> = ({ onLoadingChange }) => {
-  const { profile } = useUserStore();
+  const { profile, session } = useUserStore();
   const { isActive, session: fastingSession } = useFastingPipeline();
   const { isPerformanceMode } = usePerformanceMode();
 
   // Conditional motion component
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
+
+  // Vérification si l'utilisateur a déjà des sessions de jeûne
+  const { data: hasAnyFastingHistory = false, isLoading } = useQuery({
+    queryKey: ['fasting-sessions', 'has-history', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return false;
+
+      const { supabase } = await import('@/system/supabase/client');
+      const { data, error } = await supabase
+        .from('fasting_sessions')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .limit(1);
+
+      if (error) return false;
+      return (data?.length || 0) > 0;
+    },
+    enabled: !!session?.user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Afficher l'empty state si aucun historique et aucune session active
+  if (!isLoading && !hasAnyFastingHistory && !isActive) {
+    return <EmptyFastingTrackerState />;
+  }
 
   return (
     <MotionDiv

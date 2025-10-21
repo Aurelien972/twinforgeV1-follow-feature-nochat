@@ -11,6 +11,7 @@ import { useBodyScanData } from '../../../../hooks/useBodyScanData';
 import MorphologyInsightsCard from './components/MorphologyInsightsCard';
 import BodyMetricsCard from './components/BodyMetricsCard';
 import AvatarTabSkeleton from '../../../../ui/components/skeletons/AvatarTabSkeleton';
+import EmptyAvatarTabState from './EmptyAvatarTabState';
 import logger from '../../../../lib/utils/logger';
 import { usePerformanceMode } from '../../../../system/context/PerformanceModeContext';
 import { ConditionalMotion } from '../../../../lib/motion/ConditionalMotion';
@@ -70,28 +71,6 @@ const AvatarTab: React.FC = () => {
     });
   }, [isViewerReady, latestScanData?.id]);
 
-  // Combined loading state: show skeleton until ALL conditions are met
-  const isFullyLoading = isLoading || isComponentMounting || !isViewerReady;
-
-  // Add timeout safety to prevent infinite skeleton
-  useEffect(() => {
-    if (!isViewerReady && latestScanData?.id) {
-      const safetyTimer = setTimeout(() => {
-        if (!isViewerReady) {
-          logger.warn('AVATAR_TAB', 'Safety timeout: forcing viewer ready after 10s', {
-            scanId: latestScanData.id,
-            isLoading,
-            isComponentMounting,
-            philosophy: 'safety_timeout_force_ready'
-          });
-          setIsViewerReady(true);
-        }
-      }, 10000); // 10 seconds safety timeout
-
-      return () => clearTimeout(safetyTimer);
-    }
-  }, [isViewerReady, latestScanData?.id, isLoading, isComponentMounting]);
-
   // Log diagnostic information
   logger.info('AVATAR_TAB', 'Scan data loaded', {
     hasScan: !!latestScanData,
@@ -107,11 +86,6 @@ const AvatarTab: React.FC = () => {
     philosophy: 'avatar_tab_diagnostics'
   });
 
-  // Handle loading state - show skeleton until viewer is fully ready
-  if (isFullyLoading && !error) {
-    return <AvatarTabSkeleton />;
-  }
-
   // Handle error state
   if (error) {
     return (
@@ -125,13 +99,13 @@ const AvatarTab: React.FC = () => {
         >
           <SpatialIcon Icon={ICONS.AlertCircle} size={32} color="#EF4444" />
         </ConditionalMotion>
-        
+
         <h3 className="text-xl font-bold text-white mb-3">Erreur de chargement</h3>
         <p className="text-red-300 text-sm mb-6 leading-relaxed max-w-md mx-auto">
           {error instanceof Error ? error.message : 'Une erreur est survenue lors du chargement de votre avatar.'}
         </p>
-        
-        <button 
+
+        <button
           className="btn-glass px-6 py-3"
           onClick={() => window.location.reload()}
         >
@@ -163,54 +137,39 @@ const AvatarTab: React.FC = () => {
     });
   }
 
-  // Handle no saved avatar (onboarding)
+  // Handle no saved avatar (onboarding) - BEFORE checking loading states
+  // This ensures we show empty state immediately when there's no data, without showing skeleton first
   if (!latestScanData || !hasMinimalData) {
-    return (
-      <GlassCard className="text-center p-8" interactive>
-        <ConditionalMotion
-          className="w-20 h-20 mx-auto rounded-full bg-blue-500/20 flex items-center justify-center mb-6 relative"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        >
-          <SpatialIcon Icon={ICONS.Scan} size={40} className="text-blue-400" />
-          {!isPerformanceMode && (
-            <motion.div
-              className="absolute inset-0 rounded-full border-2 border-blue-400/30"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.6, 0.3]
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-          )}
-        </ConditionalMotion>
+    return <EmptyAvatarTabState />;
+  }
 
-        <h3 className="text-2xl font-bold text-white mb-3">
-          Aucun avatar corporel
-        </h3>
-        <p className="text-white/70 text-sm mb-6 leading-relaxed max-w-md mx-auto">
-          {!latestScanData
-            ? "Effectuez un scan corporel pour créer votre avatar 3D personnalisé."
-            : "Données morphologiques incomplètes. Veuillez effectuer un nouveau scan."
-          }
-        </p>
+  // Combined loading state: show skeleton until ALL conditions are met
+  // Only show skeleton when we have data but it's still loading/initializing
+  const isFullyLoading = isLoading || isComponentMounting || !isViewerReady;
 
-        <button
-          className="btn-glass--primary px-8 py-4 text-lg font-semibold"
-          onClick={() => navigate('/body-scan')}
-        >
-          <div className="flex items-center justify-center gap-3">
-            <SpatialIcon Icon={ICONS.Camera} size={20} />
-            <span>Commencer le scan corporel</span>
-          </div>
-        </button>
-      </GlassCard>
-    );
+  // Add timeout safety to prevent infinite skeleton
+  useEffect(() => {
+    if (!isViewerReady && latestScanData?.id) {
+      const safetyTimer = setTimeout(() => {
+        if (!isViewerReady) {
+          logger.warn('AVATAR_TAB', 'Safety timeout: forcing viewer ready after 10s', {
+            scanId: latestScanData.id,
+            isLoading,
+            isComponentMounting,
+            philosophy: 'safety_timeout_force_ready'
+          });
+          setIsViewerReady(true);
+        }
+      }, 10000); // 10 seconds safety timeout
+
+      return () => clearTimeout(safetyTimer);
+    }
+  }, [isViewerReady, latestScanData?.id, isLoading, isComponentMounting]);
+
+  // Handle loading state - show skeleton until viewer is fully ready
+  // At this point we know we have data (checked above), so skeleton is appropriate
+  if (isFullyLoading && !error) {
+    return <AvatarTabSkeleton />;
   }
 
   // Extract data directly from scan (no mapper needed)

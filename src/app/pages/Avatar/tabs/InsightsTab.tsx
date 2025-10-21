@@ -14,6 +14,7 @@ import { InsightsErrorState } from './insights/InsightsErrorState';
 import { NoScanState } from './insights/NoScanState';
 import { SummaryDashboard } from './insights/SummaryDashboard';
 import InsightsGenerationExitModal from './insights/InsightsGenerationExitModal';
+import EmptyAvatarInsightsState from './insights/EmptyAvatarInsightsState';
 import logger from '../../../../lib/utils/logger';
 import { usePerformanceMode } from '../../../../system/context/PerformanceModeContext';
 import { ConditionalMotion, ConditionalAnimatePresence } from '../../../../lib/motion/ConditionalMotion';
@@ -105,7 +106,7 @@ const InsightsTab: React.FC = () => {
 
   // No saved avatar state
   if (!latestScanData) {
-    return <NoScanState />;
+    return <EmptyAvatarInsightsState />;
   }
 
   // Main insights display

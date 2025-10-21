@@ -7,6 +7,7 @@ import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
 import { useFeedback } from '../../../../../hooks/useFeedback';
 import { getActivityIcon, getIntensityColor, getIntensityLabel } from '../ReviewStage/ActivityUtils';
+import WearableConnectionBadge from '../shared/WearableConnectionBadge';
 import React from 'react';
 
 interface Activity {
@@ -119,15 +120,18 @@ const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                   />
                 </div>
                 <div>
-                  <h2 
-                    id="activity-detail-title"
-                    className="text-2xl font-bold text-white mb-1"
-                  >
-                    {activity.type}
-                  </h2>
-                  <p className="text-white/70 text-sm">
-                    {format(new Date(activity.timestamp), 'EEEE dd MMMM yyyy à HH:mm', { locale: fr })}
-                  </p>
+                  <div>
+                    <h2
+                      id="activity-detail-title"
+                      className="text-2xl font-bold text-white mb-1"
+                    >
+                      {activity.type}
+                    </h2>
+                    <p className="text-white/70 text-sm mb-2">
+                      {format(new Date(activity.timestamp), 'EEEE dd MMMM yyyy à HH:mm', { locale: fr })}
+                    </p>
+                    <WearableConnectionBadge activityId={activity.id} />
+                  </div>
                 </div>
               </div>
               
@@ -192,6 +196,11 @@ const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                 </p>
               </div>
             )}
+
+            {/* Données Wearable Détaillées */}
+            <div className="mb-6">
+              <WearableConnectionBadge activityId={activity.id} showDetails={true} />
+            </div>
 
             {/* Informations Techniques */}
             <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">

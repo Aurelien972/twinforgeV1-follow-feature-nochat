@@ -75,28 +75,59 @@ function estimateGPUTier(gl: WebGLRenderingContext | WebGL2RenderingContext): nu
 
   const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase();
 
-  // High-end GPUs
+  // High-end GPUs (Desktop)
   if (
     renderer.includes('nvidia') ||
     renderer.includes('geforce') ||
     renderer.includes('radeon') ||
     renderer.includes('apple m1') ||
     renderer.includes('apple m2') ||
-    renderer.includes('apple a15') ||
-    renderer.includes('apple a16') ||
-    renderer.includes('apple a17')
+    renderer.includes('apple m3')
   ) {
     return 3;
+  }
+
+  // High-end Mobile GPUs (iPhone 13+, Samsung Galaxy S21+, etc.)
+  if (
+    renderer.includes('apple a15') ||
+    renderer.includes('apple a16') ||
+    renderer.includes('apple a17') ||
+    renderer.includes('apple a18') ||
+    renderer.includes('adreno 6') || // Adreno 600+ series (Snapdragon 845+)
+    renderer.includes('adreno 7') || // Adreno 700+ series (Snapdragon 8 Gen)
+    renderer.includes('mali-g7') || // Mali-G76+
+    renderer.includes('mali-g78') ||
+    renderer.includes('mali-g710') ||
+    renderer.includes('xclipse') // Samsung Exynos with AMD GPU
+  ) {
+    return 3;
+  }
+
+  // Medium-tier Mobile GPUs
+  if (
+    renderer.includes('adreno 5') || // Adreno 500 series
+    renderer.includes('mali-g5') || // Mali-G52, G57
+    renderer.includes('mali-g6') || // Mali-G68
+    renderer.includes('apple a12') ||
+    renderer.includes('apple a13') ||
+    renderer.includes('apple a14')
+  ) {
+    return 2;
   }
 
   // Low-end GPUs
   if (
     renderer.includes('intel hd') ||
     renderer.includes('intel uhd') ||
-    renderer.includes('mali') ||
+    renderer.includes('mali-t') || // Older Mali-T series
+    renderer.includes('mali-g31') ||
+    renderer.includes('mali-g51') ||
     renderer.includes('adreno 3') ||
     renderer.includes('adreno 4') ||
-    renderer.includes('powervr')
+    renderer.includes('powervr') ||
+    renderer.includes('apple a9') ||
+    renderer.includes('apple a10') ||
+    renderer.includes('apple a11')
   ) {
     return 1;
   }
@@ -143,11 +174,13 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
   } else if (isTablet) {
     performanceLevel = gpuTier >= 3 ? 'high' : gpuTier >= 2 ? 'medium' : 'low';
   } else {
-    // Mobile
+    // Mobile - Amélioration de la classification
     if (gpuTier >= 3 && hardwareConcurrency >= 6 && (!deviceMemory || deviceMemory >= 4)) {
-      performanceLevel = 'medium'; // Even high-end mobiles get medium for safety
+      performanceLevel = 'high'; // High-end mobiles (iPhone 13+, Galaxy S21+) get high
+    } else if (gpuTier >= 2 && hardwareConcurrency >= 4) {
+      performanceLevel = 'medium'; // Mid-range mobiles
     } else {
-      performanceLevel = 'low';
+      performanceLevel = 'low'; // Low-end mobiles
     }
   }
 
@@ -216,10 +249,10 @@ export function getOptimalPerformanceConfig(capabilities: DeviceCapabilities): P
       throttleControlsMs: 100 // 10 updates per second
     };
   } else if (isMobile && performanceLevel === 'medium') {
-    // Configuration équilibrée pour mobiles moyens/hauts
+    // Configuration équilibrée pour mobiles moyens
     config = {
-      pixelRatio: 1, // Still 1x for battery life
-      shadowsEnabled: false, // Still disabled on mobile
+      pixelRatio: 1.25, // AMÉLIORÉ: 1.25x pour meilleure qualité
+      shadowsEnabled: false,
       shadowMapSize: 0,
       maxLights: 4, // Ambient + Key + Fill + Rim
       targetFPS: 30,
@@ -231,6 +264,23 @@ export function getOptimalPerformanceConfig(capabilities: DeviceCapabilities): P
       enableEnvironmentMap: true, // Low-res environment
       maxMorphTargets: 25,
       throttleControlsMs: 50 // 20 updates per second
+    };
+  } else if (isMobile && performanceLevel === 'high') {
+    // NOUVEAU: Configuration pour mobiles hauts de gamme (iPhone 13+, Galaxy S21+)
+    config = {
+      pixelRatio: Math.min(devicePixelRatio, 1.5), // AMÉLIORÉ: 1.5x max pour excellent rendu
+      shadowsEnabled: false, // Toujours désactivé sur mobile pour batterie
+      shadowMapSize: 0,
+      maxLights: 5, // Plus de lumières pour meilleure qualité
+      targetFPS: 60, // 60 FPS possible sur hauts de gamme
+      enablePostProcessing: false, // Sera ajouté dans une prochaine étape
+      enableProceduralTextures: true, // Meilleurs matériaux
+      textureQuality: 'high',
+      geometryLOD: 'high',
+      enableAutoRotate: false,
+      enableEnvironmentMap: true, // Environment map haute qualité
+      maxMorphTargets: 40,
+      throttleControlsMs: 16 // 60 updates per second
     };
   } else if (capabilities.isTablet) {
     // Configuration pour tablettes

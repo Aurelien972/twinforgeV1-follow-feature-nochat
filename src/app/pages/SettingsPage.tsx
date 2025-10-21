@@ -8,6 +8,7 @@ import UnderConstructionCard from '../components/UnderConstructionCard';
 import ConnectedDevicesTab from './Settings/ConnectedDevicesTab';
 import GeneralSettingsTab from './Settings/GeneralSettingsTab';
 import PreferencesSettingsTab from './Settings/PreferencesSettingsTab';
+import Render3DQualitySettings from './Settings/Render3DQualitySettings';
 import { NotificationsSettingsTab } from './Settings/NotificationsSettingsTab';
 import { PrivacySettingsTab } from './Settings/PrivacySettingsTab';
 import SubscriptionManagementTab from './Settings/SubscriptionManagementTab';
@@ -76,7 +77,10 @@ const SettingsPage: React.FC = () => {
             ) : tab.value === 'appareils' ? (
               <ConnectedDevicesTab />
             ) : tab.value === 'performance' ? (
-              <GeneralSettingsTab />
+              <div className="space-y-8">
+                <GeneralSettingsTab />
+                <Render3DQualitySettings />
+              </div>
             ) : tab.value === 'confidentialite' ? (
               <PrivacySettingsTab />
             ) : tab.value === 'account' ? (

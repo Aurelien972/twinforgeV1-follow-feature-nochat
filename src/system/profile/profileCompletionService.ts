@@ -312,11 +312,299 @@ export function hasMinimumDataForRecipeWorkshop(profile: UserProfile | null): bo
 }
 
 /**
+ * Calculate profile completion for Meal Tracking (Meals Forge)
+ */
+export function calculateMealTrackingCompletion(profile: UserProfile | null): ProfileCompletionResult {
+  const requiredFields: CriticalField[] = [
+    {
+      key: 'sex',
+      label: 'Genre',
+      description: 'Pour calculer vos besoins caloriques',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'weight_kg',
+      label: 'Poids',
+      description: 'Essentiel pour le suivi nutritionnel',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'height_cm',
+      label: 'Taille',
+      description: 'Pour calculer votre métabolisme de base',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'allergies',
+      label: 'Allergies',
+      description: 'Important pour la sécurité alimentaire',
+      profileTab: 'nutrition',
+      priority: 'medium'
+    },
+    {
+      key: 'macroTargets.kcal',
+      label: 'Objectif calories',
+      description: 'Pour suivre vos apports quotidiens',
+      profileTab: 'fasting',
+      priority: 'medium'
+    }
+  ];
+
+  return calculateCompletion(profile, requiredFields, 'Scannez votre premier repas');
+}
+
+/**
+ * Calculate profile completion for Activity Tracking
+ */
+export function calculateActivityTrackingCompletion(profile: UserProfile | null): ProfileCompletionResult {
+  const requiredFields: CriticalField[] = [
+    {
+      key: 'sex',
+      label: 'Genre',
+      description: 'Pour calculer vos dépenses caloriques',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'weight_kg',
+      label: 'Poids',
+      description: 'Essentiel pour le calcul des calories brûlées',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'height_cm',
+      label: 'Taille',
+      description: 'Pour les calculs métaboliques',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'objective',
+      label: 'Objectif fitness',
+      description: 'Pour des recommandations adaptées',
+      profileTab: 'identity',
+      priority: 'medium'
+    }
+  ];
+
+  return calculateCompletion(profile, requiredFields, 'Enregistrez votre première activité');
+}
+
+/**
+ * Calculate profile completion for Fasting Tracking
+ */
+export function calculateFastingTrackingCompletion(profile: UserProfile | null): ProfileCompletionResult {
+  const requiredFields: CriticalField[] = [
+    {
+      key: 'sex',
+      label: 'Genre',
+      description: 'Pour des recommandations de jeûne adaptées',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'weight_kg',
+      label: 'Poids',
+      description: 'Pour suivre l\'impact du jeûne',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'fastingPreferences.experience',
+      label: 'Expérience jeûne',
+      description: 'Pour des protocoles adaptés à votre niveau',
+      profileTab: 'fasting',
+      priority: 'medium'
+    },
+    {
+      key: 'objective',
+      label: 'Objectif',
+      description: 'Pour optimiser votre stratégie de jeûne',
+      profileTab: 'identity',
+      priority: 'medium'
+    }
+  ];
+
+  return calculateCompletion(profile, requiredFields, 'Commencez votre premier jeûne');
+}
+
+/**
+ * Calculate profile completion for Body/Avatar Scanning
+ */
+export function calculateAvatarScanCompletion(profile: UserProfile | null): ProfileCompletionResult {
+  const requiredFields: CriticalField[] = [
+    {
+      key: 'sex',
+      label: 'Genre',
+      description: 'Essentiel pour la génération de l\'avatar',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'weight_kg',
+      label: 'Poids',
+      description: 'Pour calibrer les proportions',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'height_cm',
+      label: 'Taille',
+      description: 'Base pour les dimensions corporelles',
+      profileTab: 'identity',
+      priority: 'high'
+    }
+  ];
+
+  return calculateCompletion(profile, requiredFields, 'Scannez votre corps en 3D');
+}
+
+/**
+ * Generic completion calculator helper
+ */
+function calculateCompletion(
+  profile: UserProfile | null,
+  requiredFields: CriticalField[],
+  defaultAction: string
+): ProfileCompletionResult {
+  if (!profile) {
+    return {
+      isSufficient: false,
+      completionPercentage: 0,
+      missingCriticalFields: requiredFields,
+      missingHighPriorityFields: requiredFields.filter(f => f.priority === 'high'),
+      suggestedMessage: 'Complétez votre profil pour commencer',
+      nextAction: {
+        label: 'Compléter mon profil',
+        route: '/profile#identity'
+      }
+    };
+  }
+
+  const missingFields: CriticalField[] = [];
+  const missingHighPriorityFields: CriticalField[] = [];
+
+  requiredFields.forEach(field => {
+    if (!hasValidValue(profile, field.key)) {
+      missingFields.push(field);
+      if (field.priority === 'high') {
+        missingHighPriorityFields.push(field);
+      }
+    }
+  });
+
+  const totalFields = requiredFields.length;
+  const completedFields = totalFields - missingFields.length;
+  const completionPercentage = Math.round((completedFields / totalFields) * 100);
+
+  const highPriorityFields = requiredFields.filter(f => f.priority === 'high');
+  const mediumPriorityFields = requiredFields.filter(f => f.priority === 'medium');
+  const missingMediumFields = missingFields.filter(f => f.priority === 'medium');
+
+  const hasAllHighPriority = missingHighPriorityFields.length === 0;
+  const hasEnoughMediumPriority = missingMediumFields.length <= Math.floor(mediumPriorityFields.length * 0.5);
+
+  const isSufficient = hasAllHighPriority && hasEnoughMediumPriority;
+
+  let suggestedMessage: string;
+  let nextAction: { label: string; route: string } | null = null;
+
+  if (missingHighPriorityFields.length > 0) {
+    const firstMissing = missingHighPriorityFields[0];
+    suggestedMessage = `Ajoutez votre ${firstMissing.label.toLowerCase()} pour ${defaultAction.toLowerCase()}`;
+    nextAction = {
+      label: `Ajouter ${firstMissing.label}`,
+      route: `/profile#${firstMissing.profileTab}`
+    };
+  } else if (missingFields.length > 0) {
+    const firstMissing = missingFields[0];
+    suggestedMessage = `Complétez votre ${firstMissing.label.toLowerCase()} pour une meilleure expérience`;
+    nextAction = {
+      label: `Compléter ${firstMissing.label}`,
+      route: `/profile#${firstMissing.profileTab}`
+    };
+  } else {
+    suggestedMessage = 'Profil complet ! Toutes les fonctionnalités sont disponibles';
+    nextAction = null;
+  }
+
+  return {
+    isSufficient,
+    completionPercentage,
+    missingCriticalFields: missingFields,
+    missingHighPriorityFields,
+    suggestedMessage,
+    nextAction
+  };
+}
+
+/**
+ * Calculate profile completion for Training/Coaching
+ */
+export function calculateTrainingCompletion(profile: UserProfile | null): ProfileCompletionResult {
+  const requiredFields: CriticalField[] = [
+    {
+      key: 'sex',
+      label: 'Genre',
+      description: 'Pour des programmes d\'entraînement adaptés',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'weight_kg',
+      label: 'Poids',
+      description: 'Essentiel pour calibrer les charges',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'height_cm',
+      label: 'Taille',
+      description: 'Pour adapter les mouvements',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'objective',
+      label: 'Objectif fitness',
+      description: 'Pour construire le programme optimal',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'trainingPreferences.experienceLevel',
+      label: 'Niveau d\'expérience',
+      description: 'Pour adapter la complexité des exercices',
+      profileTab: 'identity',
+      priority: 'high'
+    },
+    {
+      key: 'trainingPreferences.availableEquipment',
+      label: 'Équipement disponible',
+      description: 'Pour générer des séances réalisables',
+      profileTab: 'identity',
+      priority: 'high'
+    }
+  ];
+
+  return calculateCompletion(profile, requiredFields, 'Démarrez votre coaching');
+}
+
+/**
  * Profile Completion Service Object
  * Convenient wrapper for all profile completion functions
  */
 export const profileCompletionService = {
   checkCompleteness: calculateRecipeWorkshopCompletion,
   getFeatureGuidance: getFeatureSpecificGuidance,
-  hasMinimumData: hasMinimumDataForRecipeWorkshop
+  hasMinimumData: hasMinimumDataForRecipeWorkshop,
+  checkMealTracking: calculateMealTrackingCompletion,
+  checkActivityTracking: calculateActivityTrackingCompletion,
+  checkFastingTracking: calculateFastingTrackingCompletion,
+  checkAvatarScan: calculateAvatarScanCompletion,
+  checkTraining: calculateTrainingCompletion
 };

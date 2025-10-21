@@ -82,9 +82,9 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
               boxShadow: '0 8px 24px rgba(251, 146, 60, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
             }}
           >
-            <SpatialIcon 
-              Icon={ICONS.ShoppingCart} 
-              size={32} 
+            <SpatialIcon
+              Icon={ICONS.ShoppingCart}
+              size={48}
               style={{
                 color: 'var(--color-plasma-orange)',
                 filter: 'drop-shadow(0 2px 4px rgba(251, 146, 60, 0.3))'
@@ -105,17 +105,17 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
           {/* Génération Intelligente */}
           <div className="text-center">
-            <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
               style={{
                 background: 'radial-gradient(circle, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.1) 100%)',
                 border: '1px solid rgba(251, 146, 60, 0.2)',
                 boxShadow: '0 4px 16px rgba(251, 146, 60, 0.15)'
               }}
             >
-              <SpatialIcon 
-                Icon={ICONS.Zap} 
-                size={24} 
+              <SpatialIcon
+                Icon={ICONS.Zap}
+                size={32} 
                 style={{
                   color: 'var(--color-plasma-orange)',
                   filter: 'drop-shadow(0 2px 4px rgba(251, 146, 60, 0.3))'
@@ -131,17 +131,17 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
 
           {/* Optimisation Budget */}
           <div className="text-center">
-            <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
               style={{
                 background: 'radial-gradient(circle, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.1) 100%)',
                 border: '1px solid rgba(251, 146, 60, 0.2)',
                 boxShadow: '0 4px 16px rgba(251, 146, 60, 0.15)'
               }}
             >
-              <SpatialIcon 
-                Icon={ICONS.Package} 
-                size={24} 
+              <SpatialIcon
+                Icon={ICONS.Package}
+                size={32} 
                 style={{
                   color: 'var(--color-plasma-orange)',
                   filter: 'drop-shadow(0 2px 4px rgba(251, 146, 60, 0.3))'
@@ -156,17 +156,17 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
 
           {/* Conseils Personnalisés */}
           <div className="text-center">
-            <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
               style={{
                 background: 'radial-gradient(circle, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.1) 100%)',
                 border: '1px solid rgba(251, 146, 60, 0.2)',
                 boxShadow: '0 4px 16px rgba(251, 146, 60, 0.15)'
               }}
             >
-              <SpatialIcon 
-                Icon={ICONS.Lightbulb} 
-                size={24} 
+              <SpatialIcon
+                Icon={ICONS.Lightbulb}
+                size={32} 
                 style={{
                   color: 'var(--color-plasma-orange)',
                   filter: 'drop-shadow(0 2px 4px rgba(251, 146, 60, 0.3))'
@@ -184,7 +184,7 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
         <div className="mb-8">
           <button
             onClick={buttonConfig.action}
-            className="group relative px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105"
+            className="group relative px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105 overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.4) 0%, rgba(249, 115, 22, 0.35) 50%, rgba(234, 88, 12, 0.3) 100%)',
               border: '2px solid rgba(251, 146, 60, 0.4)',
@@ -195,15 +195,6 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
               WebkitBackdropFilter: 'blur(12px)'
             }}
           >
-            {/* Shine effect */}
-            <div 
-              className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{
-                background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%)',
-                animation: 'shine 2s infinite'
-              }}
-            />
-            
             <div className="relative flex items-center justify-center gap-3">
               <SpatialIcon 
                 Icon={buttonConfig.icon} 

@@ -50,16 +50,16 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className="text-center py-12 py-1"
     >
-      <GlassCard 
+      <GlassCard
         className="p-8"
         style={{
-          background: `radial-gradient(ellipse at center, 
-            rgba(236, 72, 153, 0.15) 0%, 
-            rgba(244, 114, 182, 0.08) 50%, 
+          background: `radial-gradient(ellipse at center,
+            rgba(16, 185, 129, 0.15) 0%,
+            rgba(52, 211, 153, 0.08) 50%,
             rgba(0, 0, 0, 0.4) 100%)`,
-          borderColor: 'rgba(236, 72, 153, 0.3)',
+          borderColor: 'rgba(16, 185, 129, 0.3)',
           boxShadow: `
-            0 0 30px rgba(236, 72, 153, 0.2),
+            0 0 30px rgba(16, 185, 129, 0.2),
             0 8px 32px rgba(0, 0, 0, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.1)
           `,
@@ -68,27 +68,27 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
       >
         <div className="space-y-6 flex flex-col items-center">
           {/* Icon */}
-          <div 
+          <div
             className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center"
             style={{
-              background: `radial-gradient(circle, 
-                rgba(236, 72, 153, 0.3) 0%, 
-                rgba(244, 114, 182, 0.15) 70%, 
+              background: `radial-gradient(circle,
+                rgba(16, 185, 129, 0.3) 0%,
+                rgba(52, 211, 153, 0.15) 70%,
                 transparent 100%)`,
-              border: '1px solid rgba(236, 72, 153, 0.4)',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
               boxShadow: `
-                0 0 25px rgba(236, 72, 153, 0.3),
+                0 0 25px rgba(16, 185, 129, 0.3),
                 0 4px 20px rgba(0, 0, 0, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2)
               `
             }}
           >
-            <SpatialIcon 
-              Icon={hasSelectedInventory ? ICONS.Sparkles : ICONS.ChefHat} 
-              size={48} 
-              className="text-pink-400"
+            <SpatialIcon
+              Icon={hasSelectedInventory ? ICONS.Sparkles : ICONS.ChefHat}
+              size={48}
+              className="text-green-400"
               style={{
-                filter: `drop-shadow(0 0 12px rgba(236, 72, 153, 0.8)) 
+                filter: `drop-shadow(0 0 12px rgba(16, 185, 129, 0.8))
                          drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))`
               }}
             />
@@ -107,27 +107,27 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
           {/* Benefits Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
             <div className="text-center space-y-3">
-              <div 
+              <div
                 className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center"
                 style={{
-                  background: `radial-gradient(circle, 
-                    rgba(236, 72, 153, 0.3) 0%, 
-                    rgba(244, 114, 182, 0.1) 70%, 
+                  background: `radial-gradient(circle,
+                    rgba(16, 185, 129, 0.3) 0%,
+                    rgba(52, 211, 153, 0.1) 70%,
                     transparent 100%)`,
-                  border: '1px solid rgba(236, 72, 153, 0.4)',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
                   boxShadow: `
-                    0 0 20px rgba(236, 72, 153, 0.3),
+                    0 0 20px rgba(16, 185, 129, 0.3),
                     0 4px 15px rgba(0, 0, 0, 0.2),
                     inset 0 1px 0 rgba(255, 255, 255, 0.2)
                   `
                 }}
               >
-                <SpatialIcon 
-                  Icon={hasSelectedInventory ? ICONS.Sparkles : ICONS.Camera} 
-                  size={24} 
-                  className="text-pink-400"
+                <SpatialIcon
+                  Icon={hasSelectedInventory ? ICONS.Sparkles : ICONS.Camera}
+                  size={24}
+                  className="text-green-400"
                   style={{
-                    filter: `drop-shadow(0 0 8px rgba(236, 72, 153, 0.6)) 
+                    filter: `drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))
                              drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))`
                   }}
                 />
@@ -144,27 +144,27 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
             </div>
 
             <div className="text-center space-y-3">
-              <div 
+              <div
                 className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center"
                 style={{
-                  background: `radial-gradient(circle, 
-                    rgba(236, 72, 153, 0.3) 0%, 
-                    rgba(244, 114, 182, 0.1) 70%, 
+                  background: `radial-gradient(circle,
+                    rgba(16, 185, 129, 0.3) 0%,
+                    rgba(52, 211, 153, 0.1) 70%,
                     transparent 100%)`,
-                  border: '1px solid rgba(236, 72, 153, 0.4)',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
                   boxShadow: `
-                    0 0 20px rgba(236, 72, 153, 0.3),
+                    0 0 20px rgba(16, 185, 129, 0.3),
                     0 4px 15px rgba(0, 0, 0, 0.2),
                     inset 0 1px 0 rgba(255, 255, 255, 0.2)
                   `
                 }}
               >
-                <SpatialIcon 
-                  Icon={ICONS.Sparkles} 
-                  size={24} 
-                  className="text-pink-400"
+                <SpatialIcon
+                  Icon={ICONS.Sparkles}
+                  size={24}
+                  className="text-green-400"
                   style={{
-                    filter: `drop-shadow(0 0 8px rgba(236, 72, 153, 0.6)) 
+                    filter: `drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))
                              drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))`
                   }}
                 />
@@ -176,27 +176,27 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
             </div>
 
             <div className="text-center space-y-3">
-              <div 
+              <div
                 className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center"
                 style={{
-                  background: `radial-gradient(circle, 
-                    rgba(236, 72, 153, 0.3) 0%, 
-                    rgba(244, 114, 182, 0.1) 70%, 
+                  background: `radial-gradient(circle,
+                    rgba(16, 185, 129, 0.3) 0%,
+                    rgba(52, 211, 153, 0.1) 70%,
                     transparent 100%)`,
-                  border: '1px solid rgba(236, 72, 153, 0.4)',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
                   boxShadow: `
-                    0 0 20px rgba(236, 72, 153, 0.3),
+                    0 0 20px rgba(16, 185, 129, 0.3),
                     0 4px 15px rgba(0, 0, 0, 0.2),
                     inset 0 1px 0 rgba(255, 255, 255, 0.2)
                   `
                 }}
               >
-                <SpatialIcon 
-                  Icon={ICONS.Clock} 
-                  size={24} 
-                  className="text-pink-400"
+                <SpatialIcon
+                  Icon={ICONS.Clock}
+                  size={24}
+                  className="text-green-400"
                   style={{
-                    filter: `drop-shadow(0 0 8px rgba(236, 72, 153, 0.6)) 
+                    filter: `drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))
                              drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))`
                   }}
                 />
@@ -214,12 +214,12 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
               onClick={buttonAction}
               className="group relative px-8 py-4 text-white font-semibold rounded-2xl transform hover:scale-105 transition-all duration-300"
               style={{
-                background: `linear-gradient(135deg, 
-                  rgba(236, 72, 153, 0.8) 0%, 
-                  rgba(244, 114, 182, 0.9) 100%)`,
-                border: '2px solid rgba(236, 72, 153, 0.6)',
+                background: `linear-gradient(135deg,
+                  rgba(16, 185, 129, 0.8) 0%,
+                  rgba(52, 211, 153, 0.9) 100%)`,
+                border: '2px solid rgba(16, 185, 129, 0.6)',
                 boxShadow: `
-                  0 0 30px rgba(236, 72, 153, 0.4),
+                  0 0 30px rgba(16, 185, 129, 0.4),
                   0 8px 25px rgba(0, 0, 0, 0.3),
                   inset 0 1px 0 rgba(255, 255, 255, 0.2),
                   inset 0 -1px 0 rgba(0, 0, 0, 0.2)
@@ -229,12 +229,12 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
             >
               <div className="flex items-center gap-3">
                 <SpatialIcon 
-                  Icon={hasSelectedInventory ? ICONS.Sparkles : ICONS.Camera} 
-                  size={24} 
+                  Icon={hasSelectedInventory ? ICONS.Sparkles : ICONS.Camera}
+                  size={24}
                   className="group-hover:rotate-12 transition-transform duration-300"
                   style={{
                     color: 'white',
-                    filter: `drop-shadow(0 0 10px rgba(236, 72, 153, 0.8)) 
+                    filter: `drop-shadow(0 0 10px rgba(16, 185, 129, 0.8))
                              drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3))`
                   }}
                 />
@@ -242,12 +242,12 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
               </div>
               
               {/* 3D Effect */}
-              <div 
+              <div
                 className="absolute inset-0 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 -z-10"
                 style={{
-                  background: `linear-gradient(135deg, 
-                    rgba(236, 72, 153, 0.6) 0%, 
-                    rgba(244, 114, 182, 0.6) 100%)`
+                  background: `linear-gradient(135deg,
+                    rgba(16, 185, 129, 0.6) 0%,
+                    rgba(52, 211, 153, 0.6) 100%)`
                 }}
               ></div>
             </button>
@@ -257,20 +257,20 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
           <div
             className="text-white/50 text-sm p-3 rounded-xl"
             style={{
-              background: `radial-gradient(ellipse at center, 
-                rgba(236, 72, 153, 0.1) 0%, 
+              background: `radial-gradient(ellipse at center,
+                rgba(16, 185, 129, 0.1) 0%,
                 transparent 70%)`,
-              border: '1px solid rgba(236, 72, 153, 0.2)',
-              boxShadow: `0 0 15px rgba(236, 72, 153, 0.1)`
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              boxShadow: `0 0 15px rgba(16, 185, 129, 0.1)`
             }}
           >
             <div className="flex items-center justify-center gap-2">
-              <SpatialIcon 
-                Icon={ICONS.Lightbulb} 
-                size={16} 
-                className="text-pink-400"
+              <SpatialIcon
+                Icon={ICONS.Lightbulb}
+                size={16}
+                className="text-green-400"
                 style={{
-                  filter: `drop-shadow(0 0 6px rgba(236, 72, 153, 0.6))`
+                  filter: `drop-shadow(0 0 6px rgba(16, 185, 129, 0.6))`
                 }}
               />
               <span>
