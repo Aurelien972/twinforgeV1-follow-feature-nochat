@@ -153,11 +153,14 @@ function processActivitiesForAnalysis(activities) {
   return text;
 }
 Deno.serve(async (req)=>{
-  // Handle CORS preflight
+  // Handle CORS preflight - MUST be first
   if (req.method === 'OPTIONS') {
     return new Response(null, {
-      status: 200,
-      headers: corsHeaders
+      status: 204,
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Max-Age': '86400', // 24 hours cache for preflight
+      }
     });
   }
   try {

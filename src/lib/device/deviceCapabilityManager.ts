@@ -271,20 +271,32 @@ class DeviceCapabilityManager {
   }
 
   private monitorFrameRate() {
+    let lowFPSCount = 0;
+    const DEGRADATION_THRESHOLD = 5; // Require 5 consecutive bad frames before degrading
+
     const measureFrame = () => {
       const now = performance.now();
       const delta = now - this.lastFrameTime;
       const fps = 1000 / delta;
 
       this.frameRateHistory.push(fps);
-      if (this.frameRateHistory.length > 60) {
+      if (this.frameRateHistory.length > 120) { // Increased history window
         this.frameRateHistory.shift();
       }
 
-      // Check average FPS
+      // Check average FPS with more lenient threshold
       const avgFPS = this.frameRateHistory.reduce((a, b) => a + b, 0) / this.frameRateHistory.length;
-      if (avgFPS < 55 && this.frameRateHistory.length >= 60) {
-        this.degradePerformanceIfNeeded();
+
+      // Only degrade if we have sustained poor performance (not just a spike)
+      if (avgFPS < 45 && this.frameRateHistory.length >= 120) {
+        lowFPSCount++;
+        if (lowFPSCount >= DEGRADATION_THRESHOLD) {
+          this.degradePerformanceIfNeeded();
+          lowFPSCount = 0; // Reset counter after degrading
+        }
+      } else {
+        // Reset counter if performance is acceptable
+        lowFPSCount = 0;
       }
 
       this.lastFrameTime = now;
@@ -300,12 +312,12 @@ class DeviceCapabilityManager {
       this.capabilities.performanceLevel = 'medium';
       this.config = this.generateConfig();
       this.applyConfigToDOM();
-      console.warn('[DeviceCapability] Degraded to medium performance');
+      console.log('[DeviceCapability] Degraded to medium performance due to sustained low FPS');
     } else if (currentLevel === 'medium') {
       this.capabilities.performanceLevel = 'low';
       this.config = this.generateConfig();
       this.applyConfigToDOM();
-      console.warn('[DeviceCapability] Degraded to low performance');
+      console.log('[DeviceCapability] Degraded to low performance due to sustained low FPS');
     }
   }
 

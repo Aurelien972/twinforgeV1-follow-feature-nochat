@@ -22,6 +22,7 @@ import {
 } from '../../../../system/data/activitiesRepository';
 import { supabase } from '../../../../system/supabase/client';
 import logger from '../../../../lib/utils/logger';
+import { shouldLogDiagnostic } from '../../../../config/debugFlags';
 
 /**
  * Hook pour récupérer l'historique des activités
@@ -61,14 +62,16 @@ export function useActivityInsightsGenerator(period: 'last7Days' | 'last30Days' 
   return useQuery({
     queryKey: ['activities', 'insights', session?.user?.id, period],
     queryFn: async () => {
-      logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'queryFn execution started', {
-        userId: session?.user?.id,
-        period,
-        executionTime: new Date().toISOString(),
-        reason: 'react_query_triggered_execution',
-        cacheStrategy: 'edge_function_with_local_fallback',
-        timestamp: new Date().toISOString()
-      });
+      if (shouldLogDiagnostic('activity')) {
+        logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'queryFn execution started', {
+          userId: session?.user?.id,
+          period,
+          executionTime: new Date().toISOString(),
+          reason: 'react_query_triggered_execution',
+          cacheStrategy: 'edge_function_with_local_fallback',
+          timestamp: new Date().toISOString()
+        });
+      }
 
       if (!session?.user?.id) {
         throw new Error('User not authenticated');
@@ -92,12 +95,14 @@ export function useActivityInsightsGenerator(period: 'last7Days' | 'last30Days' 
           objective: profile?.objective
         };
 
-        logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Attempting edge function call', {
-          userId: session.user.id,
-          period,
-          endpoint: `${supabaseUrl}/functions/v1/activity-progress-generator`,
-          timestamp: new Date().toISOString()
-        });
+        if (shouldLogDiagnostic('activity')) {
+          logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Attempting edge function call', {
+            userId: session.user.id,
+            period,
+            endpoint: `${supabaseUrl}/functions/v1/activity-progress-generator`,
+            timestamp: new Date().toISOString()
+          });
+        }
 
         const response = await fetch(`${supabaseUrl}/functions/v1/activity-progress-generator`, {
           method: 'POST',
@@ -148,14 +153,16 @@ export function useActivityInsightsGenerator(period: 'last7Days' | 'last30Days' 
           current_activities: currentActivities
         };
 
-        logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Edge function call successful', {
-          userId: session.user.id,
-          period,
-          insightsCount: insightsData.insights?.length || 0,
-          currentActivities,
-          cached: insightsData.cached || false,
-          timestamp: new Date().toISOString()
-        });
+        if (shouldLogDiagnostic('activity')) {
+          logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Edge function call successful', {
+            userId: session.user.id,
+            period,
+            insightsCount: insightsData.insights?.length || 0,
+            currentActivities,
+            cached: insightsData.cached || false,
+            timestamp: new Date().toISOString()
+          });
+        }
 
         return enrichedData;
 
@@ -301,9 +308,9 @@ export function useLastActivity() {
         .eq('user_id', session.user.id)
         .order('timestamp', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+      if (error) {
         logger.error('ACTIVITIES_REPO', 'Failed to fetch last activity', {
           error: error.message,
           userId: session.user.id,

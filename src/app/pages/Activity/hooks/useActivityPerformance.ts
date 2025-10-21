@@ -1,10 +1,10 @@
 /**
  * useActivityPerformance Hook
  * Activity-specific performance adaptations for the Energy Forge
- * Extends useLegacyPerformanceMode with Activity module specific parameters
+ * Uses the centralized PerformanceModeContext for performance settings
  */
 
-import { useLegacyPerformanceMode } from '../../../../hooks/useLegacyPerformanceMode';
+import { usePerformanceMode } from '../../../../system/context/PerformanceModeContext';
 
 export interface ActivityPerformanceSettings {
   mode: 'high' | 'medium' | 'low';
@@ -24,36 +24,60 @@ export interface ActivityPerformanceSettings {
   calendarDays: number;
 }
 
+// Map performance modes to legacy mode format
+const mapPerformanceMode = (mode: string): 'high' | 'medium' | 'low' => {
+  switch (mode) {
+    case 'high-performance':
+      return 'high';
+    case 'battery-saver':
+      return 'low';
+    case 'balanced':
+    default:
+      return 'medium';
+  }
+};
+
 export const useActivityPerformance = (): ActivityPerformanceSettings => {
-  const baseMetrics = useLegacyPerformanceMode();
+  const { mode: performanceMode, isPerformanceMode } = usePerformanceMode();
+
+  // Convert new mode system to legacy mode format
+  const mode = mapPerformanceMode(performanceMode);
+
+  // Derive settings from performance mode
+  const enableAnimations = mode !== 'low';
+  const enableComplexEffects = mode === 'high';
+
+  const maxDataPoints = mode === 'high' ? 90 : mode === 'medium' ? 60 : 30;
+  const animationDelay = mode === 'high' ? 0.01 : mode === 'medium' ? 0.02 : 0;
+  const calendarDays = mode === 'high' ? 180 : mode === 'medium' ? 90 : 60;
 
   const activitySettings: ActivityPerformanceSettings = {
-    mode: baseMetrics.mode,
-    enableAnimations: baseMetrics.enableAnimations,
-    enableComplexEffects: baseMetrics.enableComplexEffects,
-    animationDelay: baseMetrics.animationDelay,
-    calendarDays: baseMetrics.calendarDays,
+    mode,
+    enableAnimations,
+    enableComplexEffects,
+    animationDelay,
+    calendarDays,
 
-    enableRings: baseMetrics.mode === 'high',
-    enableParticles: baseMetrics.mode === 'high',
-    enableGlows: baseMetrics.mode !== 'low',
-    enableShimmers: baseMetrics.mode !== 'low',
-    enablePulseEffects: baseMetrics.mode !== 'low',
-    enableRotations: baseMetrics.mode === 'high',
+    enableRings: mode === 'high',
+    enableParticles: mode === 'high',
+    enableGlows: mode !== 'low',
+    enableShimmers: mode !== 'low',
+    enablePulseEffects: mode !== 'low',
+    enableRotations: mode === 'high',
 
     maxActivitiesDisplayed:
-      baseMetrics.mode === 'high' ? 30 :
-      baseMetrics.mode === 'medium' ? 20 : 10,
+      mode === 'high' ? 30 :
+      mode === 'medium' ? 20 : 10,
 
-    chartPointsLimit: baseMetrics.maxDataPoints,
+    chartPointsLimit: maxDataPoints,
 
     staggerDelay:
-      baseMetrics.mode === 'high' ? 0.15 :
-      baseMetrics.mode === 'medium' ? 0.08 : 0,
+      mode === 'high' ? 0.15 :
+      mode === 'medium' ? 0.08 : 0,
 
     transitionDuration:
-      baseMetrics.mode === 'high' ? 0.5 :
-      baseMetrics.mode === 'medium' ? 0.3 : 0.15,
+      mode === 'high' ? 0.5 :
+      mode === 'medium' ? 0.3 : 0.15,
   };
 
   return activitySettings;

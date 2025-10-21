@@ -135,10 +135,25 @@ const ActivityProgressTab: React.FC = () => {
   // Générateur d'insights
   const { data: insightsData, isLoading, error } = useActivityInsightsGenerator(apiPeriod);
 
-  // Bloquer la navigation pendant le chargement de l'analyse
+  // Détecter si l'onglet progression est actif (vérifie le hash de l'URL)
+  const [isTabActive, setIsTabActive] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkTabActive = () => {
+      const hash = window.location.hash.replace('#', '');
+      setIsTabActive(hash === 'progression');
+    };
+
+    checkTabActive();
+    window.addEventListener('hashchange', checkTabActive);
+    return () => window.removeEventListener('hashchange', checkTabActive);
+  }, []);
+
+  // Bloquer la navigation pendant le chargement de l'analyse - UNIQUEMENT si l'onglet est actif
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) => {
-      const shouldBlock = isLoading && currentLocation.pathname !== nextLocation.pathname;
+      // Ne bloquer que si l'onglet progression est actif ET qu'on est en chargement ET qu'on change de page
+      const shouldBlock = isTabActive && isLoading && currentLocation.pathname !== nextLocation.pathname;
       
       if (shouldBlock) {
         logger.debug('ACTIVITY_PROGRESS_TAB', 'Navigation blocked during analysis loading', {
