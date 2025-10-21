@@ -109,6 +109,16 @@ const ProfileNutritionTab: React.FC = () => {
           onSave={saveDietSection}
         />
 
+        {/* Restrictions Card - Moved to second position */}
+        <RestrictionsSection
+          register={register}
+          watchedValues={watchedValues}
+          setValue={setValue}
+          isDirty={hasRestrictionsChanges}
+          isSaving={sectionSaving === 'restrictions'}
+          onSave={saveRestrictionsSection}
+        />
+
         {/* Essentials Card - Foyer, Temps, Niveau, Équipement */}
         <EssentialsSection
           register={register}
@@ -126,16 +136,6 @@ const ProfileNutritionTab: React.FC = () => {
           isDirty={hasPreferencesChanges}
           isSaving={sectionSaving === 'preferences'}
           onSave={savePreferencesSection}
-        />
-
-        {/* Restrictions Card */}
-        <RestrictionsSection
-          register={register}
-          watchedValues={watchedValues}
-          setValue={setValue}
-          isDirty={hasRestrictionsChanges}
-          isSaving={sectionSaving === 'restrictions'}
-          onSave={saveRestrictionsSection}
         />
 
         {/* Macro Targets Card */}

@@ -366,20 +366,54 @@ export function useProfileNutritionForm() {
     }
   };
 
-  // Check for section changes
+  // Check for section changes - properly handle nested fields
   const hasDietChanges = !!(dirtyFields.diet || dirtyFields.budgetLevel);
   const hasRestrictionsChanges = !!(dirtyFields.allergies || dirtyFields.intolerances || dirtyFields.noKnownAllergies);
   const hasEssentialsChanges = !!(
-    dirtyFields.householdDetails ||
-    dirtyFields.mealPrepPreferences ||
-    dirtyFields.kitchenEquipment
+    dirtyFields.householdDetails?.adults ||
+    dirtyFields.householdDetails?.children ||
+    dirtyFields.householdDetails?.dietaryRestrictions ||
+    dirtyFields.mealPrepPreferences?.weekdayTimeMin ||
+    dirtyFields.mealPrepPreferences?.weekendTimeMin ||
+    dirtyFields.mealPrepPreferences?.cookingSkill ||
+    dirtyFields.mealPrepPreferences?.preferredMealTimes ||
+    dirtyFields.kitchenEquipment?.oven ||
+    dirtyFields.kitchenEquipment?.stove ||
+    dirtyFields.kitchenEquipment?.microwave ||
+    dirtyFields.kitchenEquipment?.airFryer ||
+    dirtyFields.kitchenEquipment?.slowCooker ||
+    dirtyFields.kitchenEquipment?.blender ||
+    dirtyFields.kitchenEquipment?.foodProcessor ||
+    dirtyFields.kitchenEquipment?.standMixer ||
+    dirtyFields.kitchenEquipment?.riceCooker ||
+    dirtyFields.kitchenEquipment?.grill ||
+    dirtyFields.kitchenEquipment?.steamBasket ||
+    dirtyFields.kitchenEquipment?.pressureCooker
   );
   const hasPreferencesChanges = !!(
-    dirtyFields.foodPreferences ||
-    dirtyFields.sensoryPreferences
+    dirtyFields.foodPreferences?.cuisines ||
+    dirtyFields.foodPreferences?.ingredients ||
+    dirtyFields.foodPreferences?.flavors ||
+    dirtyFields.sensoryPreferences?.spiceTolerance ||
+    dirtyFields.sensoryPreferences?.textureAversions ||
+    dirtyFields.sensoryPreferences?.temperaturePreferences
   );
-  const hasNutritionChanges = !!(dirtyFields.macroTargets);
-  const hasShoppingChanges = !!(dirtyFields.shoppingPreferences);
+  const hasNutritionChanges = !!(
+    dirtyFields.macroTargets?.kcal ||
+    dirtyFields.macroTargets?.fiberMinG ||
+    dirtyFields.macroTargets?.sugarMaxG ||
+    dirtyFields.macroTargets?.saltMaxMg ||
+    dirtyFields.macroTargets?.carbsMaxG ||
+    dirtyFields.macroTargets?.fatMinG
+  );
+  const hasShoppingChanges = !!(
+    dirtyFields.shoppingPreferences?.frequencyPerWeek ||
+    dirtyFields.shoppingPreferences?.defaultPortionsPerMeal ||
+    dirtyFields.shoppingPreferences?.batchCooking ||
+    dirtyFields.shoppingPreferences?.bias ||
+    dirtyFields.shoppingPreferences?.preferredStores ||
+    dirtyFields.shoppingPreferences?.budgetPerWeek
+  );
 
   // Memoize return values to prevent unnecessary re-renders and infinite loops
   const formReturn = React.useMemo(() => ({

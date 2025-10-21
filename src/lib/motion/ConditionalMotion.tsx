@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, HTMLMotionProps, AnimatePresenceProps } from 'framer-motion';
+import { motion, AnimatePresence, HTMLMotionProps, AnimatePresenceProps } from 'framer-motion';
 import { usePerformanceMode } from '../../system/context/PerformanceModeContext';
 
 /**
@@ -112,8 +112,6 @@ export const ConditionalAnimatePresence: React.FC<ConditionalAnimatePresenceProp
   }
 
   // Balanced and Quality modes: Use AnimatePresence
-  const { AnimatePresence } = require('framer-motion');
-
   return (
     <AnimatePresence mode={presenceMode} initial={initial} {...props}>
       {children}
