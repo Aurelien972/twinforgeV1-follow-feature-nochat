@@ -93,9 +93,10 @@ export function analyzeActivityContext(
   let urgencyLevel: ActivityContext['urgencyLevel'] = 'none';
   let contextMessage = '';
 
-  // Déterminer le niveau d'urgence et le message contextuel
+  // CORRECTION CRITIQUE: Déterminer le niveau d'urgence et le message contextuel
+  // Prendre en compte l'historique global, pas seulement aujourd'hui
   if (!lastActivity) {
-    // Aucune activité jamais enregistrée
+    // Aucune activité jamais enregistrée (vraiment aucune activité globale)
     urgencyLevel = 'critical';
     contextMessage = 'Vous n\'avez pas encore enregistré d\'activité. Commencez votre voyage énergétique !';
   } else if (daysSince === 0 && hasActivitiesToday) {

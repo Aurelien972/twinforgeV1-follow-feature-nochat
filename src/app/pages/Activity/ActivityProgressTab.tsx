@@ -183,16 +183,18 @@ const ActivityProgressTab: React.FC = () => {
   // Mettre à jour le nombre d'activités et gérer la période intelligemment
   React.useEffect(() => {
     if (insightsData?.current_activities !== undefined) {
-      logger.debug('ACTIVITY_PROGRESS_TAB', 'Activities count updated from insights data', {
+      logger.info('ACTIVITY_PROGRESS_TAB_DIAGNOSTIC', 'Activities count updated from insights data', {
         previousCount: currentActivitiesCount,
         newCount: insightsData.current_activities,
+        summaryTotalActivities: insightsData.summary?.total_activities,
+        dataConsistency: insightsData.current_activities === insightsData.summary?.total_activities ? 'consistent' : 'inconsistent',
         selectedPeriod,
         userHasSelectedPeriod,
         cacheStatus: insightsData.cached ? 'cached' : 'fresh',
         willRespectUserChoice: userHasSelectedPeriod,
         timestamp: new Date().toISOString()
       });
-      
+
       setCurrentActivitiesCount(insightsData.current_activities);
       
       // CRITIQUE: Ne recalculer la période que si l'utilisateur n'a pas fait de sélection manuelle

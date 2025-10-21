@@ -93,9 +93,18 @@ const ActivityInsightsTab: React.FC = () => {
   // Mettre à jour le nombre d'activités
   React.useEffect(() => {
     if (insightsData?.current_activities !== undefined) {
+      logger.info('ACTIVITY_INSIGHTS_TAB_DIAGNOSTIC', 'Current activities count updated', {
+        previousCount: currentActivitiesCount,
+        newCount: insightsData.current_activities,
+        summaryTotalActivities: insightsData.summary?.total_activities,
+        dataConsistency: insightsData.current_activities === insightsData.summary?.total_activities ? 'consistent' : 'inconsistent',
+        cached: insightsData.cached || false,
+        timestamp: new Date().toISOString()
+      });
+
       setCurrentActivitiesCount(insightsData.current_activities);
     }
-  }, [insightsData?.current_activities]);
+  }, [insightsData?.current_activities, currentActivitiesCount, insightsData?.summary?.total_activities, insightsData?.cached]);
 
   // Gestion des erreurs
   React.useEffect(() => {

@@ -140,22 +140,47 @@ export function useActivityInsightsGenerator(period: 'last7Days' | 'last30Days' 
       }
 
       const insightsData = await response.json();
-      
-      // DIAGNOSTIC: Log de succès avec information sur le cache
+
+      // CORRECTION CRITIQUE: Validation et enrichissement de current_activities
+      let currentActivities = insightsData.current_activities;
+
+      // Si current_activities n'est pas défini, le calculer depuis summary.total_activities
+      if (currentActivities === undefined || currentActivities === null) {
+        currentActivities = insightsData.summary?.total_activities || 0;
+        logger.warn('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'current_activities missing, calculated from summary', {
+          userId: session.user.id,
+          period,
+          calculatedValue: currentActivities,
+          summaryTotalActivities: insightsData.summary?.total_activities,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Ajouter current_activities dans la réponse si manquant
+      const enrichedData = {
+        ...insightsData,
+        current_activities: currentActivities
+      };
+
+      // DIAGNOSTIC: Log de succès avec information sur le cache et current_activities
       logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'API CALL COMPLETED', {
         userId: session.user.id,
         period,
         insightsCount: insightsData.insights?.length || 0,
+        currentActivities: currentActivities,
+        summaryTotalActivities: insightsData.summary?.total_activities,
+        dataConsistency: currentActivities === insightsData.summary?.total_activities ? 'consistent' : 'inconsistent',
         costUsd: insightsData.costUsd,
         processingTime: insightsData.processingTime,
         cached: insightsData.cached || false,
         cacheAge: insightsData.cache_age_hours,
         fallback: insightsData.fallback || false,
         creditsConsumed: !insightsData.cached && !insightsData.fallback,
+        enrichmentApplied: currentActivities !== insightsData.current_activities,
         timestamp: new Date().toISOString()
       });
 
-      return insightsData;
+      return enrichedData;
     },
     enabled: !!session?.user?.id,
     staleTime: getStaleTimeForPeriod(period), // Cache client adaptatif selon la période

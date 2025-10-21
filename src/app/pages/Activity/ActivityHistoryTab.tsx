@@ -43,7 +43,21 @@ const ActivityHistoryTab: React.FC = () => {
   
   // Hook pour récupérer l'historique des activités
   const { data: activities, isLoading, error } = useActivityHistory(100);
-  
+
+  // DIAGNOSTIC: Logger l'état de l'historique
+  React.useEffect(() => {
+    if (activities !== undefined) {
+      logger.info('ACTIVITY_HISTORY_TAB_DIAGNOSTIC', 'Activity history loaded', {
+        activitiesCount: activities?.length || 0,
+        hasActivities: (activities?.length || 0) > 0,
+        isLoading,
+        hasError: !!error,
+        userId,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [activities, isLoading, error, userId]);
+
   // Hook pour supprimer une activité
   const deleteActivityMutation = useDeleteActivity();
 

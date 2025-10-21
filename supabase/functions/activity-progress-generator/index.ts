@@ -199,19 +199,57 @@ Deno.serve(async (req)=>{
     
     if (cacheEntry && isCacheValid(cacheEntry, period)) {
       const isStillRelevant = await isCacheStillRelevant(cacheEntry, userId, period, supabase);
-      
+
       if (isStillRelevant) {
-        console.log('✅ [ACTIVITY_INSIGHTS] Using cached data - no OpenAI call needed', {
+        // CORRECTION CRITIQUE: Récupérer les statistiques réelles des activités pour le cache
+        const { startDate, endDate } = getDateRange(period);
+        const { data: currentActivities, error: activitiesError } = await supabase
+          .from('activities')
+          .select('*')
+          .eq('user_id', userId)
+          .gte('timestamp', startDate)
+          .lte('timestamp', endDate);
+
+        if (activitiesError) {
+          console.warn('⚠️ [ACTIVITY_INSIGHTS] Failed to fetch current activities for cache enrichment', {
+            error: activitiesError.message,
+            userId,
+            period,
+            willUseCachedDataWithoutEnrichment: true,
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        // Calculer les statistiques réelles actuelles
+        const currentActivitiesCount = currentActivities?.length || 0;
+        const totalCalories = currentActivities?.reduce((sum, a) => sum + a.calories_est, 0) || 0;
+        const totalDuration = currentActivities?.reduce((sum, a) => sum + a.duration_min, 0) || 0;
+        const avgDailyCalories = currentActivitiesCount > 0 ? Math.round(totalCalories / getPeriodDays(period)) : 0;
+
+        // Calculer le type d'activité le plus fréquent
+        const typeFrequency = {};
+        currentActivities?.forEach(activity => {
+          typeFrequency[activity.type] = (typeFrequency[activity.type] || 0) + 1;
+        });
+        const mostFrequentType = Object.entries(typeFrequency)
+          .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Aucun';
+
+        console.log('✅ [ACTIVITY_INSIGHTS] Using cached insights enriched with current activity stats', {
           userId,
           period,
           cacheAge: Math.round((Date.now() - new Date(cacheEntry.updated_at).getTime()) / (1000 * 60 * 60)),
           cacheValidityHours: CACHE_VALIDITY_HOURS[period],
           dataStillRelevant: true,
           costSaved: 'OpenAI call avoided',
+          enrichmentApplied: true,
+          currentActivitiesCount,
+          totalCalories,
+          totalDuration,
           timestamp: new Date().toISOString()
         });
-        
+
         // Transformer les données du cache au format attendu par le frontend
+        // CORRECTION: Enrichir avec les vraies statistiques actuelles
         cachedResponse = {
           insights: cacheEntry.trends || [],
           distribution: {
@@ -224,26 +262,28 @@ Deno.serve(async (req)=>{
             weeks: [],
             stats: {
               excellentDays: 0,
-              activityRate: 0,
+              activityRate: currentActivitiesCount > 0 ? Math.round((currentActivitiesCount / getPeriodDays(period)) * 100) : 0,
               excellenceRate: 0,
-              avgCaloriesPerDay: 0,
-              avgDurationPerDay: 0
+              avgCaloriesPerDay: avgDailyCalories,
+              avgDurationPerDay: currentActivitiesCount > 0 ? Math.round(totalDuration / getPeriodDays(period)) : 0
             }
           },
           summary: {
-            total_activities: 0,
-            total_calories: 0,
-            total_duration: 0,
-            avg_daily_calories: 0,
-            most_frequent_type: 'Aucun',
+            total_activities: currentActivitiesCount,
+            total_calories: totalCalories,
+            total_duration: totalDuration,
+            avg_daily_calories: avgDailyCalories,
+            most_frequent_type: mostFrequentType,
             avg_intensity: 'medium',
-            consistency_score: 0
+            consistency_score: currentActivitiesCount > 0 ? Math.min(100, Math.round((currentActivitiesCount / getMinimumActivitiesForPeriod(period)) * 100)) : 0
           },
+          activities: currentActivities || [],
+          current_activities: currentActivitiesCount,
           cached: true,
           cache_age_hours: Math.round((Date.now() - new Date(cacheEntry.updated_at).getTime()) / (1000 * 60 * 60)),
           generated_at: cacheEntry.updated_at
         };
-        
+
         shouldRegenerate = false;
       } else {
         console.log('🔄 [ACTIVITY_INSIGHTS] Cache expired due to new activities - will regenerate', {

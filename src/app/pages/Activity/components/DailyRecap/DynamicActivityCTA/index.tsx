@@ -10,6 +10,7 @@ import { analyzeActivityContext } from './contextAnalysis';
 import { generateCTAMessage } from './messageGenerator';
 import { calculateUrgencyConfig, shouldShowParticles, getParticleCount } from './urgencyCalculator';
 import { useActivityPerformance } from '../../../hooks/useActivityPerformance';
+import logger from '../../../../../../lib/utils/logger';
 
 interface ActivityCTAProps {
   todayStats?: {
@@ -54,9 +55,35 @@ const DynamicActivityCTA: React.FC<ActivityCTAProps> = ({ todayStats, profile })
   // Récupérer la dernière activité globale (pas uniquement aujourd'hui)
   const { data: lastActivity } = useLastActivity();
 
+  // DIAGNOSTIC: Logger les données reçues pour le CTA
+  React.useEffect(() => {
+    logger.info('DYNAMIC_ACTIVITY_CTA_DIAGNOSTIC', 'CTA render state', {
+      hasTodayStats: !!todayStats,
+      todayActivitiesCount: todayStats?.activitiesCount || 0,
+      todayTotalCalories: todayStats?.totalCalories || 0,
+      hasLastActivity: !!lastActivity,
+      lastActivityTimestamp: lastActivity?.timestamp,
+      lastActivityType: lastActivity?.type,
+      timestamp: new Date().toISOString()
+    });
+  }, [todayStats, lastActivity]);
+
   // Analyser le contexte d'activité complet
   const activityContext = React.useMemo(() => {
-    return analyzeActivityContext(todayStats || null, lastActivity);
+    const context = analyzeActivityContext(todayStats || null, lastActivity);
+
+    // DIAGNOSTIC: Logger le contexte analysé
+    logger.info('DYNAMIC_ACTIVITY_CTA_DIAGNOSTIC', 'Activity context analyzed', {
+      urgencyLevel: context.urgencyLevel,
+      daysSinceLastActivity: context.daysSinceLastActivity,
+      hasActivitiesToday: context.hasActivitiesToday,
+      totalActivitiesToday: context.totalActivitiesToday,
+      hasActivitiesThisWeek: context.hasActivitiesThisWeek,
+      contextMessage: context.contextMessage,
+      timestamp: new Date().toISOString()
+    });
+
+    return context;
   }, [todayStats, lastActivity]);
 
   // Générer le message CTA basé sur le contexte
