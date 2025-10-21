@@ -90,10 +90,14 @@ const ProfileNudge: React.FC<ProfileNudgeProps> = ({
     click();
 
     if (completion.nextAction) {
-      // Parse route to extract path, tab and hash
+      // Parse route: /profile?tab=nutrition#section-id
       const route = completion.nextAction.route;
-      const [path, search] = route.split('?');
-      const [basePath, hash] = path.split('#');
+
+      // Split on # first to get hash
+      const [pathWithQuery, hash] = route.split('#');
+
+      // Then split on ? to get path and query
+      const [basePath, search] = pathWithQuery.split('?');
 
       // Extract tab from search params if present
       const params = new URLSearchParams(search);
@@ -103,7 +107,7 @@ const ProfileNudge: React.FC<ProfileNudgeProps> = ({
         tab: tab || undefined,
         hash: hash || undefined,
         smooth: true,
-        delay: 150
+        delay: 200 // Increase delay for tab switching + scroll
       });
       success();
     }

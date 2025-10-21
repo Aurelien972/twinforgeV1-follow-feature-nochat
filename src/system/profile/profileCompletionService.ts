@@ -11,6 +11,7 @@ export interface CriticalField {
   label: string;
   description: string;
   profileTab: 'identity' | 'nutrition' | 'health' | 'fasting' | 'preferences' | 'avatar';
+  sectionHash?: string; // Optional hash to scroll to specific section
   priority: 'high' | 'medium' | 'low';
 }
 
@@ -57,6 +58,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     label: 'Allergies',
     description: 'Important pour la sécurité alimentaire',
     profileTab: 'nutrition',
+    sectionHash: 'restrictions-section',
     priority: 'medium'
   },
   {
@@ -64,6 +66,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     label: 'Nombre d\'adultes',
     description: 'Pour adapter les portions des recettes',
     profileTab: 'nutrition',
+    sectionHash: 'essentials-section',
     priority: 'high'
   },
   
@@ -73,6 +76,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     label: 'Régime alimentaire',
     description: 'Pour des recettes adaptées à votre style',
     profileTab: 'nutrition',
+    sectionHash: 'diet-section',
     priority: 'medium'
   },
   {
@@ -80,6 +84,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     label: 'Niveau de cuisine',
     description: 'Pour adapter la complexité des recettes',
     profileTab: 'nutrition',
+    sectionHash: 'essentials-section',
     priority: 'medium'
   },
   {
@@ -87,6 +92,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     label: 'Équipement de cuisine',
     description: 'Pour des recettes réalisables chez vous',
     profileTab: 'nutrition',
+    sectionHash: 'essentials-section',
     priority: 'medium'
   },
   {
@@ -103,6 +109,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     label: 'Intolérances',
     description: 'Pour éviter les inconforts digestifs',
     profileTab: 'nutrition',
+    sectionHash: 'restrictions-section',
     priority: 'low'
   },
   {
@@ -110,13 +117,15 @@ const CRITICAL_FIELDS: CriticalField[] = [
     label: 'Cuisines préférées',
     description: 'Pour des recettes qui vous plaisent',
     profileTab: 'nutrition',
+    sectionHash: 'preferences-section',
     priority: 'low'
   },
   {
     key: 'macroTargets.kcal',
     label: 'Objectif calories',
     description: 'Pour des recettes équilibrées',
-    profileTab: 'fasting',
+    profileTab: 'nutrition',
+    sectionHash: 'macros-section',
     priority: 'low'
   }
 ];
@@ -229,16 +238,18 @@ export function calculateRecipeWorkshopCompletion(profile: UserProfile | null): 
   if (missingHighPriorityFields.length > 0) {
     const firstMissing = missingHighPriorityFields[0];
     suggestedMessage = `Complétez votre ${firstMissing.label.toLowerCase()} pour des recettes personnalisées`;
+    const hashPart = firstMissing.sectionHash ? `#${firstMissing.sectionHash}` : '';
     nextAction = {
       label: `Ajouter ${firstMissing.label}`,
-      route: `/profile#${firstMissing.profileTab}`
+      route: `/profile?tab=${firstMissing.profileTab}${hashPart}`
     };
   } else if (missingFields.length > 0) {
     const firstMissing = missingFields[0];
     suggestedMessage = `Ajoutez votre ${firstMissing.label.toLowerCase()} pour une meilleure personnalisation`;
+    const hashPart = firstMissing.sectionHash ? `#${firstMissing.sectionHash}` : '';
     nextAction = {
       label: `Compléter ${firstMissing.label}`,
-      route: `/profile#${firstMissing.profileTab}`
+      route: `/profile?tab=${firstMissing.profileTab}${hashPart}`
     };
   } else {
     suggestedMessage = 'Profil complet ! Recettes ultra-personnalisées disponibles';
@@ -521,16 +532,18 @@ function calculateCompletion(
   if (missingHighPriorityFields.length > 0) {
     const firstMissing = missingHighPriorityFields[0];
     suggestedMessage = `Ajoutez votre ${firstMissing.label.toLowerCase()} pour ${defaultAction.toLowerCase()}`;
+    const hashPart = firstMissing.sectionHash ? `#${firstMissing.sectionHash}` : '';
     nextAction = {
       label: `Ajouter ${firstMissing.label}`,
-      route: `/profile#${firstMissing.profileTab}`
+      route: `/profile?tab=${firstMissing.profileTab}${hashPart}`
     };
   } else if (missingFields.length > 0) {
     const firstMissing = missingFields[0];
     suggestedMessage = `Complétez votre ${firstMissing.label.toLowerCase()} pour une meilleure expérience`;
+    const hashPart = firstMissing.sectionHash ? `#${firstMissing.sectionHash}` : '';
     nextAction = {
       label: `Compléter ${firstMissing.label}`,
-      route: `/profile#${firstMissing.profileTab}`
+      route: `/profile?tab=${firstMissing.profileTab}${hashPart}`
     };
   } else {
     suggestedMessage = 'Profil complet ! Toutes les fonctionnalités sont disponibles';

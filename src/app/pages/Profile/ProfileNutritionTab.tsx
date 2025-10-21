@@ -102,59 +102,73 @@ const ProfileNutritionTab: React.FC = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Diet & Budget Card */}
-        <DietBudgetSection
-          register={register}
-          isDirty={hasDietChanges}
-          isSaving={sectionSaving === 'diet'}
-          onSave={saveDietSection}
-        />
+        <div id="diet-section">
+          <DietBudgetSection
+            register={register}
+            isDirty={hasDietChanges}
+            isSaving={sectionSaving === 'diet'}
+            onSave={saveDietSection}
+          />
+        </div>
 
         {/* Restrictions Card - Moved to second position */}
-        <RestrictionsSection
-          register={register}
-          watchedValues={watchedValues}
-          setValue={setValue}
-          isDirty={hasRestrictionsChanges}
-          isSaving={sectionSaving === 'restrictions'}
-          onSave={saveRestrictionsSection}
-        />
+        <div id="restrictions-section">
+          <RestrictionsSection
+            register={register}
+            watchedValues={watchedValues}
+            setValue={setValue}
+            isDirty={hasRestrictionsChanges}
+            isSaving={sectionSaving === 'restrictions'}
+            onSave={saveRestrictionsSection}
+          />
+        </div>
 
         {/* Essentials Card - Foyer, Temps, Niveau, Équipement */}
-        <EssentialsSection
-          register={register}
-          watchedValues={watchedValues}
-          isDirty={hasEssentialsChanges}
-          isSaving={sectionSaving === 'essentials'}
-          onSave={saveEssentialsSection}
-        />
+        <div id="essentials-section">
+          <EssentialsSection
+            register={register}
+            watchedValues={watchedValues}
+            isDirty={hasEssentialsChanges}
+            isSaving={sectionSaving === 'essentials'}
+            onSave={saveEssentialsSection}
+          />
+        </div>
 
         {/* Food Preferences Card */}
-        <FoodPreferencesSection
-          register={register}
-          watchedValues={watchedValues}
-          setValue={setValue}
-          isDirty={hasPreferencesChanges}
-          isSaving={sectionSaving === 'preferences'}
-          onSave={savePreferencesSection}
-        />
+        <div id="preferences-section">
+          <FoodPreferencesSection
+            register={register}
+            watchedValues={watchedValues}
+            setValue={setValue}
+            isDirty={hasPreferencesChanges}
+            isSaving={sectionSaving === 'preferences'}
+            onSave={savePreferencesSection}
+          />
+        </div>
 
         {/* Macro Targets Card */}
-        <MacroTargetsSection
-          register={register}
-          isDirty={hasNutritionChanges}
-          isSaving={sectionSaving === 'nutrition'}
-          onSave={saveNutritionSection}
-        />
+        <div id="macros-section">
+          <MacroTargetsSection
+            register={register}
+            watchedValues={watchedValues}
+            setValue={setValue}
+            isDirty={hasNutritionChanges}
+            isSaving={sectionSaving === 'nutrition'}
+            onSave={saveNutritionSection}
+          />
+        </div>
 
         {/* Shopping Preferences Card */}
-        <ShoppingPreferencesSection
-          register={register}
-          watchedValues={watchedValues}
-          setValue={setValue}
-          isDirty={hasShoppingChanges}
-          isSaving={sectionSaving === 'shopping'}
-          onSave={saveShoppingSection}
-        />
+        <div id="shopping-section">
+          <ShoppingPreferencesSection
+            register={register}
+            watchedValues={watchedValues}
+            setValue={setValue}
+            isDirty={hasShoppingChanges}
+            isSaving={sectionSaving === 'shopping'}
+            onSave={saveShoppingSection}
+          />
+        </div>
 
         {/* Global Save Action */}
         <div className="flex justify-center pt-4">

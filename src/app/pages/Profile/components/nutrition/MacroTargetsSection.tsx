@@ -3,9 +3,13 @@ import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
 import { SectionSaveButton } from '../ProfileNutritionComponents';
+import { useUserStore } from '../../../../../system/store/userStore';
+import { calculateDailyCalories, getCalorieCalculationExplanation, canCalculateCalories } from '../../../../../lib/nutrition/calorieCalculator';
 
 interface MacroTargetsSectionProps {
   register: any;
+  watchedValues: any;
+  setValue: any;
   isDirty: boolean;
   isSaving: boolean;
   onSave: () => void;
@@ -13,10 +17,64 @@ interface MacroTargetsSectionProps {
 
 export const MacroTargetsSection: React.FC<MacroTargetsSectionProps> = ({
   register,
+  watchedValues,
+  setValue,
   isDirty,
   isSaving,
   onSave
 }) => {
+  const { profile } = useUserStore();
+  const [hasAutoCalculated, setHasAutoCalculated] = React.useState(false);
+
+  // Calculate recommended calories based on user profile
+  const calculatedCalories = React.useMemo(() => {
+    if (!profile) return null;
+
+    return calculateDailyCalories({
+      sex: profile.sex,
+      weight_kg: profile.weight_kg,
+      height_cm: profile.height_cm,
+      birthdate: profile.birthdate,
+      activity_level: profile.activity_level,
+      objective: profile.objective
+    });
+  }, [profile?.sex, profile?.weight_kg, profile?.height_cm, profile?.birthdate, profile?.activity_level, profile?.objective]);
+
+  const canCalculate = React.useMemo(() => {
+    if (!profile) return false;
+    return canCalculateCalories({
+      sex: profile.sex,
+      weight_kg: profile.weight_kg,
+      height_cm: profile.height_cm,
+      birthdate: profile.birthdate
+    });
+  }, [profile?.sex, profile?.weight_kg, profile?.height_cm, profile?.birthdate]);
+
+  const calculationExplanation = React.useMemo(() => {
+    if (!profile) return '';
+    return getCalorieCalculationExplanation({
+      sex: profile.sex,
+      weight_kg: profile.weight_kg,
+      height_cm: profile.height_cm,
+      birthdate: profile.birthdate,
+      activity_level: profile.activity_level,
+      objective: profile.objective
+    }, calculatedCalories);
+  }, [profile, calculatedCalories]);
+
+  // Auto-fill calories if empty and calculation is possible
+  React.useEffect(() => {
+    if (hasAutoCalculated || !calculatedCalories) return;
+
+    const currentCalories = watchedValues.macroTargets?.kcal;
+
+    // Only auto-fill if field is empty
+    if (!currentCalories || currentCalories === 0) {
+      setValue('macroTargets.kcal', calculatedCalories, { shouldDirty: false });
+    }
+
+    setHasAutoCalculated(true);
+  }, [calculatedCalories, watchedValues.macroTargets?.kcal, setValue, hasAutoCalculated]);
   return (
     <GlassCard className="p-6" style={{
       background: `
@@ -51,10 +109,41 @@ export const MacroTargetsSection: React.FC<MacroTargetsSectionProps> = ({
         </div>
       </div>
 
+      {/* Auto-calculation info */}
+      {canCalculate && calculatedCalories && (
+        <div className="mb-4 p-3 rounded-xl" style={{
+          background: 'rgba(34, 197, 94, 0.08)',
+          border: '1px solid rgba(34, 197, 94, 0.2)'
+        }}>
+          <div className="flex items-start gap-2">
+            <SpatialIcon
+              Icon={ICONS.Sparkles}
+              size={14}
+              className="flex-shrink-0 mt-0.5"
+              style={{ color: '#22C55E' }}
+            />
+            <div className="flex-1">
+              <p className="text-green-300 text-xs font-medium mb-1">
+                Calcul automatique
+              </p>
+              <p className="text-white/70 text-xs">
+                {calculationExplanation}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label htmlFor="macroTargets.kcal" className="block text-white/80 text-sm mb-2">
+          <label htmlFor="macroTargets.kcal" className="flex items-center gap-2 text-white/80 text-sm mb-2">
             Calories/jour
+            {canCalculate && (
+              <span className="text-xs text-green-400 flex items-center gap-1">
+                <SpatialIcon Icon={ICONS.Sparkles} size={10} />
+                Auto
+              </span>
+            )}
           </label>
           <input
             {...register('macroTargets.kcal', { valueAsNumber: true })}
@@ -64,8 +153,13 @@ export const MacroTargetsSection: React.FC<MacroTargetsSectionProps> = ({
             max="5000"
             step="50"
             className="glass-input"
-            placeholder="2000"
+            placeholder={calculatedCalories?.toString() || "2000"}
           />
+          {!canCalculate && (
+            <p className="text-white/50 text-xs mt-1">
+              Complétez votre profil (sexe, poids, taille, date de naissance) pour le calcul automatique
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="macroTargets.fiberMinG" className="block text-white/80 text-sm mb-2">

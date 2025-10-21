@@ -3,6 +3,7 @@ import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
 import { SectionSaveButton, TriStatePreferenceManager, ArrayItemManager } from '../ProfileNutritionComponents';
+import { useUserStore } from '../../../../../system/store/userStore';
 
 interface FoodPreferencesSectionProps {
   register: any;
@@ -13,6 +14,32 @@ interface FoodPreferencesSectionProps {
   onSave: () => void;
 }
 
+/**
+ * Map country codes to their cuisine names
+ */
+const COUNTRY_TO_CUISINE: Record<string, string> = {
+  'FR': 'Française',
+  'IT': 'Italienne',
+  'ES': 'Espagnole',
+  'MX': 'Mexicaine',
+  'IN': 'Indienne',
+  'GR': 'Grecque',
+  'JP': 'Japonaise',
+  'TH': 'Thaï',
+  'LB': 'Libanaise',
+  'MA': 'Marocaine',
+  'CN': 'Chinoise',
+  'KR': 'Coréenne',
+  'VN': 'Vietnamienne',
+  'US': 'Américaine',
+  'GB': 'Britannique',
+  'DE': 'Allemande',
+  'TR': 'Turque',
+  'BR': 'Brésilienne',
+  'AR': 'Argentine',
+  'PE': 'Péruvienne'
+};
+
 export const FoodPreferencesSection: React.FC<FoodPreferencesSectionProps> = ({
   register,
   watchedValues,
@@ -21,7 +48,31 @@ export const FoodPreferencesSection: React.FC<FoodPreferencesSectionProps> = ({
   isSaving,
   onSave
 }) => {
+  const { profile } = useUserStore();
   const [newTextureAversion, setNewTextureAversion] = React.useState('');
+  const [hasInitialized, setHasInitialized] = React.useState(false);
+
+  // Auto-populate user's country cuisine on mount
+  React.useEffect(() => {
+    if (hasInitialized || !profile?.country) return;
+
+    const currentCuisines = watchedValues.foodPreferences?.cuisines || [];
+
+    // Only add if user hasn't already added cuisines
+    if (currentCuisines.length === 0) {
+      const userCountry = profile.country.toUpperCase();
+      const cuisineName = COUNTRY_TO_CUISINE[userCountry];
+
+      if (cuisineName) {
+        // Add user's country cuisine with neutral preference
+        setValue('foodPreferences.cuisines', [
+          { name: cuisineName, preference: 'neutral' as const }
+        ], { shouldDirty: false }); // Don't mark as dirty on auto-fill
+      }
+    }
+
+    setHasInitialized(true);
+  }, [profile?.country, watchedValues.foodPreferences?.cuisines, setValue, hasInitialized]);
 
   const addTextureAversion = React.useCallback(() => {
     if (newTextureAversion.trim()) {
