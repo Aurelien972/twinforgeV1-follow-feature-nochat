@@ -14,6 +14,21 @@
   margin-bottom: 1rem;
 }
 
+/* Sticky behavior - not on mobile for capture step */
+@media (max-width: 768px) {
+  .wrap[data-step="capture"] {
+    position: static;
+  }
+
+  .wrap[data-step="processing"],
+  .wrap[data-step="celebration"],
+  .wrap[data-step="avatar"] {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+}
+
 /* Carte : padding interne haut/bas légèrement augmenté */
 .card {
   padding: 26px 18px;

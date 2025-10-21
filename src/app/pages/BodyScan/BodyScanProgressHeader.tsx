@@ -42,7 +42,7 @@ const BodyScanProgressHeader: React.FC<BodyScanProgressHeaderProps> = ({
   const currentIcon = STEP_ICONS[currentStepId] || 'Scan';
 
   return (
-    <div className={`${s.wrap} ${className}`}>
+    <div className={`${s.wrap} ${className}`} data-step={currentStepId}>
       <GlassCard className={s.card}>
         <div className={s.grid} data-body-forge>
           {/* Col 1 — Icône (centrée verticalement) */}

@@ -34,13 +34,24 @@ export async function getModelUrlForGender(gender: 'male' | 'female'): Promise<s
   const signedUrl = await getSignedUrl(PRIVATE_BUCKETS.MODELS_3D, modelPath);
 
   if (!signedUrl) {
+    const errorMessage = `3D model file not found in storage: ${modelPath}. Please ensure the model files are uploaded to the '${PRIVATE_BUCKETS.MODELS_3D}' bucket in Supabase Storage.`;
     logger.error('ASSETS_REPO', 'Failed to get signed URL for model', {
       gender,
       modelPath,
+      bucket: PRIVATE_BUCKETS.MODELS_3D,
+      errorMessage,
+      recommendation: 'Upload model files to Supabase Storage',
       philosophy: 'signed_url_failure'
     });
-    throw new Error(`Failed to get signed URL for ${gender} model`);
+    throw new Error(errorMessage);
   }
+
+  logger.info('ASSETS_REPO', 'Successfully retrieved signed URL for model', {
+    gender,
+    modelPath,
+    urlLength: signedUrl.length,
+    philosophy: 'signed_url_success'
+  });
 
   return signedUrl;
 }

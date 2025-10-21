@@ -13,16 +13,7 @@ const BodyScanCelebrationWithHeader: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto mt-4 space-y-6 pb-4">
-      {/* Progress Header - Always visible, non-animated at 100% */}
-      {isActive && steps.length > 0 && (
-        <BodyScanProgressHeader
-          steps={steps}
-          currentStepId={currentStep}
-          progress={100}
-          message="Scan Corporel Terminé"
-          subMessage="Votre avatar 3D est prêt"
-        />
-      )}
+      {/* Progress Header - Hidden during celebration phase as requested */}
 
       {/* Celebration Content */}
       <BodyScanCelebrationStep />
