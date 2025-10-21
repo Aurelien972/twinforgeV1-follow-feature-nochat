@@ -368,13 +368,11 @@ const RecipesTab: React.FC = () => {
       )}
 
       {/* Recipe Detail Modal */}
-      {selectedRecipeForDetail && (
-        <RecipeDetailModal
-          isOpen={showRecipeDetailModal}
-          onClose={handleCloseModal}
-          recipe={selectedRecipeForDetail}
-        />
-      )}
+      <RecipeDetailModal
+        isOpen={showRecipeDetailModal}
+        onClose={handleCloseModal}
+        recipe={selectedRecipeForDetail}
+      />
     </motion.div>
   );
 };
