@@ -342,22 +342,35 @@ const MealScanFlowPage: React.FC = () => {
 
       // OPTIMISATION CRITIQUE: Forcer le refetch synchrone de toutes les queries de repas
       // Utilisation de refetchQueries avec type: 'active' pour forcer les refetch immediats
+      // Gracefully handle cancellation errors to prevent console warnings
       await Promise.all([
         queryClient.refetchQueries({
           queryKey: ['meals-today', userId],
           type: 'active'
+        }).catch(error => {
+          if (error?.name !== 'CancelledError') throw error;
+          logger.debug('MEAL_SCAN_SAVE', 'meals-today refetch cancelled, ignoring', { userId });
         }),
         queryClient.refetchQueries({
           queryKey: ['meals-week', userId],
           type: 'active'
+        }).catch(error => {
+          if (error?.name !== 'CancelledError') throw error;
+          logger.debug('MEAL_SCAN_SAVE', 'meals-week refetch cancelled, ignoring', { userId });
         }),
         queryClient.refetchQueries({
           queryKey: ['meals-recent', userId],
           type: 'active'
+        }).catch(error => {
+          if (error?.name !== 'CancelledError') throw error;
+          logger.debug('MEAL_SCAN_SAVE', 'meals-recent refetch cancelled, ignoring', { userId });
         }),
         queryClient.refetchQueries({
           queryKey: ['meals-history', userId],
           type: 'active'
+        }).catch(error => {
+          if (error?.name !== 'CancelledError') throw error;
+          logger.debug('MEAL_SCAN_SAVE', 'meals-history refetch cancelled, ignoring', { userId });
         }),
         queryClient.invalidateQueries({ queryKey: ['meals-month', userId] }),
         queryClient.invalidateQueries({ queryKey: ['daily-ai-summary', userId] })

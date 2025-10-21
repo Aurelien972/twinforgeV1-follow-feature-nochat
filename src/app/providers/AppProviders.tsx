@@ -130,9 +130,39 @@ const initializeCachePersistence = async () => {
         shouldDehydrateQuery: (query) => {
           // Only persist specific query types to avoid bloating localStorage
           const queryKey = query.queryKey;
+          const queryState = query.state;
+
+          // CRITICAL: Don't persist queries that are currently fetching or in pending state
+          // This prevents "CancelledError" warnings during persistence
+          if (queryState.fetchStatus === 'fetching') {
+            logger.debug('REACT_QUERY_PERSISTENCE', 'Skipping query in fetching state', {
+              queryKey,
+              fetchStatus: queryState.fetchStatus,
+              timestamp: new Date().toISOString()
+            });
+            return false;
+          }
+
+          // Don't persist queries with errors (including CancelledError)
+          if (queryState.status === 'error') {
+            logger.debug('REACT_QUERY_PERSISTENCE', 'Skipping query with error state', {
+              queryKey,
+              status: queryState.status,
+              timestamp: new Date().toISOString()
+            });
+            return false;
+          }
 
           // Don't persist fasting queries - they change in real-time and cause persistence loops
           if (queryKey.includes('fasting')) return false;
+
+          // CRITICAL FIX: Don't persist meals queries - they change frequently and refetch often
+          // This eliminates CancelledError warnings during meal scanning
+          if (queryKey.includes('meals-today')) return false;
+          if (queryKey.includes('meals-week')) return false;
+          if (queryKey.includes('meals-recent')) return false;
+          if (queryKey.includes('meals-history')) return false;
+          if (queryKey.includes('meals-month')) return false;
 
           // Persist activity insights (expensive AI calls)
           if (queryKey.includes('insights')) return true;
@@ -143,8 +173,9 @@ const initializeCachePersistence = async () => {
           // Persist trend analyses
           if (queryKey.includes('trend-analysis')) return true;
 
-          // Persist daily summaries
+          // Persist daily summaries (but not meals summaries which change frequently)
           if (queryKey.includes('daily-summary')) return true;
+          if (queryKey.includes('daily-ai-summary')) return false;
 
           // Don't persist real-time data like daily activities
           if (queryKey.includes('daily') && !queryKey.includes('summary')) return false;

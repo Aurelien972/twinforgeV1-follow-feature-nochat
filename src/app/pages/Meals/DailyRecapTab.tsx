@@ -80,6 +80,13 @@ const DailyRecapTab: React.FC<DailyRecapTabProps> = ({ onLoadingChange }) => {
     staleTime: 0, // CRITIQUE: Aucun cache pour garantir des données fraîches
     refetchOnWindowFocus: true, // Refetch quand la fenêtre reprend le focus
     refetchOnMount: true, // CRITIQUE: Toujours refetch au montage du composant
+    // CRITICAL: Retry configuration to handle cancellations gracefully
+    retry: (failureCount, error) => {
+      // Don't retry on cancellation errors
+      if (error?.name === 'CancelledError') return false;
+      // Retry other errors once
+      return failureCount < 1;
+    },
   });
 
   // OPTIMISATION CRITIQUE: Force refetch si on détecte une sauvegarde récente
@@ -91,10 +98,26 @@ const DailyRecapTab: React.FC<DailyRecapTabProps> = ({ onLoadingChange }) => {
         timestamp: new Date().toISOString()
       });
 
-      // Force refetch immédiat
+      // Force refetch immédiat avec cancelRefetch: false pour éviter les CancelledError
       queryClient.refetchQueries({
         queryKey: ['meals-today', userId],
-        type: 'active'
+        type: 'active',
+      }).catch(error => {
+        // Gracefully handle cancellation errors
+        if (error?.name === 'CancelledError') {
+          logger.debug('DAILY_RECAP_TAB', 'Refetch cancelled, ignoring', {
+            savedMealId,
+            userId,
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          logger.error('DAILY_RECAP_TAB', 'Refetch failed', {
+            error: error instanceof Error ? error.message : String(error),
+            savedMealId,
+            userId,
+            timestamp: new Date().toISOString()
+          });
+        }
       });
 
       // Nettoyer l'état de navigation après utilisation
@@ -201,18 +224,25 @@ const DailyRecapTab: React.FC<DailyRecapTabProps> = ({ onLoadingChange }) => {
       await mealsRepo.deleteMeal(mealId, userId);
 
       // Forcer le refetch immédiat des queries actives pour mise à jour UI
+      // Wrap in try-catch to gracefully handle cancellation errors
       await Promise.all([
         queryClient.refetchQueries({
           queryKey: ['meals-today', userId],
           type: 'active'
+        }).catch(error => {
+          if (error?.name !== 'CancelledError') throw error;
         }),
         queryClient.refetchQueries({
           queryKey: ['meals-week', userId],
           type: 'active'
+        }).catch(error => {
+          if (error?.name !== 'CancelledError') throw error;
         }),
         queryClient.refetchQueries({
           queryKey: ['meals-history', userId],
           type: 'active'
+        }).catch(error => {
+          if (error?.name !== 'CancelledError') throw error;
         }),
         queryClient.invalidateQueries({ queryKey: ['meals-month', userId] }),
         queryClient.invalidateQueries({ queryKey: ['daily-ai-summary', userId] })
