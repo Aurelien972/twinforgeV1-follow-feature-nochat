@@ -39,25 +39,6 @@ const AnalyzeCTA: React.FC<AnalyzeCTAProps> = ({
               color="rgba(255, 255, 255, 0.9)"
               variant="pure"
             />
-
-            {/* Anneaux de Pulsation Multiples - Désactivés en performance mode */}
-            {[0, 0.5, 1].map((delay, idx) => (
-              <div
-                key={idx}
-                className={`absolute inset-0 rounded-full border-2 pointer-events-none ${
-                  isPerformanceMode ? '' : 'fridge-scan-analysis-line'
-                }`}
-                style={{
-                  borderColor:
-                    idx === 0
-                      ? 'color-mix(in srgb, var(--fridge-scan-primary) 60%, transparent)'
-                      : idx === 1
-                      ? 'color-mix(in srgb, var(--fridge-scan-secondary) 50%, transparent)'
-                      : 'color-mix(in srgb, var(--fridge-scan-accent) 40%, transparent)',
-                  animationDelay: isPerformanceMode ? '0s' : `${delay}s`
-                }}
-              />
-            ))}
           </div>
         </div>
 
