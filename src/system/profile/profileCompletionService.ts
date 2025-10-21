@@ -80,7 +80,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'medium'
   },
   {
-    key: 'nutrition.mealPrepPreferences.cookingSkill',
+    key: 'mealPrepPreferences.cookingSkill',
     label: 'Niveau de cuisine',
     description: 'Pour adapter la complexité des recettes',
     profileTab: 'nutrition',
@@ -88,7 +88,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'medium'
   },
   {
-    key: 'nutrition.kitchenEquipment',
+    key: 'kitchenEquipment',
     label: 'Équipement de cuisine',
     description: 'Pour des recettes réalisables chez vous',
     profileTab: 'nutrition',
@@ -113,7 +113,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'low'
   },
   {
-    key: 'nutrition.foodPreferences.cuisines',
+    key: 'foodPreferences.cuisines',
     label: 'Cuisines préférées',
     description: 'Pour des recettes qui vous plaisent',
     profileTab: 'nutrition',
@@ -121,7 +121,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'low'
   },
   {
-    key: 'nutrition.macroTargets.kcal',
+    key: 'macroTargets.kcal',
     label: 'Objectif calories',
     description: 'Pour des recettes équilibrées',
     profileTab: 'nutrition',
@@ -293,8 +293,8 @@ export function getFeatureSpecificGuidance(
   // Feature-specific requirements
   const featureRequirements = {
     recipes: ['sex', 'weight_kg', 'nutrition.allergies', 'householdDetails.adults'],
-    shopping: ['householdDetails.adults', 'nutrition.allergies', 'nutrition.shoppingPreferences.frequencyPerWeek'],
-    planning: ['householdDetails.adults', 'nutrition.mealPrepPreferences.cookingSkill', 'nutrition.macroTargets.kcal']
+    shopping: ['householdDetails.adults', 'nutrition.allergies', 'shoppingPreferences.frequencyPerWeek'],
+    planning: ['householdDetails.adults', 'mealPrepPreferences.cookingSkill', 'macroTargets.kcal']
   };
 
   const requiredFields = featureRequirements[feature] || [];
@@ -362,7 +362,7 @@ export function calculateMealTrackingCompletion(profile: UserProfile | null): Pr
       priority: 'medium'
     },
     {
-      key: 'nutrition.macroTargets.kcal',
+      key: 'macroTargets.kcal',
       label: 'Objectif calories',
       description: 'Pour suivre vos apports quotidiens',
       profileTab: 'nutrition',
