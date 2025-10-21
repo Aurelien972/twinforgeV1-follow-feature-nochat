@@ -5,6 +5,22 @@
    ========================================= */
 
 /*
+  MODULAR ARCHITECTURE
+  ====================
+  This file imports specialized modules for better maintainability:
+
+  - performance-mode/_core.css: Base rules, animations control, transforms
+  - performance-mode/_glass.css: Glass card effects and backgrounds
+  - performance-mode/_buttons.css: Buttons, chips, and interactive elements
+  - performance-mode/_navigation.css: Header, sidebar, bottom bar
+  - performance-mode/_icons.css: Icon containers and spatial icons
+  - performance-mode/_modals.css: Modals, drawers, overlays
+  - performance-mode/_animations.css: Essential animations and disabled decoratives
+  - performance-mode/_shadows.css: Shadow simplification and text-shadow
+  - performance-mode/_special-components.css: Logos, tokens, floating buttons
+  - performance-mode/_page-specific.css: Body scan, meals, training pages
+  - performance-mode/_pseudo-elements.css: ::before and ::after optimizations
+
   BOX-SHADOW OPTIMIZATION STRATEGY
   =================================
 
@@ -54,6 +70,27 @@
   - Icons/spatial: 100+ → depth minimal
   - Modals/drawers: 80+ → strong elevation
 */
+
+/* Import all modules */
+@import './performance-mode/_core.css';
+@import './performance-mode/_glass.css';
+@import './performance-mode/_buttons.css';
+@import './performance-mode/_navigation.css';
+@import './performance-mode/_icons.css';
+@import './performance-mode/_modals.css';
+@import './performance-mode/_animations.css';
+@import './performance-mode/_shadows.css';
+@import './performance-mode/_special-components.css';
+@import './performance-mode/_page-specific.css';
+@import './performance-mode/_pseudo-elements.css';
+
+/* =========================================
+   LEGACY CODE - To be removed after verification
+   ========================================= */
+
+/* Note: The code below is kept temporarily for backward compatibility.
+   All rules have been moved to their respective modules above.
+   This section will be removed once all imports are verified working. */
 
 /* =========================================
    GLASS EFFECTS - Solid backgrounds Apple-like
