@@ -37,17 +37,24 @@ const ProfileNutritionTab: React.FC = () => {
   useEffect(() => {
     if (location.hash) {
       const hash = location.hash.replace('#', '');
-      const element = document.getElementById(hash);
-      if (element) {
-        // Wait for tab to be fully rendered
-        setTimeout(() => {
+
+      // Retry function to wait for element to be rendered
+      const scrollToElement = (attempts = 0) => {
+        const element = document.getElementById(hash);
+        if (element) {
           element.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
             inline: 'nearest'
           });
-        }, 300);
-      }
+        } else if (attempts < 10) {
+          // Retry after 100ms if element not found yet
+          setTimeout(() => scrollToElement(attempts + 1), 100);
+        }
+      };
+
+      // Start scrolling after tab animation (500ms delay)
+      setTimeout(() => scrollToElement(), 500);
     }
   }, [location.hash]);
 

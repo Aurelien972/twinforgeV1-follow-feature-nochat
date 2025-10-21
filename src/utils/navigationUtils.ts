@@ -42,21 +42,8 @@ export function navigateWithScroll(
   }
 
   // Navigate to the route with hash
+  // The target component should handle scrolling to the hash element
   navigate(fullRoute);
-
-  // Also ensure element is scrolled into view after navigation
-  if (hash) {
-    setTimeout(() => {
-      const element = document.getElementById(hash);
-      if (element) {
-        element.scrollIntoView({
-          behavior: smooth ? 'smooth' : 'auto',
-          block: 'start',
-          inline: 'nearest'
-        });
-      }
-    }, delay);
-  }
 }
 
 /**
