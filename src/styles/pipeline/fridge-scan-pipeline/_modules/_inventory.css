@@ -1,0 +1,95 @@
+/* =========================================
+   FRIDGE SCAN PIPELINE - Inventory Items
+   Composants d'inventaire et review
+   ========================================= */
+
+.fridge-inventory-item-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.fridge-inventory-category-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  transform: translateZ(0);
+}
+
+.fridge-inventory-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fridge-inventory-name {
+  color: white;
+  font-weight: 600;
+  font-size: 1.125rem;
+  margin-bottom: 0.25rem;
+}
+
+.fridge-inventory-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.fridge-inventory-quantity {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.fridge-inventory-category-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.fridge-inventory-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fridge-inventory-btn {
+  padding: 0.625rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: all var(--fridge-anim-fast) ease;
+  transform: translateZ(0);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fridge-inventory-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05) translateZ(0);
+}
+
+.fridge-inventory-input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: white;
+  font-size: 1rem;
+  width: 100%;
+  outline: none;
+  transition: border-color var(--fridge-anim-fast) ease;
+}
+
+.fridge-inventory-input:focus {
+  border-color: rgba(236, 72, 153, 0.5);
+}

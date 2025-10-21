@@ -1,0 +1,199 @@
+/* =========================================
+   FRIDGE SCAN PIPELINE - Responsive
+   Media queries optimisées par device
+   ========================================= */
+
+/* Mobile petit (320px-375px) - Simplifications maximales */
+@media (max-width: 375px) {
+  :root {
+    --fridge-grid-gap: 0.5rem;
+    --fridge-anim-fast: 150ms;
+    --fridge-anim-medium: 250ms;
+  }
+
+  .glass-fridge-main-cta,
+  .glass-fridge-photo-grid,
+  .glass-fridge-complement-card {
+    padding: 1rem;
+  }
+
+  .glass-fridge-analysis-card {
+    padding: 1.5rem;
+    min-height: 350px;
+  }
+
+  .fridge-capture-icon-wrapper {
+    width: 96px;
+    height: 96px;
+  }
+
+  .fridge-capture-title {
+    font-size: 1.5rem;
+  }
+
+  .fridge-photos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fridge-inventory-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile standard (376px-768px) - iPhone 11-14 - FOCUS PRINCIPAL */
+@media (max-width: 768px) {
+  :root {
+    --fridge-glass-blur-mobile: 8px;
+  }
+
+  .glass-fridge-main-cta,
+  .glass-fridge-photo-grid,
+  .glass-fridge-analysis-card,
+  .glass-fridge-progress-header,
+  .glass-fridge-inventory-item,
+  .glass-fridge-complement-card {
+    backdrop-filter: blur(var(--fridge-glass-blur-mobile)) saturate(var(--fridge-glass-saturate));
+    -webkit-backdrop-filter: blur(var(--fridge-glass-blur-mobile)) saturate(var(--fridge-glass-saturate));
+  }
+
+  .fridge-progress-header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .fridge-progress-header-left {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .fridge-progress-header-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .fridge-progress-header-title {
+    font-size: 1.125rem;
+  }
+
+  .fridge-progress-header-subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .fridge-progress-percentage {
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    min-width: auto;
+    padding: 1rem;
+  }
+
+  .fridge-progress-percentage-value {
+    font-size: 1.5rem;
+  }
+
+  .fridge-progress-percentage-label {
+    font-size: 0.6875rem;
+  }
+
+  .fridge-analysis-background-grid {
+    animation: none !important;
+    opacity: 0.2 !important;
+  }
+
+  .fridge-scan-line {
+    animation-duration: 6s !important;
+  }
+
+  .fridge-data-particle {
+    animation-duration: 8s !important;
+  }
+
+  .fridge-breathing {
+    animation-duration: 6s !important;
+  }
+
+  .fridge-analysis-icon-container {
+    width: 96px;
+    height: 96px;
+  }
+
+  .fridge-photos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--fridge-grid-gap-mobile);
+  }
+
+  .fridge-inventory-grid {
+    grid-template-columns: 1fr;
+    gap: var(--fridge-grid-gap-mobile);
+  }
+
+  .fridge-photo-delete-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .glass-fridge-action-button {
+    min-height: 48px;
+    padding: 0.875rem 1.5rem;
+  }
+
+  .fridge-inventory-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .fridge-review-search,
+  .fridge-inventory-input {
+    font-size: 16px !important;
+  }
+}
+
+/* Tablet (769px-1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .glass-fridge-main-cta,
+  .glass-fridge-photo-grid,
+  .glass-fridge-analysis-card,
+  .glass-fridge-progress-header,
+  .glass-fridge-inventory-item,
+  .glass-fridge-complement-card {
+    backdrop-filter: blur(var(--fridge-glass-blur-tablet)) saturate(var(--fridge-glass-saturate));
+    -webkit-backdrop-filter: blur(var(--fridge-glass-blur-tablet)) saturate(var(--fridge-glass-saturate));
+  }
+
+  .fridge-photos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .fridge-inventory-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop (1025px+) */
+@media (min-width: 1025px) {
+  .fridge-photos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .fridge-inventory-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Landscape mobile */
+@media (orientation: landscape) and (max-height: 600px) {
+  .glass-fridge-analysis-card {
+    min-height: 300px;
+  }
+
+  .fridge-analysis-icon-container {
+    width: 80px;
+    height: 80px;
+  }
+
+  .fridge-capture-icon-wrapper {
+    width: 80px;
+    height: 80px;
+  }
+}

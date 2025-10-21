@@ -1,0 +1,42 @@
+/* =========================================
+   FRIDGE SCAN PIPELINE - Variables
+   Couleurs, espacements et valeurs de configuration
+   ========================================= */
+
+:root {
+  /* Couleurs Fridge Pipeline */
+  --fridge-primary: #EC4899;
+  --fridge-secondary: #F472B6;
+  --fridge-cyan-accent: #18E3FF;
+  --fridge-indigo: #3D13B3;
+
+  /* Glass optimisé par device */
+  --fridge-glass-blur-mobile: 8px;
+  --fridge-glass-blur-tablet: 12px;
+  --fridge-glass-blur-desktop: 16px;
+  --fridge-glass-saturate: 140%;
+
+  /* Catégories couleurs simplifiées */
+  --category-legumes: #22C55E;
+  --category-fruits: #F59E0B;
+  --category-viandes: #EF4444;
+  --category-poissons: #06B6D4;
+  --category-laitiers: #8B5CF6;
+  --category-cereales: #D97706;
+  --category-epices: #EC4899;
+  --category-autre: #6B7280;
+
+  /* Animations simplifiées */
+  --fridge-anim-fast: 200ms;
+  --fridge-anim-medium: 300ms;
+  --fridge-anim-slow: 400ms;
+
+  /* Shadows optimisées (1 layer seulement) */
+  --fridge-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --fridge-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --fridge-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.3);
+
+  /* Grid spacing */
+  --fridge-grid-gap: 1rem;
+  --fridge-grid-gap-mobile: 0.75rem;
+}

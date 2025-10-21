@@ -1,0 +1,134 @@
+/* =========================================
+   FRIDGE SCAN PIPELINE - Progress Header
+   Header de progression avec étapes
+   ========================================= */
+
+.fridge-progress-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.fridge-progress-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.fridge-progress-header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(236, 72, 153, 0.3) 0%, transparent 70%),
+    linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(244, 114, 182, 0.15));
+  border: 3px solid rgba(236, 72, 153, 0.5);
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+  backdrop-filter: blur(12px);
+  animation: fridge-breathing 3s ease-in-out infinite;
+  transform: translateZ(0);
+}
+
+.fridge-progress-header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.fridge-progress-header-subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fridge-progress-percentage {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.25) 0%, transparent 70%),
+    rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(147, 51, 234, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 0 20px rgba(147, 51, 234, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateZ(0);
+  min-width: 120px;
+}
+
+.fridge-progress-percentage-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 0 12px rgba(147, 51, 234, 0.6);
+  line-height: 1;
+}
+
+.fridge-progress-percentage-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.25rem;
+  white-space: nowrap;
+}
+
+.fridge-progress-bar-main {
+  width: 100%;
+  background: rgba(107, 114, 128, 0.5);
+  border-radius: 999px;
+  height: 8px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.fridge-progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9333EA, #EC4899);
+  transition: width 500ms ease;
+  transform: translateZ(0);
+}
+
+.fridge-progress-dots {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fridge-progress-dots-left {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fridge-progress-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #4B5563;
+  transition: background var(--fridge-anim-fast) ease, transform var(--fridge-anim-fast) ease;
+  transform: translateZ(0);
+}
+
+.fridge-progress-dot.active {
+  background: linear-gradient(135deg, #9333EA, #EC4899);
+  transform: scale(1.2) translateZ(0);
+}
+
+.fridge-progress-dots-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
