@@ -6,8 +6,15 @@
   Modèle: gpt-5-mini (optimisé pour le raisonnement et l'analyse)
 */
 
-import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+
+// CORS Headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey'
+};
+
 // Table MET pour différentes activités (valeurs de référence)
 const MET_VALUES = {
   // Cardio
@@ -112,35 +119,44 @@ const MET_VALUES = {
     very_high: 6.0
   }
 };
-function calculateCalories(metValue, weightKg, durationMin) {
+
+function calculateCalories(metValue: number, weightKg: number, durationMin: number): number {
   // Formule MET: Calories = METs × Poids (kg) × Durée (heures)
   const durationHours = durationMin / 60;
   const calories = metValue * weightKg * durationHours;
   return Math.round(calories);
 }
-function getMetValue(activityType, intensity) {
+
+function getMetValue(activityType: string, intensity: string): number {
   const normalizedType = activityType.toLowerCase().replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a').replace(/[ç]/g, 'c');
+  
   // Recherche de correspondance dans la table MET
-  for (const [key, values] of Object.entries(MET_VALUES)){
+  for (const [key, values] of Object.entries(MET_VALUES)) {
     if (normalizedType.includes(key.replace('_', ' ')) || normalizedType.includes(key.replace('_', ''))) {
-      return values[intensity] || values.medium;
+      return values[intensity as keyof typeof values] || values.medium;
     }
   }
+  
   // Valeur par défaut
-  return MET_VALUES.activite_generale[intensity] || 4.0;
+  return MET_VALUES.activite_generale[intensity as keyof typeof MET_VALUES.activite_generale] || 4.0;
 }
-function calculateAge(birthdate) {
+
+function calculateAge(birthdate?: string): number {
   if (!birthdate) return 30; // Âge par défaut
+  
   const birth = new Date(birthdate);
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || monthDiff === 0 && today.getDate() < birth.getDate()) {
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
+  
   return Math.max(16, Math.min(100, age)); // Limites raisonnables
 }
-Deno.serve(async (req)=>{
+
+Deno.serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -148,9 +164,11 @@ Deno.serve(async (req)=>{
       headers: corsHeaders
     });
   }
+
   try {
     const { cleanText, userId, userProfile, clientTraceId } = await req.json();
     const startTime = Date.now();
+
     console.log('🔥 [ACTIVITY_ANALYZER] Starting analysis', {
       userId,
       clientTraceId,
@@ -162,12 +180,15 @@ Deno.serve(async (req)=>{
       },
       timestamp: new Date().toISOString()
     });
+
     // Validation des données d'entrée
     if (!cleanText || !userId || !userProfile?.weight_kg) {
       throw new Error('Clean text, user ID, and user weight are required');
     }
+
     // Calcul de l'âge pour personnaliser l'analyse
     const userAge = calculateAge(userProfile.birthdate);
+
     // Prompt optimisé pour gpt-5-mini
     const analysisPrompt = `Tu es un expert en analyse d'activités physiques pour la Forge Énergétique TwinForge.
 
@@ -207,6 +228,7 @@ RÉPONSE REQUISE (JSON uniquement):
     "insight_personnalisé_basé_sur_le_profil"
   ]
 }`;
+
     // Appel à gpt-5-mini pour l'analyse
     let analysisResponse;
     try {
@@ -255,12 +277,15 @@ RÉPONSE REQUISE (JSON uniquement):
       });
       throw new Error(`Activity analysis failed: ${analysisResponse.statusText} - ${errorBody}`);
     }
+
     const analysisData = await analysisResponse.json();
     const analysisResult = JSON.parse(analysisData.choices[0]?.message?.content || '{}');
+
     // Traitement des résultats et calcul des calories
-    const activities = (analysisResult.activities || []).map((activity)=>{
+    const activities = (analysisResult.activities || []).map((activity: any) => {
       const metValue = getMetValue(activity.type, activity.intensity);
       const calories = calculateCalories(metValue, userProfile.weight_kg, activity.duration_min);
+
       return {
         type: activity.type,
         duration_min: activity.duration_min,
@@ -270,19 +295,24 @@ RÉPONSE REQUISE (JSON uniquement):
         notes: activity.notes || null
       };
     });
-    const totalCalories = activities.reduce((sum, activity)=>sum + activity.calories_est, 0);
-    const totalDuration = activities.reduce((sum, activity)=>sum + activity.duration_min, 0);
+
+    const totalCalories = activities.reduce((sum: number, activity: any) => sum + activity.calories_est, 0);
+    const totalDuration = activities.reduce((sum: number, activity: any) => sum + activity.duration_min, 0);
+
     // Génération d'insights personnalisés pour la Forge Énergétique
     const forgeInsights = [
       `Votre Forge Énergétique a traité ${activities.length} activité${activities.length > 1 ? 's' : ''}`,
       `Énergie forgée: ${totalCalories} calories en ${totalDuration} minutes`,
-      ...analysisResult.insights || []
+      ...(analysisResult.insights || [])
     ];
+
     const processingTime = Date.now() - startTime;
+
     // Estimation du coût pour gpt-5-mini
     const estimatedInputTokens = Math.ceil(analysisPrompt.length / 4);
     const estimatedOutputTokens = Math.ceil(JSON.stringify(analysisResult).length / 4);
-    const costUsd = estimatedInputTokens / 1000000 * 0.25 + estimatedOutputTokens / 1000000 * 2.0;
+    const costUsd = (estimatedInputTokens / 1000000 * 0.25) + (estimatedOutputTokens / 1000000 * 2.0);
+
     console.log('✅ [ACTIVITY_ANALYZER] Analysis completed', {
       userId,
       clientTraceId,
@@ -293,9 +323,14 @@ RÉPONSE REQUISE (JSON uniquement):
       costUsd: costUsd.toFixed(6),
       timestamp: new Date().toISOString()
     });
+
     // Store cost tracking in database
     try {
-      const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
       await supabase.from('ai_analysis_jobs').insert({
         user_id: userId,
         analysis_type: 'activity_analysis',
@@ -322,6 +357,7 @@ RÉPONSE REQUISE (JSON uniquement):
           model: 'gpt-5-mini'
         }
       });
+
       console.log('💰 [ACTIVITY_ANALYZER] Cost tracking saved to database', {
         userId,
         costUsd: costUsd.toFixed(6),
@@ -335,8 +371,9 @@ RÉPONSE REQUISE (JSON uniquement):
         costUsd: costUsd.toFixed(6),
         timestamp: new Date().toISOString()
       });
-    // Don't fail the main function if cost tracking fails
+      // Don't fail the main function if cost tracking fails
     }
+
     const response = {
       activities,
       totalCalories,
@@ -346,6 +383,7 @@ RÉPONSE REQUISE (JSON uniquement):
       confidence: 0.85,
       forgeInsights
     };
+
     return new Response(JSON.stringify(response), {
       status: 200,
       headers: {
@@ -355,16 +393,19 @@ RÉPONSE REQUISE (JSON uniquement):
     });
   } catch (error) {
     console.error('❌ [ACTIVITY_ANALYZER] Error:', error);
-    return new Response(JSON.stringify({
-      error: 'Activity analysis failed',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders
+    return new Response(
+      JSON.stringify({
+        error: 'Activity analysis failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
       }
-    });
+    );
   }
 });
