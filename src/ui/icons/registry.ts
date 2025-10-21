@@ -178,7 +178,6 @@ export const ICONS = {
   GripHorizontal: L.GripHorizontal,
   TrendingDown: L.TrendingDown,
   Watch: L.Watch,
-  WatchOff: L.WatchOff,
   Bike: L.Bike,
   Link: L.Link,
   Link2: L.Link2,
