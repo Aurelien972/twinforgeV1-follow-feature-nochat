@@ -13,8 +13,9 @@
  */
 
 import logger from '../../lib/utils/logger';
-import type { ChatMode } from '../store/globalChatStore';
-import type { VoiceType } from '../store/voiceCoachStore';
+import type { ChatMode } from '../store/unifiedCoachStore';
+
+type VoiceType = 'alloy' | 'echo' | 'shimmer' | 'fable' | 'onyx' | 'nova';
 
 interface RealtimeConfig {
   model: string;

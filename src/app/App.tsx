@@ -20,6 +20,8 @@ import Sidebar from './shell/Sidebar';
 import NewMobileBottomBar from './shell/NewMobileBottomBar';
 import GlobalExitModal from '../ui/components/GlobalExitModal';
 import CentralActionsMenu from './shell/CentralActionsMenu';
+import FloatingChatButton from '../ui/components/chat/FloatingChatButton';
+import GlobalChatDrawer from '../ui/components/chat/GlobalChatDrawer';
 
 function AppContent() {
   const { isInstallable, isInstalled } = usePWAInstall();
@@ -257,6 +259,12 @@ function AppContent() {
         isOpen={isCentralMenuOpen}
         onClose={close}
       />
+
+      {/* Floating Chat Button - Accessible from anywhere */}
+      <FloatingChatButton />
+
+      {/* Global Chat Drawer - Unified Coach Interface with Realtime */}
+      <GlobalChatDrawer />
     </div>
   );
 }
