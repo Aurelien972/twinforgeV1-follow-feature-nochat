@@ -1,7 +1,6 @@
 import React from 'react';
 import ForgeHammerIcon from '../../icons/ForgeHammerIcon';
 import { usePerformanceMode } from '../../../system/context/PerformanceModeContext';
-import { usePerformanceMode } from '../../../system/context/PerformanceModeContext';
 
 interface TwinForgeLogoProps {
   variant?: 'desktop' | 'mobile';
