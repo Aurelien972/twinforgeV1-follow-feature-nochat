@@ -128,16 +128,10 @@ const RecipesTab: React.FC = () => {
 
   // Handle recipe view
   const handleViewRecipe = (recipe: Recipe) => {
-    console.log('[RecipesTab] handleViewRecipe called');
-    console.log('[RecipesTab] Recipe received:', recipe);
-    console.log('[RecipesTab] Recipe ID:', recipe?.id);
-    console.log('[RecipesTab] Recipe Title:', recipe?.title);
-
     click();
 
     // Validate recipe has required data before opening modal
     if (!recipe) {
-      console.error('[RecipesTab] Recipe is null or undefined');
       showToast({
         type: 'error',
         title: 'Erreur',
@@ -149,7 +143,6 @@ const RecipesTab: React.FC = () => {
 
     // Check if recipe has at least basic info (relaxed validation)
     if (!recipe.title) {
-      console.error('[RecipesTab] Recipe has no title');
       showToast({
         type: 'error',
         title: 'Recette incomplète',
@@ -159,25 +152,15 @@ const RecipesTab: React.FC = () => {
       return;
     }
 
-    console.log('[RecipesTab] Validation passed, setting state...');
-    console.log('[RecipesTab] Current showRecipeDetailModal:', showRecipeDetailModal);
-    console.log('[RecipesTab] Current selectedRecipeForDetail:', selectedRecipeForDetail);
-
     // Set selected recipe and open modal
     setSelectedRecipeForDetail(recipe);
     setShowRecipeDetailModal(true);
-
-    console.log('[RecipesTab] State updated - modal should open');
-    console.log('[RecipesTab] New showRecipeDetailModal: true');
-    console.log('[RecipesTab] New selectedRecipeForDetail:', recipe.id);
   };
 
   // Handle modal close
   const handleCloseModal = () => {
-    console.log('[RecipesTab] handleCloseModal called');
     setShowRecipeDetailModal(false);
     setSelectedRecipeForDetail(null);
-    console.log('[RecipesTab] Modal closed');
   };
 
   // Handle start fridge scan
@@ -189,15 +172,6 @@ const RecipesTab: React.FC = () => {
   const isGenerating = loadingState === 'generating' || loadingState === 'streaming';
   const hasRecipes = allRecipes.length > 0;
   const isLoading = loadingPersistedRecipes || isGenerating;
-
-  // Debug log for modal state
-  React.useEffect(() => {
-    console.log('[RecipesTab] Modal state changed:');
-    console.log('  - showRecipeDetailModal:', showRecipeDetailModal);
-    console.log('  - selectedRecipeForDetail:', selectedRecipeForDetail);
-    console.log('  - selectedRecipeForDetail ID:', selectedRecipeForDetail?.id);
-    console.log('  - selectedRecipeForDetail title:', selectedRecipeForDetail?.title);
-  }, [showRecipeDetailModal, selectedRecipeForDetail]);
 
   return (
     <motion.div
@@ -394,11 +368,13 @@ const RecipesTab: React.FC = () => {
       )}
 
       {/* Recipe Detail Modal */}
-      <RecipeDetailModal
-        isOpen={showRecipeDetailModal}
-        onClose={handleCloseModal}
-        recipe={selectedRecipeForDetail}
-      />
+      {selectedRecipeForDetail && (
+        <RecipeDetailModal
+          isOpen={showRecipeDetailModal}
+          onClose={handleCloseModal}
+          recipe={selectedRecipeForDetail}
+        />
+      )}
     </motion.div>
   );
 };

@@ -92,17 +92,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   };
 
   const handleCardClick = () => {
-    console.log('[RecipeCard] Click détecté');
-    console.log('[RecipeCard] Recipe data:', recipe);
-    console.log('[RecipeCard] onView exists:', !!onView);
-
     if (onView) {
-      console.log('[RecipeCard] Calling onView with recipe:', recipe.id, recipe.title);
       click();
       onView(recipe);
-      console.log('[RecipeCard] onView called successfully');
-    } else {
-      console.error('[RecipeCard] onView is not defined!');
     }
   };
 
@@ -161,13 +153,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           isNewlyGenerated ? { background: 'rgba(234, 179, 8, 0.1)' } :
           isSaved ? { background: 'rgba(34, 197, 94, 0.05)' } : {}
         )}
-        onClick={(e) => {
-          console.log('[RecipeCard] GlassCard onClick event:', e);
-          console.log('[RecipeCard] Event type:', e.type);
-          console.log('[RecipeCard] Event target:', e.target);
-          console.log('[RecipeCard] Event currentTarget:', e.currentTarget);
-          handleCardClick();
-        }}
+        onClick={handleCardClick}
       >
         {/* Badge Nouveau */}
         {isNewlyGenerated && (
