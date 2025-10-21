@@ -12,6 +12,9 @@ type InputMode = 'wearable' | 'audio' | 'text';
 interface InputModeSelectorProps {
   selectedInputMode: InputMode | null;
   onInputModeChange: (mode: InputMode) => void;
+  hasConnectedWearable: boolean;
+  connectedDevicesCount: number;
+  loading?: boolean;
 }
 
 /**
@@ -20,10 +23,12 @@ interface InputModeSelectorProps {
  */
 const InputModeSelector: React.FC<InputModeSelectorProps> = ({
   selectedInputMode,
-  onInputModeChange
+  onInputModeChange,
+  hasConnectedWearable,
+  connectedDevicesCount,
+  loading = false
 }) => {
   const { click } = useFeedback();
-  const { hasConnectedWearable, connectedDevicesCount, loading } = useHasConnectedWearable();
 
   const handleModeChange = (mode: InputMode) => {
     click();
@@ -57,14 +62,16 @@ const InputModeSelector: React.FC<InputModeSelectorProps> = ({
   return (
     <>
       <GlassCard className="p-6 capture-stage-card">
-      <div className="capture-mode-selector">
-        <WearableInputOption
-          hasConnectedWearable={hasConnectedWearable}
-          connectedDevicesCount={connectedDevicesCount}
-          selectedInputMode={selectedInputMode}
-          onModeChange={handleModeChange}
-          loading={loading}
-        />
+      <div className="flex items-start gap-3 mb-4">
+        <div className="flex-1">
+          <div className="capture-mode-selector">
+            <WearableInputOption
+              hasConnectedWearable={hasConnectedWearable}
+              connectedDevicesCount={connectedDevicesCount}
+              selectedInputMode={selectedInputMode}
+              onModeChange={handleModeChange}
+              loading={loading}
+            />
 
         <button
           onClick={() => handleModeChange('audio')}
@@ -129,6 +136,24 @@ const InputModeSelector: React.FC<InputModeSelectorProps> = ({
             </div>
           </div>
         </button>
+          </div>
+        </div>
+
+        {!loading && !hasConnectedWearable && (
+          <div
+            className="px-3 py-2 rounded-xl text-xs font-medium shrink-0 self-center"
+            style={{
+              background: 'color-mix(in srgb, #64748B 10%, transparent)',
+              border: '1px solid color-mix(in srgb, #64748B 20%, transparent)',
+              color: '#94A3B8'
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <SpatialIcon Icon={ICONS.WifiOff} size={12} style={{ color: '#94A3B8' }} />
+              <span>Aucun objet connecté</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="p-4 rounded-xl" style={{

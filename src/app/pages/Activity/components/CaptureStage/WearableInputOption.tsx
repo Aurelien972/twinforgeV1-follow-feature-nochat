@@ -29,7 +29,7 @@ const WearableInputOption: React.FC<WearableInputOptionProps> = ({
     click();
 
     if (!hasConnectedWearable) {
-      navigate('/settings');
+      navigate('/settings?tab=appareils');
     } else {
       onModeChange('wearable');
     }

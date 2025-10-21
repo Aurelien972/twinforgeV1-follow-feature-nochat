@@ -293,7 +293,24 @@ const ReviewStage: React.FC<ReviewStageProps> = ({ analysisResult, onComplete, o
         queryKey: ['activities', 'recent', session.user.id]
       });
       await queryClient.invalidateQueries({
+        queryKey: ['activities', 'has-history', session.user.id]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['activities', 'history', session.user.id]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['activities', 'insights', session.user.id]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['activities', 'progression', session.user.id]
+      });
+      await queryClient.invalidateQueries({
         queryKey: ['training-goals', session.user.id]
+      });
+
+      logger.info('ACTIVITY_REVIEW', 'All activity caches invalidated', {
+        userId: session.user.id,
+        timestamp: new Date().toISOString()
       });
       success();
       showToast({

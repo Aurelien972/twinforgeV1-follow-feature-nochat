@@ -127,6 +127,7 @@
   pointer-events: none;
   z-index: 0;
   contain: layout style;
+  opacity: 0.5;
 }
 
 .analysis-particle {
@@ -138,10 +139,11 @@
   opacity: 0;
   transform: translateZ(0);
   will-change: transform, opacity;
+  mix-blend-mode: screen;
 }
 
 .activity-perf-high .analysis-particle {
-  opacity: 0.6;
+  opacity: 0.4;
   animation: particleFloat 8s ease-in-out infinite;
 }
 

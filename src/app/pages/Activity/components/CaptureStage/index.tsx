@@ -6,7 +6,6 @@ import TextInputInterface from './TextInputInterface';
 import WearableInputInterface from './WearableInputInterface';
 import { useHasConnectedWearable } from '../../../../../hooks/useHasConnectedWearable';
 import BenefitsInfoCard, { Benefit } from '../../../../../ui/cards/BenefitsInfoCard';
-import WearableConnectionBadge from '../shared/WearableConnectionBadge';
 import React from 'react';
 
 type InputMode = 'wearable' | 'audio' | 'text';
@@ -83,13 +82,13 @@ const CaptureStage: React.FC<CaptureStageProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <InputModeSelector
-          selectedInputMode={selectedInputMode}
-          onInputModeChange={onInputModeChange}
-        />
-        <WearableConnectionBadge className="ml-auto" />
-      </div>
+      <InputModeSelector
+        selectedInputMode={selectedInputMode}
+        onInputModeChange={onInputModeChange}
+        hasConnectedWearable={hasConnectedWearable}
+        connectedDevicesCount={connectedDevicesCount}
+        loading={loading}
+      />
 
       <AnimatePresence mode="wait">
         {selectedInputMode === 'wearable' && (
