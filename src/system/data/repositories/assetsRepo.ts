@@ -34,13 +34,18 @@ export async function getModelUrlForGender(gender: 'male' | 'female'): Promise<s
   const signedUrl = await getSignedUrl(PRIVATE_BUCKETS.MODELS_3D, modelPath);
 
   if (!signedUrl) {
-    const errorMessage = `3D model file not found in storage: ${modelPath}. Please ensure the model files are uploaded to the '${PRIVATE_BUCKETS.MODELS_3D}' bucket in Supabase Storage.`;
+    const errorMessage = `Failed to generate signed URL for 3D model: ${modelPath}. This may be due to:\n1. File not found in storage\n2. RLS policies blocking access\n3. User not authenticated\n4. Network connectivity issues`;
     logger.error('ASSETS_REPO', 'Failed to get signed URL for model', {
       gender,
       modelPath,
       bucket: PRIVATE_BUCKETS.MODELS_3D,
       errorMessage,
-      recommendation: 'Upload model files to Supabase Storage',
+      troubleshooting: {
+        step1: 'Verify user is authenticated',
+        step2: 'Check RLS policies on storage.objects table',
+        step3: 'Confirm file exists in bucket',
+        step4: 'Review Supabase logs for detailed error'
+      },
       philosophy: 'signed_url_failure'
     });
     throw new Error(errorMessage);

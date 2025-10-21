@@ -140,7 +140,10 @@ export async function getSignedUrl(
       logger.error('SIGNED_URL_SERVICE', 'Failed to generate signed URL', {
         bucket,
         path,
-        error: error.message
+        error: error.message,
+        errorDetails: error,
+        statusCode: (error as any).statusCode,
+        hint: 'Check if the file exists and RLS policies allow access'
       });
       return null;
     }
