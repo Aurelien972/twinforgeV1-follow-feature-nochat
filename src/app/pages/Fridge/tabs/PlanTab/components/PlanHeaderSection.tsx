@@ -74,7 +74,16 @@ const PlanHeaderSection: React.FC<PlanHeaderSectionProps> = ({
       <GlassCard className="fridge-glass-plans p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
           <div className="flex items-center gap-4 flex-1">
-            <div className={`fridge-icon-plans ${isPerformanceMode ? '' : 'fridge-ai-focus'} w-16 h-16`}>
+            <div
+              className={`fridge-icon-plans ${isPerformanceMode ? '' : 'fridge-ai-focus'} w-16 h-16`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                border: '2px solid rgba(139, 92, 246, 0.5)'
+              }}
+            >
               <SpatialIcon Icon={ICONS.Calendar} size={32} color="rgba(255, 255, 255, 0.95)" variant="pure" />
             </div>
             <div className="flex-1">

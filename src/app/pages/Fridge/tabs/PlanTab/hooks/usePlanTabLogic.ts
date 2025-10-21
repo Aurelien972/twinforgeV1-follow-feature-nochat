@@ -291,8 +291,46 @@ export const usePlanTabLogic = () => {
       return;
     }
 
-    // Check if meal has at least basic info
-    if (!meal.title && !meal.ingredients && !meal.instructions) {
+    // Build a complete recipe object from meal data
+    let recipeToDisplay: any = null;
+
+    // Check if meal has detailedRecipe
+    if (meal.detailedRecipe) {
+      recipeToDisplay = {
+        ...meal.detailedRecipe,
+        id: meal.detailedRecipe.id || meal.recipeId || crypto.randomUUID(),
+        title: meal.detailedRecipe.title || meal.mealName || meal.title || 'Recette sans nom',
+        imageUrl: meal.imageUrl || meal.detailedRecipe.imageUrl
+      };
+    } else {
+      // Build recipe from basic meal data
+      recipeToDisplay = {
+        id: meal.recipeId || crypto.randomUUID(),
+        title: meal.mealName || meal.title || 'Recette sans nom',
+        description: meal.descriptionSummary || meal.description || '',
+        ingredients: (meal.mainIngredients || meal.ingredients || []).map((ing: any) => {
+          if (typeof ing === 'string') {
+            return { name: ing, quantity: '', unit: '' };
+          }
+          return ing;
+        }),
+        instructions: meal.instructions || [],
+        prepTimeMin: meal.prep_time_min || 0,
+        cookTimeMin: meal.cook_time_min || 0,
+        servings: meal.servings || 2,
+        nutritionalInfo: {
+          calories: meal.calories_est || 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          fiber: 0
+        },
+        imageUrl: meal.imageUrl
+      };
+    }
+
+    // Final validation
+    if (!recipeToDisplay.title && !recipeToDisplay.ingredients && !recipeToDisplay.instructions) {
       showToast({
         type: 'error',
         title: 'Recette incomplète',
@@ -302,7 +340,7 @@ export const usePlanTabLogic = () => {
       return;
     }
 
-    setSelectedRecipeForDetail(meal);
+    setSelectedRecipeForDetail(recipeToDisplay);
     setShowRecipeDetailModal(true);
   };
 

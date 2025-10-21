@@ -31,6 +31,7 @@ interface PlanContentSectionProps {
   handleGenerateMealPlan: () => void;
   isWeekAvailable: (week: number) => boolean;
   setCurrentWeek: (week: number) => void;
+  handleSavePlanAsIs?: () => Promise<void>;
 }
 
 /**

@@ -56,14 +56,17 @@ const PlanGenerationProgress: React.FC<PlanGenerationProgressProps> = ({
         <div className="space-y-6">
           {/* Icône de Génération */}
           <MotionDiv
-            className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${isPerformanceMode ? 'animate-pulse' : ''}`}
+            className={`w-20 h-20 mx-auto rounded-full ${isPerformanceMode ? 'animate-pulse' : ''}`}
             style={{
               background: `
                 radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 60%),
                 linear-gradient(135deg, color-mix(in srgb, #8B5CF6 35%, transparent), color-mix(in srgb, #8B5CF6 25%, transparent))
               `,
               border: '2px solid color-mix(in srgb, #8B5CF6 50%, transparent)',
-              boxShadow: '0 0 30px color-mix(in srgb, #8B5CF6 40%, transparent)'
+              boxShadow: '0 0 30px color-mix(in srgb, #8B5CF6 40%, transparent)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
             {...(!isPerformanceMode && {
               animate: {

@@ -81,9 +81,10 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-4xl max-h-[90vh] overflow-auto pointer-events-auto"
+              className="w-full max-w-4xl pointer-events-auto"
+              style={{ maxHeight: '90vh', overflowY: 'auto' }}
             >
-              <GlassCard className="p-6 relative" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+              <GlassCard className="p-6 relative">
                 <button
                   onClick={onClose}
                   className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
@@ -111,21 +112,21 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
                       <SpatialIcon Icon={ICONS.Clock} size={16} className="text-cyan-400" />
                       <span className="text-xs text-white/60">Préparation</span>
                     </div>
-                    <p className="text-white font-semibold">{recipe.prepTimeMin} min</p>
+                    <p className="text-white font-semibold">{recipe.prepTimeMin || 0} min</p>
                   </div>
                   <div className="glass-card p-4 rounded-xl">
                     <div className="flex items-center gap-2 mb-1">
                       <SpatialIcon Icon={ICONS.Flame} size={16} className="text-orange-400" />
                       <span className="text-xs text-white/60">Cuisson</span>
                     </div>
-                    <p className="text-white font-semibold">{recipe.cookTimeMin} min</p>
+                    <p className="text-white font-semibold">{recipe.cookTimeMin || 0} min</p>
                   </div>
                   <div className="glass-card p-4 rounded-xl">
                     <div className="flex items-center gap-2 mb-1">
                       <SpatialIcon Icon={ICONS.Users} size={16} className="text-pink-400" />
                       <span className="text-xs text-white/60">Portions</span>
                     </div>
-                    <p className="text-white font-semibold">{recipe.servings}</p>
+                    <p className="text-white font-semibold">{recipe.servings || 2}</p>
                   </div>
                 </div>
 

@@ -244,7 +244,7 @@ export const createRecipeGenerationActions = (
       logger.info('FRIDGE_SCAN_PIPELINE', 'Starting streaming recipe generation', {
         sessionId: state.currentSessionId,
         inventoryCount: inventoryToUse.length,
-        aiModel: 'gpt-4o-mini',
+        aiModel: 'gpt-5-mini',
         streamingEnabled: true,
         timestamp: new Date().toISOString()
       });
@@ -560,7 +560,7 @@ export const createRecipeGenerationActions = (
               processingTimeMs: parsedData.processing_time_ms,
               costUsd: parsedData.cost_usd,
               cacheHit: parsedData.cache_hit,
-              aiModel: 'gpt-4o-mini',
+              aiModel: 'gpt-5-mini',
               inputTokens: parsedData.input_tokens,
               outputTokens: parsedData.output_tokens,
               timestamp: new Date().toISOString()
@@ -667,7 +667,7 @@ export const createRecipeGenerationActions = (
         error: error instanceof Error ? error.message : 'Unknown error',
         sessionId: state.currentSessionId,
         costUsd: 0, // No cost on failure
-        aiModel: 'gpt-4o-mini',
+        aiModel: 'gpt-5-mini',
         timestamp: new Date().toISOString()
       });
       

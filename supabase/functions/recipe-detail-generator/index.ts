@@ -73,15 +73,15 @@ function generateCacheKey(request: RecipeDetailRequest): string {
   })
 }
 
-// Calculate cost for GPT-4o
+// Calculate cost for GPT-5-mini
 function calculateCost(inputTokens: number, outputTokens: number): number {
   const inputCostPer1M = 0.25 // $0.25 per 1M input tokens
-  const outputCostPer1M = 10.00 // $10.00 per 1M output tokens for gpt-4o
-  
+  const outputCostPer1M = 2.00 // $2.00 per 1M output tokens for gpt-5-mini
+
   return (inputTokens / 1000000 * inputCostPer1M) + (outputTokens / 1000000 * outputCostPer1M)
 }
 
-// Generate detailed recipe using GPT-4o
+// Generate detailed recipe using GPT-5-mini
 async function generateDetailedRecipe(request: RecipeDetailRequest): Promise<DetailedRecipe> {
   // Ensure meal title is not undefined
   const mealTitle = request.meal_title && request.meal_title !== 'undefined' 
@@ -165,7 +165,7 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: 'gpt-5-mini',
       messages: [
         {
           role: 'system',
@@ -177,12 +177,14 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
         }
       ],
       temperature: 0.8,
-      max_tokens: 2000,
+      max_completion_tokens: 2000,
+      reasoning_effort: 'low',
+      verbosity: 'low'
     }),
   })
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`)
+    throw new Error(`OpenAI API error (gpt-5-mini): ${response.status}`)
   }
 
   const data = await response.json()
@@ -219,8 +221,8 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
     
     return recipe
   } catch (error) {
-    console.error('Failed to parse GPT-4o response:', { content, error: error.message })
-    throw new Error('Invalid JSON response from GPT-4o')
+    console.error('Failed to parse GPT-5-mini response:', { content, error: error.message })
+    throw new Error('Invalid JSON response from GPT-5-mini')
   }
 }
 
@@ -254,14 +256,14 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         recipe: cachedJob.result_payload,
         cached: true,
-        model_used: 'gpt-4o'
+        model_used: 'gpt-5-mini'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
     // Generate detailed recipe with AI
-    console.log('Generating detailed recipe with GPT-4o for:', request.meal_title)
+    console.log('Generating detailed recipe with GPT-5-mini for:', request.meal_title)
     const recipe = await generateDetailedRecipe(request)
 
     // Calculate cost (mock usage for now, would need actual token count)
@@ -288,7 +290,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       recipe,
       cached: false,
-      model_used: 'gpt-4o',
+      model_used: 'gpt-5-mini',
       cost_usd: cost
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

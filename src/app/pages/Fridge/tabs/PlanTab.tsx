@@ -99,6 +99,8 @@ const PlanTab: React.FC = () => {
         selectedInventory={selectedInventory}
         handleGenerateAllRecipes={handleGenerateAllRecipes}
         handleRegenerateWeek={handleRegenerateWeek}
+        handleExportPlan={handleExportPlan}
+        clearPlan={clearPlan}
         handleViewRecipe={handleViewRecipe}
         generateDetailedRecipeForMeal={generateDetailedRecipeForMeal}
         setCurrentWeek={setCurrentWeek}
