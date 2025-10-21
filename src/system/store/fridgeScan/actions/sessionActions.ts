@@ -16,6 +16,17 @@ export const createSessionActions = (
       return;
     }
 
+    // Validate that the current step is a valid database stage
+    const validStages = ['photo', 'analyze', 'complement', 'validation', 'generating_recipes', 'recipes'];
+    if (!validStages.includes(state.currentStep)) {
+      logger.warn('FRIDGE_SCAN_PIPELINE', 'Invalid stage value detected, skipping save', {
+        currentStep: state.currentStep,
+        validStages,
+        sessionId: state.currentSessionId
+      });
+      return;
+    }
+
     try {
       const { useUserStore } = await import('../../userStore');
       const userId = useUserStore.getState().session?.user?.id;
@@ -46,6 +57,12 @@ export const createSessionActions = (
         updated_at: new Date().toISOString()
       };
 
+      logger.debug('FRIDGE_SCAN_PIPELINE', 'Attempting to save session', {
+        sessionId: state.currentSessionId,
+        stage: state.currentStep,
+        itemsCount: state.userEditedInventory.length
+      });
+
       const { error } = await supabase
         .from('fridge_scan_sessions')
         .upsert(sessionData, {
@@ -58,10 +75,22 @@ export const createSessionActions = (
           logger.debug('FRIDGE_SCAN_PIPELINE', 'fridge_scan_sessions table not found, skipping save');
           return;
         }
+
+        // Log detailed error information for constraint violations
+        if (error.code === '23514' || error.message?.includes('constraint')) {
+          logger.error('FRIDGE_SCAN_PIPELINE', 'Database constraint violation', {
+            error: error.message,
+            code: error.code,
+            currentStep: state.currentStep,
+            sessionId: state.currentSessionId,
+            validStages
+          });
+        }
+
         throw error;
       }
 
-      logger.debug('FRIDGE_SCAN_PIPELINE', 'Session saved to Supabase', {
+      logger.debug('FRIDGE_SCAN_PIPELINE', 'Session saved to Supabase successfully', {
         sessionId: state.currentSessionId,
         stage: state.currentStep,
         itemsCount: state.userEditedInventory.length
@@ -69,7 +98,8 @@ export const createSessionActions = (
     } catch (error) {
       logger.warn('FRIDGE_SCAN_PIPELINE', 'Failed to save session to Supabase', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        sessionId: state.currentSessionId
+        sessionId: state.currentSessionId,
+        currentStep: state.currentStep
       });
     }
   },

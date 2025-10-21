@@ -43,7 +43,6 @@ export interface MealPlanData {
   created_at: string;
 }
 
-export type FridgeScanStep = 'photo' | 'analyze' | 'validation';
 export type FridgeScanStep = 'photo' | 'analyze' | 'complement' | 'validation' | 'generating_recipes' | 'recipes';
 
 export interface FridgeScanStepData {
