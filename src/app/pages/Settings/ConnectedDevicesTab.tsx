@@ -15,7 +15,7 @@ import type { ConnectedDevice, Provider } from '../../../domain/connectedDevices
 import logger from '../../../lib/utils/logger';
 import WearableConnectionStatus from '../../../ui/components/wearable/WearableConnectionStatus';
 import { supabase } from '../../../system/supabase/client';
-import '../../../styles/components/connected-devices.css';
+import '../../../styles/components/profile/connected-devices.css';
 
 const ConnectedDevicesTab: React.FC = () => {
   const { user } = useUserStore();

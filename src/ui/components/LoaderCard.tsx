@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import GlassCard from '../cards/GlassCard';
 import SpatialIcon from '../icons/SpatialIcon';
 import { ICONS } from '../icons/registry';
-import '../../styles/components/loader-animations.css';
+import '../../styles/components/ui-elements/loader-animations.css';
 
 export type LoaderVariant = 'inventory' | 'recipes' | 'plan' | 'shopping' | 'training' | 'default';
 

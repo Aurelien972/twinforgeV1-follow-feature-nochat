@@ -8,8 +8,8 @@
 @import './styles/pipeline/forge-pipeline-steps-grid.css';
 @import './styles/pipeline/forge-immersive-analysis.css';
 
-@import './styles/components/loader-animations.css';
-@import './styles/components/endurance-map.css';
+@import './styles/components/ui-elements/loader-animations.css';
+@import './styles/components/effects/endurance-map.css';
 
 /* Performance Mode - iPhone 10 Optimization */
 @import './styles/optimizations/performance-mode.css';

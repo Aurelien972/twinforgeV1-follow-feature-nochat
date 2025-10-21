@@ -28,7 +28,7 @@ import TextChatInput from './TextChatInput';
 import VoiceReadyPrompt from './VoiceReadyPrompt';
 import { voiceCoachOrchestrator } from '../../../system/services/voiceCoachOrchestrator';
 import logger from '../../../lib/utils/logger';
-import '../../../styles/components/voice-coach-panel.css';
+import '../../../styles/components/chat/voice-coach-panel.css';
 
 const VoiceCoachPanel: React.FC = () => {
   // DEPRECATED WARNING

@@ -53,42 +53,61 @@
    PHASE 5: COMPOSANTS SPÉCIALISÉS
    ========================================= */
 @import './components/common/_buttons-chips.css';
-@import './components/inputs.css';
-@import './components/loading.css';
-@import './components/generic-drawer.css';
+/* UI Elements */
+@import './components/ui-elements/inputs.css';
+@import './components/ui-elements/loading.css';
+@import './components/ui-elements/generic-drawer.css';
 @import './components/tabs/_tabs.css';
-@import './components/profile-sections.css';
+@import './components/ui-elements/page-header-responsive.css';
+
+/* Navigation */
 @import './components/sidebar/sidebar-liquid-glass-v2.css';
-@import './components/mobile-drawer-liquid-glass.css';
-@import './components/new-mobile-bottom-bar.css';
-@import './components/central-actions-menu.css';
+@import './components/navigation/mobile-drawer-liquid-glass.css';
+@import './components/navigation/new-mobile-bottom-bar.css';
+@import './components/navigation/central-actions-menu.css';
 @import './components/header/header-liquid-glass-v2.css';
-@import './components/celebration-animations.css';
-@import './components/coach-chat.css';
-@import './components/floating-chat-button.css';
-@import './components/floating-chat-button-step2.css';
-@import './components/global-chat-drawer.css';
-@import './components/global-chat-drawer-desktop.css';
-@import './components/chat-messages.css';
-@import './components/chat-input-typing.css';
-@import './components/chat-notification-bubble.css';
-@import './components/floating-voice-coach-button.css';
-@import './components/voice-coach-panel.css';
-@import './components/training-coach-notification.css';
-@import './components/training-loader.css';
-@import './components/training-prescription-card-mobile.css';
-@import './components/active-exercise-card.css';
-@import './components/functional-training.css';
-@import './components/rep-display-optimizations.css';
-@import './components/training-hero-animations.css';
-@import './components/connected-devices.css';
-@import './components/training-illustration.css';
-@import './components/floating-generate-button.css';
-@import './components/face-shape-controls.css';
-@import './components/fasting-cta-3d.css';
-@import './components/meal-scan-results.css';
-@import './components/page-header-responsive.css';
-@import './components/settings-components.css';
+
+/* Effects */
+@import './components/effects/celebration-animations.css';
+
+/* Chat */
+@import './components/chat/coach-chat.css';
+@import './components/chat/global-chat-drawer.css';
+@import './components/chat/global-chat-drawer-desktop.css';
+@import './components/chat/chat-messages.css';
+@import './components/chat/chat-input-typing.css';
+@import './components/chat/chat-notification-bubble.css';
+@import './components/chat/voice-coach-panel.css';
+@import './components/chat/unified-coach-drawer.css';
+
+/* Buttons */
+@import './components/buttons/floating-chat-button.css';
+@import './components/buttons/floating-chat-button-step2.css';
+@import './components/buttons/floating-voice-coach-button.css';
+@import './components/buttons/floating-generate-button.css';
+@import './components/buttons/unified-floating-button.css';
+
+/* Training */
+@import './components/training/training-coach-notification.css';
+@import './components/training/training-loader.css';
+@import './components/training/training-prescription-card-mobile.css';
+@import './components/training/active-exercise-card.css';
+@import './components/training/functional-training.css';
+@import './components/training/rep-display-optimizations.css';
+@import './components/training/training-hero-animations.css';
+@import './components/training/training-illustration.css';
+@import './components/training/exercise-card-skeleton.css';
+
+/* Profile */
+@import './components/profile/profile-sections.css';
+@import './components/profile/connected-devices.css';
+@import './components/profile/face-shape-controls.css';
+@import './components/profile/settings-components.css';
+
+/* Nutrition */
+@import './components/nutrition/fasting-cta-3d.css';
+@import './components/nutrition/meal-scan-results.css';
+@import './components/nutrition/fridge-scan-animations.css';
 @import '../ui/components/skeletons/skeletons.css';
 
 /* =========================================
