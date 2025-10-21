@@ -5,7 +5,6 @@ import type { Recipe } from '../../domain/recipe';
 import GlassCard from '../../ui/cards/GlassCard';
 import SpatialIcon from '../../ui/icons/SpatialIcon';
 import { ICONS } from '../../ui/icons/registry';
-import Portal from '../../ui/components/Portal';
 
 interface RecipeDetailModalProps {
   recipe: Recipe | null;
@@ -49,51 +48,50 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
   if (!isOpen || !recipe) return null;
 
   return (
-    <Portal containerId="recipe-modal-root">
-      <AnimatePresence mode="wait">
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-              style={{
-                zIndex: 999998,
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                pointerEvents: 'auto'
-              }}
-              onClick={onClose}
-            />
-            <div
-              className="fixed inset-0 flex items-center justify-center p-4"
-              style={{
-                zIndex: 999999,
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                pointerEvents: 'none'
-              }}
-            >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-4xl pointer-events-auto"
-              style={{
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                position: 'relative',
-                zIndex: 1000000
-              }}
-            >
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            style={{
+              zIndex: 999998,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: 'auto'
+            }}
+            onClick={onClose}
+          />
+          <div
+            className="fixed inset-0 flex items-center justify-center p-4"
+            style={{
+              zIndex: 999999,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: 'none'
+            }}
+          >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="w-full max-w-4xl pointer-events-auto"
+            style={{
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              position: 'relative',
+              zIndex: 1000000
+            }}
+          >
               <GlassCard className="p-6 relative">
                 <button
                   onClick={onClose}
@@ -203,10 +201,9 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
               </GlassCard>
             </motion.div>
           </div>
-          </>
-        )}
-      </AnimatePresence>
-    </Portal>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 
