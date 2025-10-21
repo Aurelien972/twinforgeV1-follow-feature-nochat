@@ -16,7 +16,8 @@ import { BackgroundManager } from '../../ui/components/BackgroundManager';
 import PerformanceRecommendationAlert, { usePerformanceRecommendationAlert } from '../../ui/components/PerformanceRecommendationAlert';
 
 // Create QueryClient with enhanced cache configuration for persistence
-const queryClient = new QueryClient({
+// Export for use in stores and services
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 10 * 60 * 1000, // 10 minutes - increased for better persistence

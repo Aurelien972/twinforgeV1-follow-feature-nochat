@@ -246,13 +246,34 @@ export const createSessionActions = (
         const { useMealPlanStore } = await import('../../mealPlanStore');
         await useMealPlanStore.getState().loadAvailableInventories();
         useMealPlanStore.getState().selectInventory(state.currentSessionId!);
-        
+
         logger.info('FRIDGE_SCAN_PIPELINE', 'Meal plan store updated with new inventory', {
           sessionId: state.currentSessionId,
           timestamp: new Date().toISOString()
         });
       } catch (error) {
         logger.warn('FRIDGE_SCAN_PIPELINE', 'Failed to update meal plan store', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          sessionId: state.currentSessionId,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Invalidate React Query cache to update Scanner tab
+      try {
+        const { queryClient } = await import('../../../../app/providers/AppProviders');
+        if (queryClient) {
+          await queryClient.invalidateQueries({
+            queryKey: ['fridge-scan-sessions', 'has-history']
+          });
+
+          logger.info('FRIDGE_SCAN_PIPELINE', 'React Query cache invalidated for Scanner tab', {
+            sessionId: state.currentSessionId,
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (error) {
+        logger.warn('FRIDGE_SCAN_PIPELINE', 'Failed to invalidate React Query cache', {
           error: error instanceof Error ? error.message : 'Unknown error',
           sessionId: state.currentSessionId,
           timestamp: new Date().toISOString()
