@@ -102,8 +102,7 @@
    ========================================= */
 @import './optimizations/z-index-system.css';
 @import './optimizations/mobile-replacements.css';
-@import './optimizations/performance-modes/_index.css';
-@import './optimizations/performance-mode/_index.css';
+@import './optimizations/performance-modes.css';
 @import './optimizations/responsive.css';
 @import './optimizations/performance.css';
 @import './optimizations/gradient-optimizations.css';
