@@ -8,6 +8,7 @@ import { getTabColor, uniformTabPanelVariants } from './tabsConfig';
 // Main Tabs component
 const Tabs: React.FC<{
   defaultValue: string;
+  value?: string;
   className?: string;
   children: ReactNode;
   onValueChange?: (value: string) => void;
@@ -28,17 +29,23 @@ const Tabs: React.FC<{
     value: string;
     children: ReactNode;
   }>;
-} = ({ defaultValue, className = '', children, onValueChange, forgeContext }) => {
+} = ({ defaultValue, value, className = '', children, onValueChange, forgeContext }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Derive activeTab from URL hash, fallback to defaultValue
+  // Use controlled value if provided, otherwise derive from URL hash
   const activeTab = React.useMemo(() => {
+    // If value prop is provided (controlled mode), use it
+    if (value !== undefined) {
+      return value;
+    }
+
+    // Otherwise derive from URL hash (uncontrolled mode)
     const hash = location.hash.replace('#', '');
     // Decode URI component to handle spaces and special characters
     const decodedHash = hash ? decodeURIComponent(hash) : '';
     return decodedHash || defaultValue;
-  }, [location.hash, defaultValue]);
+  }, [value, location.hash, defaultValue]);
 
   // Handle tab change by updating URL hash
   const setActiveTab = React.useCallback((value: string) => {
