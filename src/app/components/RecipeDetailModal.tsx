@@ -76,7 +76,12 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
               left: 0,
               right: 0,
               bottom: 0,
-              pointerEvents: 'none'
+              pointerEvents: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100vh',
+              width: '100vw'
             }}
           >
           <motion.div
