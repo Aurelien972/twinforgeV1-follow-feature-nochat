@@ -77,6 +77,7 @@ export async function createUserProfileInDb(userId: string, userEmail?: string, 
       profileCompletion: 0.1,
     },
     nutrition: { allergies: [], intolerances: [] },
+    household_details: { adults: 1, children: 0, dietaryRestrictions: [] },
     health: {},
     emotions: {},
   };

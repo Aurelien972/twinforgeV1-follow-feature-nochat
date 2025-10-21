@@ -6,6 +6,7 @@
  */
 
 import React, { useRef, useCallback, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ConditionalMotion, ConditionalAnimatePresence } from '../../../../lib/motion/ConditionalMotion';
 import { useBodyScanPerformance } from '../../../../hooks/useBodyScanPerformance';
 
@@ -79,6 +80,14 @@ const BodyScanPhotoCaptureStep: React.FC<BodyScanPhotoCaptureStepProps> = ({
   const { click, success, error: errorSound, glassClick } = useFeedback();
   const { showToast } = useToast();
   const performanceConfig = useBodyScanPerformance();
+
+  // Derive animation config from performance settings
+  const preferredMotion = performanceConfig.enableFramerMotion;
+  const animConfig = {
+    duration: performanceConfig.mode === 'high-performance' ? 0.3 : performanceConfig.mode === 'balanced' ? 0.5 : 0.8,
+    ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    shouldAnimate: performanceConfig.enableCSSAnimations
+  };
 
   const photoType = step === 'front-photo' ? 'front' : 'profile';
   const frontPhoto = capturedPhotos.find(p => p.type === 'front');

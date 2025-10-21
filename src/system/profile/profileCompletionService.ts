@@ -154,11 +154,16 @@ function hasValidValue(profile: any, fieldKey: string): boolean {
   if (typeof current === 'object' && Object.keys(current).length === 0) {
     return false;
   }
-  
+
+  // Special handling for householdDetails.adults: accept values >= 1
+  if (fieldKey === 'householdDetails.adults') {
+    return typeof current === 'number' && current >= 1;
+  }
+
   if (typeof current === 'number' && current <= 0) {
     return false;
   }
-  
+
   return true;
 }
 
