@@ -80,9 +80,9 @@
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.8;
   z-index: 2;
-  animation: borderFlow 6s ease-in-out infinite;
+  animation: none;
 }
 
 /* Ambient glow underneath panel */
@@ -98,34 +98,26 @@
     rgba(255, 107, 53, 0.1) 60%,
     transparent 80%
   );
-  opacity: 0.85;
+  opacity: 0.7;
   z-index: -1;
   pointer-events: none;
-  animation: panelGlow 4s ease-in-out infinite alternate;
+  animation: none;
   filter: blur(12px);
 }
 
-/* Animated border gradient flow */
+/* Border gradient - STATIC */
 @keyframes borderFlow {
   0%, 100% {
     background-position: 0% 50%;
-    opacity: 0.85;
-  }
-  50% {
-    background-position: 100% 50%;
-    opacity: 1;
+    opacity: 0.8;
   }
 }
 
-/* Ambient glow pulsing */
+/* Ambient glow - STATIC */
 @keyframes panelGlow {
-  0% {
+  0%, 100% {
     opacity: 0.7;
-    transform: scale(0.98);
-  }
-  100% {
-    opacity: 0.95;
-    transform: scale(1.02);
+    transform: scale(1);
   }
 }
 
@@ -519,9 +511,9 @@
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.5;
   z-index: 1;
-  animation: avatarBorderFlow 4s ease-in-out infinite;
+  animation: none;
   filter: none;
   box-shadow: none !important;
 }
@@ -553,8 +545,8 @@
   }
 
   .central-actions-panel .avatar-twin-button:hover::before {
-    opacity: 0.8;
-    animation-duration: 3s;
+    opacity: 0.7;
+    animation: none;
   }
 }
 
@@ -563,13 +555,10 @@
   transform: scale(0.98) translateZ(0);
 }
 
-/* Avatar border flow animation */
+/* Avatar border - STATIC */
 @keyframes avatarBorderFlow {
   0%, 100% {
     background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
   }
 }
 
@@ -592,13 +581,13 @@
 
   .central-actions-panel::after {
     filter: blur(8px);
-    /* Disable glow animation on mobile for better performance */
+    /* Glow animation disabled */
     animation: none !important;
   }
 
   .central-actions-panel::before {
-    /* Reduce border animation complexity on mobile */
-    animation-duration: 8s !important;
+    /* Border animation disabled */
+    animation: none !important;
   }
 
   .central-actions-panel .glass-card,
@@ -730,13 +719,13 @@
   .central-actions-panel .avatar-twin-button {
     min-height: 56px !important;
     padding: 10px 12px !important;
-    /* Reduce animation complexity on mobile */
+    /* Animation disabled */
     animation: none !important;
   }
 
   .central-actions-panel .avatar-twin-button::before {
-    /* Simplify border animation on mobile */
-    animation-duration: 6s !important;
+    /* Border animation disabled */
+    animation: none !important;
     opacity: 0.5 !important;
   }
 

@@ -14,14 +14,13 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
   className = ''
 }) => {
   const isDesktop = variant === 'desktop';
-  const { isPerformanceMode, mode } = usePerformanceMode();
 
   if (isDesktop) {
     return (
       <div
         className={`flex items-center ${className}`}
         style={{
-          transition: mode === 'quality' ? 'all 300ms ease-out' : 'none',
+          transition: 'none',
           height: '100%'
         }}
       >
@@ -35,100 +34,31 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
               color: '#E5E7EB',
               lineHeight: 1,
               textTransform: 'uppercase',
-              filter: mode === 'quality'
-                ? (isHovered
-                  ? 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))'
-                  : 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.15))')
-                : 'none',
-              transition: mode === 'quality' ? 'filter 300ms ease' : 'none'
+              filter: 'none',
+              transition: 'none'
             }}
           >
             TWIN
           </span>
-          {mode === 'high-performance' ? (
-            // Mode Performance: Lettres individuelles avec couleurs distinctes
-            <span style={{ display: 'inline-flex', gap: '0' }}>
-              <span style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: '25px',
-                fontWeight: 800,
-                letterSpacing: '1.2px',
-                color: '#FF6B35',
-                lineHeight: 1,
-                textTransform: 'uppercase',
-                filter: 'none',
-                transition: 'none'
-              }}>F</span>
-              <span style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: '25px',
-                fontWeight: 800,
-                letterSpacing: '1.2px',
-                color: '#F89442',
-                lineHeight: 1,
-                textTransform: 'uppercase',
-                filter: 'none',
-                transition: 'none'
-              }}>Ø</span>
-              <span style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: '25px',
-                fontWeight: 800,
-                letterSpacing: '1.2px',
-                color: '#F7931E',
-                lineHeight: 1,
-                textTransform: 'uppercase',
-                filter: 'none',
-                transition: 'none'
-              }}>R</span>
-              <span style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: '25px',
-                fontWeight: 800,
-                letterSpacing: '1.2px',
-                color: '#FCBB45',
-                lineHeight: 1,
-                textTransform: 'uppercase',
-                filter: 'none',
-                transition: 'none'
-              }}>G</span>
-              <span style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: '25px',
-                fontWeight: 800,
-                letterSpacing: '1.2px',
-                color: '#FDC830',
-                lineHeight: 1,
-                textTransform: 'uppercase',
-                filter: 'none',
-                transition: 'none'
-              }}>E</span>
-            </span>
-          ) : (
-            // Mode Balanced & Quality: Gradient
-            <span
-              style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: '25px',
-                fontWeight: 800,
-                letterSpacing: '1.2px',
-                background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                lineHeight: 1,
-                textTransform: 'uppercase',
-                filter: mode === 'quality'
-                  ? (isHovered
-                    ? 'drop-shadow(0 0 12px rgba(253, 200, 48, 0.5))'
-                    : 'drop-shadow(0 0 6px rgba(247, 147, 30, 0.3))')
-                  : 'none',
-                transition: mode === 'quality' ? 'filter 300ms ease' : 'none'
-              }}
-            >
-              FØRGE
-            </span>
-          )}
+          {/* Gradient statique pour tous les modes - sans animation */}
+          <span
+            style={{
+              fontFamily: "'Montserrat', sans-serif",
+              fontSize: '25px',
+              fontWeight: 800,
+              letterSpacing: '1.2px',
+              background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              lineHeight: 1,
+              textTransform: 'uppercase',
+              filter: 'none',
+              transition: 'none'
+            }}
+          >
+            FØRGE
+          </span>
         </div>
       </div>
     );
@@ -138,7 +68,7 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
     <div
       className={`flex items-center ${className}`}
       style={{
-        transition: mode === 'quality' ? 'all 300ms ease-out' : 'none',
+        transition: 'none',
         gap: '8px',
         position: 'relative'
       }}
@@ -172,100 +102,31 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
             color: '#E5E7EB',
             lineHeight: 1,
             textTransform: 'uppercase',
-            filter: mode === 'quality'
-              ? (isHovered
-                ? 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.3))'
-                : 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.15))')
-              : 'none',
-            transition: mode === 'quality' ? 'filter 300ms ease' : 'none'
+            filter: 'none',
+            transition: 'none'
           }}
         >
           TWIN
         </span>
-        {mode === 'high-performance' ? (
-          // Mode Performance: Lettres individuelles avec couleurs distinctes
-          <span style={{ display: 'inline-flex', gap: '0' }}>
-            <span style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '15px',
-              fontWeight: 800,
-              letterSpacing: '0.8px',
-              color: '#FF6B35',
-              lineHeight: 1,
-              textTransform: 'uppercase',
-              filter: 'none',
-              transition: 'none'
-            }}>F</span>
-            <span style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '15px',
-              fontWeight: 800,
-              letterSpacing: '0.8px',
-              color: '#F89442',
-              lineHeight: 1,
-              textTransform: 'uppercase',
-              filter: 'none',
-              transition: 'none'
-            }}>Ø</span>
-            <span style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '15px',
-              fontWeight: 800,
-              letterSpacing: '0.8px',
-              color: '#F7931E',
-              lineHeight: 1,
-              textTransform: 'uppercase',
-              filter: 'none',
-              transition: 'none'
-            }}>R</span>
-            <span style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '15px',
-              fontWeight: 800,
-              letterSpacing: '0.8px',
-              color: '#FCBB45',
-              lineHeight: 1,
-              textTransform: 'uppercase',
-              filter: 'none',
-              transition: 'none'
-            }}>G</span>
-            <span style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '15px',
-              fontWeight: 800,
-              letterSpacing: '0.8px',
-              color: '#FDC830',
-              lineHeight: 1,
-              textTransform: 'uppercase',
-              filter: 'none',
-              transition: 'none'
-            }}>E</span>
-          </span>
-        ) : (
-          // Mode Balanced & Quality: Gradient
-          <span
-            style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '15px',
-              fontWeight: 800,
-              letterSpacing: '0.8px',
-              background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              lineHeight: 1,
-              textTransform: 'uppercase',
-              filter: mode === 'quality'
-                ? (isHovered
-                  ? 'drop-shadow(0 0 10px rgba(253, 200, 48, 0.4))'
-                  : 'drop-shadow(0 0 5px rgba(247, 147, 30, 0.25))')
-                : 'none',
-              transition: mode === 'quality' ? 'filter 300ms ease' : 'none'
-            }}
-          >
-            FØRGE
-          </span>
-        )}
+        {/* Gradient statique pour tous les modes - sans animation */}
+        <span
+          style={{
+            fontFamily: "'Montserrat', sans-serif",
+            fontSize: '15px',
+            fontWeight: 800,
+            letterSpacing: '0.8px',
+            background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            lineHeight: 1,
+            textTransform: 'uppercase',
+            filter: 'none',
+            transition: 'none'
+          }}
+        >
+          FØRGE
+        </span>
       </div>
     </div>
   );

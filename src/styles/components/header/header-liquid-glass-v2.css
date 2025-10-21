@@ -56,9 +56,9 @@
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  opacity: 1;
+  opacity: 0.8;
   z-index: 1;
-  animation: borderPulse 4s ease-in-out infinite;
+  animation: none;
 }
 
 /* Ambient glow layer underneath matching bottom bar */
@@ -73,25 +73,20 @@
     rgba(61, 19, 179, 0.1) 40%,
     transparent 70%
   );
-  opacity: 0.8;
+  opacity: 0.6;
   z-index: -1;
   pointer-events: none;
-  animation: glowPulse 3s ease-in-out infinite alternate;
+  animation: none;
 }
 
 @keyframes borderPulse {
   0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
 }
 
 @keyframes glowPulse {
-  0% {
+  0%, 100% {
     opacity: 0.6;
     transform: scale(1);
-  }
-  100% {
-    opacity: 0.9;
-    transform: scale(1.02);
   }
 }
 

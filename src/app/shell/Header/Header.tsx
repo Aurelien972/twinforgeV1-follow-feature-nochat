@@ -111,9 +111,9 @@ export const Header = React.memo(() => {
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
             >
-              {/* Carrés tournants aux 4 coins */}
+              {/* Carrés fixes aux 4 coins - sans animation */}
               {[0, 1, 2, 3].map((i) => (
-                <motion.div
+                <div
                   key={i}
                   style={{
                     position: 'absolute',
@@ -126,21 +126,9 @@ export const Header = React.memo(() => {
                     bottom: i >= 2 ? '2px' : 'auto',
                     left: i % 2 === 0 ? '2px' : 'auto',
                     right: i % 2 === 1 ? '2px' : 'auto',
-                    zIndex: 2
-                  }}
-                  initial={{
-                    rotate: i % 2 === 0 ? 45 : -45
-                  }}
-                  animate={{
-                    scale: centralMenuOpen ? [1, 1.4, 1] : [1, 1.2, 1],
-                    opacity: centralMenuOpen ? [0.7, 1, 0.7] : [0.5, 0.8, 0.5],
-                    rotate: i % 2 === 0 ? [45, 60, 45] : [-45, -60, -45]
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    delay: i * 0.2,
-                    ease: [0.4, 0, 0.2, 1]
+                    zIndex: 2,
+                    transform: i % 2 === 0 ? 'rotate(45deg)' : 'rotate(-45deg)',
+                    opacity: centralMenuOpen ? 0.7 : 0.5
                   }}
                 />
               ))}
@@ -157,25 +145,14 @@ export const Header = React.memo(() => {
                 aria-hidden="true"
               />
 
-              <motion.div
+              <div
                 className="absolute inset-0 rounded-full"
                 style={{
                   background: 'radial-gradient(circle at center, rgba(247, 147, 30, 0.25) 0%, transparent 70%)',
                   filter: 'blur(10px)',
                   zIndex: -1,
-                  pointerEvents: 'none'
-                }}
-                animate={centralMenuOpen ? {
-                  scale: [1, 1.4, 1.3],
-                  opacity: [0.7, 1, 0.8]
-                } : {
-                  scale: [1, 1.15, 1],
-                  opacity: [0.4, 0.6, 0.4]
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
+                  pointerEvents: 'none',
+                  opacity: centralMenuOpen ? 0.7 : 0.4
                 }}
                 aria-hidden="true"
               />

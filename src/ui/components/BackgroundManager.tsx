@@ -58,25 +58,13 @@ export const BackgroundManager: React.FC = () => {
   }, [isPerformanceMode, mode]);
 
   useEffect(() => {
-    // Initialize particles only in quality/balanced mode
-    if (!isPerformanceMode && !particlesInitialized.current) {
-      // Small delay to ensure DOM is ready
-      const timeoutId = setTimeout(() => {
-        initializeForgeParticles(mode);
-        particlesInitialized.current = true;
-      }, 100);
-
-      return () => clearTimeout(timeoutId);
+    // Particules TOTALEMENT DÉSACTIVÉES - Ne jamais initialiser
+    // Cleanup: s'assurer qu'aucune particule n'existe
+    const container = document.getElementById('cosmic-forge-particles-container');
+    if (container) {
+      container.innerHTML = '';
     }
-
-    // Clean up particles when switching to performance mode
-    if (isPerformanceMode && particlesInitialized.current) {
-      const container = document.getElementById('cosmic-forge-particles-container');
-      if (container) {
-        container.innerHTML = '';
-      }
-      particlesInitialized.current = false;
-    }
+    particlesInitialized.current = false;
   }, [isPerformanceMode, mode]);
 
   // En mode performance, render fond uni statique SANS classe bg-twinforge-visionos
@@ -94,20 +82,14 @@ export const BackgroundManager: React.FC = () => {
     );
   }
 
-  // En mode quality/balanced, render le fond avec particules
+  // En mode quality/balanced, render le fond SANS particules
   return (
     <>
       <div
         className="bg-twinforge-visionos"
         aria-hidden="true"
       />
-      <div
-        className="cosmic-forge-particles"
-        aria-hidden="true"
-        id="cosmic-forge-particles-container"
-      >
-        {/* Les particules seront ajoutées dynamiquement par JS */}
-      </div>
+      {/* Particules totalement désactivées */}
     </>
   );
 };
