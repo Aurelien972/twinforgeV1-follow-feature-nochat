@@ -55,12 +55,26 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-              style={{ zIndex: 9999 }}
+              style={{
+                zIndex: 99999,
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
               onClick={onClose}
             />
             <div
               className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
-              style={{ zIndex: 10000 }}
+              style={{
+                zIndex: 100000,
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
             >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
