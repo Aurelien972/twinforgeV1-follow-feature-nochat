@@ -756,3 +756,29 @@
   content-visibility: auto;
   contain-intrinsic-size: 800px;
 }
+
+/* =========================================
+   12. RECIPE MODAL - Z-INDEX ET VISIBILITÉ
+   ========================================= */
+
+#recipe-modal-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999998;
+  pointer-events: none;
+}
+
+#recipe-modal-root > * {
+  pointer-events: auto;
+}
+
+/* Force visibility du modal */
+#recipe-modal-root [role="dialog"],
+#recipe-modal-root .glass-card {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}

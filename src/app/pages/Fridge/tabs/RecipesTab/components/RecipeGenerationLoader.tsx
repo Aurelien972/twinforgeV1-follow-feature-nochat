@@ -50,7 +50,9 @@ const RecipeGenerationLoader: React.FC = () => {
               className="relative"
               style={{
                 width: '96px',
-                height: '96px'
+                height: '96px',
+                overflow: 'hidden',
+                contain: 'paint layout'
               }}
             >
               <div
@@ -89,10 +91,14 @@ const RecipeGenerationLoader: React.FC = () => {
               {/* Pulsing Ring Effect */}
               {!isPerformanceMode && (
                 <div
-                  className="absolute inset-0 rounded-full recipe-gen-ring-pulse"
+                  className="absolute rounded-full recipe-gen-ring-pulse"
                   style={{
                     border: '2px solid color-mix(in srgb, #10B981 40%, transparent)',
-                    transform: 'scale(1.2)'
+                    top: '-10%',
+                    left: '-10%',
+                    right: '-10%',
+                    bottom: '-10%',
+                    pointerEvents: 'none'
                   }}
                 />
               )}
@@ -156,22 +162,24 @@ const RecipeGenerationLoader: React.FC = () => {
 
             {/* Enhanced Animated Progress Bar with Green Energy */}
             <div
-              className="w-full max-w-md mx-auto h-3 rounded-full relative overflow-hidden"
+              className="w-full max-w-md mx-auto h-3 rounded-full relative"
               style={{
                 background: 'rgba(16, 185, 129, 0.15)',
-                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)'
+                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
+                overflow: 'hidden',
+                contain: 'paint layout'
               }}
             >
               <MotionDiv
                 className="h-full rounded-full relative"
                 style={{
                   background: 'linear-gradient(90deg, #10B981, #34D399, #6EE7B7)',
-                  boxShadow: isPerformanceMode ? 'none' : '0 0 15px color-mix(in srgb, #10B981 60%, transparent)'
+                  boxShadow: isPerformanceMode ? 'none' : '0 0 15px color-mix(in srgb, #10B981 60%, transparent)',
+                  maxWidth: '100%'
                 }}
                 {...(!isPerformanceMode && {
                   animate: {
-                    width: ['30%', '70%', '30%'],
-                    x: [0, 50, 0]
+                    width: ['30%', '70%', '30%']
                   },
                   transition: {
                     duration: 2.5,
@@ -185,7 +193,8 @@ const RecipeGenerationLoader: React.FC = () => {
                     className="absolute inset-0 rounded-full"
                     style={{
                       background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
-                      animation: 'recipe-shimmer 1.5s ease-in-out infinite'
+                      animation: 'recipe-shimmer 1.5s ease-in-out infinite',
+                      overflow: 'hidden'
                     }}
                   />
                 )}
@@ -234,11 +243,11 @@ const RecipeGenerationLoader: React.FC = () => {
         @keyframes recipe-gen-ring-pulse {
           0%, 100% {
             opacity: 0.3;
-            transform: scale(1.2);
+            transform: scale(1);
           }
           50% {
             opacity: 0.6;
-            transform: scale(1.35);
+            transform: scale(1.15);
           }
         }
 

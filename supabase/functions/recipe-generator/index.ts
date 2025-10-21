@@ -393,7 +393,7 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
 
         console.log('RECIPE_GENERATOR', 'Calling OpenAI streaming API', {
           user_id: userId,
-          model: 'gpt-4o',
+          model: 'gpt-5-mini',
           timestamp: new Date().toISOString()
         });
 
@@ -404,7 +404,7 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'gpt-4o',
+            model: 'gpt-5-mini',
             messages: [{ role: 'user', content: prompt }],
             max_completion_tokens: 15000,
             temperature: 1.0,
@@ -537,7 +537,7 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
           cost_usd: costUsd,
           input_tokens: totalTokens.input,
           output_tokens: totalTokens.output,
-          model_used: 'gpt-4o'
+          model_used: 'gpt-5-mini'
         } as Record<string, unknown>;
 
         const completionEvent = `event: complete\ndata: ${JSON.stringify(completionData)}\n\n`;
@@ -553,7 +553,7 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
             inventory_count: inventory.length,
             has_preferences: !!preferences,
             has_filters: !!filters,
-            model_used: 'gpt-4o',
+            model_used: 'gpt-5-mini',
             input_tokens: totalTokens.input,
             output_tokens: totalTokens.output,
             fitness_focused: true
