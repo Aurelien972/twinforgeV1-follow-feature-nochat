@@ -1,0 +1,370 @@
+/* =========================================
+   ADVANCED PERFORMANCE UTILITIES
+   GPU, containment, memory, and scroll optimizations
+   ========================================= */
+
+/* =========================================
+   GPU ACCELERATION HELPERS
+   ========================================= */
+
+.gpu-layer,
+.transform-gpu,
+.gpu-optimized {
+  transform: var(--gpu-acceleration);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+}
+
+.gpu-layer-promote {
+  transform: var(--gpu-layer-promotion);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.gpu-only-transform {
+  transform: var(--gpu-acceleration);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* =========================================
+   WILL-CHANGE UTILITIES
+   ========================================= */
+
+.will-change-transform-important {
+  will-change: transform !important;
+}
+
+.will-change-auto-important {
+  will-change: auto !important;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.will-change-filter {
+  will-change: filter;
+}
+
+.will-change-scroll {
+  will-change: scroll-position;
+}
+
+/* =========================================
+   CONTAINMENT STRATEGIES
+   ========================================= */
+
+.contain-layout {
+  contain: var(--contain-layout);
+}
+
+.contain-style {
+  contain: var(--contain-style);
+}
+
+.contain-paint {
+  contain: var(--contain-paint);
+}
+
+.contain-size {
+  contain: var(--contain-size);
+}
+
+.contain-all {
+  contain: var(--contain-all);
+}
+
+/* Strategic containment for heavy sections */
+.heavy-section {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 600px;
+}
+
+.animation-heavy-section {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 400px;
+}
+
+.chart-section {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 400px;
+}
+
+/* =========================================
+   CONTENT VISIBILITY
+   ========================================= */
+
+.content-visibility-auto {
+  content-visibility: var(--content-visibility-auto);
+  contain-intrinsic-size: 200px;
+}
+
+.content-visibility-hidden {
+  content-visibility: var(--content-visibility-hidden);
+}
+
+.content-visibility-visible {
+  content-visibility: var(--content-visibility-visible);
+}
+
+.content-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px;
+}
+
+.content-list {
+  content-visibility: auto;
+  contain-intrinsic-size: 200px 800px;
+}
+
+.content-modal {
+  content-visibility: auto;
+  contain-intrinsic-size: 400px 600px;
+}
+
+/* =========================================
+   SCROLL PERFORMANCE
+   ========================================= */
+
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  scroll-snap-type: y proximity;
+}
+
+.momentum-scroll-enhanced {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  scroll-snap-type: y proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.1) transparent;
+}
+
+.modal-scroll-lock {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+}
+
+/* Scroll performance mode */
+.scroll-performance-mode {
+  --scroll-performance-mode: 1;
+  --scroll-blur-reduction: 0.7;
+}
+
+.scroll-performance-mode .glass-card {
+  backdrop-filter: blur(calc(var(--glass-blur) * var(--scroll-blur-reduction, 0.7)));
+  transition: none !important;
+}
+
+.scroll-performance-mode .glass-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================================
+   ANIMATION BUDGET
+   ========================================= */
+
+.animation-budget-exceeded * {
+  animation: none !important;
+  transition: background-color 200ms ease, color 200ms ease !important;
+}
+
+.animation-budget-exceeded .glass-card:hover,
+.animation-budget-exceeded .spatial-icon:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.essential-animations-only .breathing-icon,
+.essential-animations-only .icon-pulse-css,
+.essential-animations-only .particle-css {
+  animation: none !important;
+}
+
+.essential-animations-only .loader-essential {
+  animation: icon-spin-css 2s linear infinite !important;
+}
+
+/* =========================================
+   MEMORY OPTIMIZATION
+   ========================================= */
+
+.low-memory-mode .glass-card {
+  backdrop-filter: none !important;
+  background: rgba(255,255,255,.05) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15) !important;
+}
+
+.low-memory-mode .glass-card::before,
+.low-memory-mode .glass-card::after,
+.low-memory-mode .cosmic-forge-particles {
+  display: none !important;
+}
+
+/* =========================================
+   BATTERY OPTIMIZATION
+   ========================================= */
+
+.low-power-mode .glass-card,
+.low-power-mode .btn-glass {
+  backdrop-filter: none !important;
+  background: rgba(255,255,255,.05) !important;
+  transition: background 200ms ease !important;
+}
+
+.low-power-mode .glass-card::before,
+.low-power-mode .glass-card::after {
+  display: none !important;
+}
+
+.low-power-mode .glass-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: rgba(255,255,255,.08) !important;
+}
+
+.low-power-mode .breathing-icon,
+.low-power-mode .icon-pulse-css,
+.low-power-mode .particle-css {
+  animation: none !important;
+}
+
+/* =========================================
+   CRITICAL RENDERING PATH
+   ========================================= */
+
+.above-fold {
+  content-visibility: visible;
+  contain: none;
+}
+
+.below-fold {
+  content-visibility: auto;
+  contain: layout style paint;
+  contain-intrinsic-size: 400px;
+}
+
+.critical-path {
+  will-change: auto;
+  contain: none;
+  content-visibility: visible;
+}
+
+.non-critical-path {
+  content-visibility: auto;
+  contain: layout style paint;
+}
+
+/* =========================================
+   INTERSECTION OBSERVER HELPERS
+   ========================================= */
+
+.lazy-animate {
+  opacity: 0;
+  transform: translateY(20px) translateZ(0);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.lazy-animate.in-view {
+  opacity: 1;
+  transform: translateY(0) translateZ(0);
+}
+
+.lazy-animate.out-of-view {
+  opacity: 0;
+  transform: translateY(20px) translateZ(0);
+}
+
+/* =========================================
+   BROWSER-SPECIFIC OPTIMIZATIONS
+   ========================================= */
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  .safari-optimized {
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-transform: translateZ(0);
+  }
+}
+
+@-moz-document url-prefix() {
+  .firefox-optimized {
+    animation-timing-function: ease-in-out;
+  }
+
+  .glass-card {
+    background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  }
+}
+
+@supports (backdrop-filter: blur(1px)) and (not (-webkit-backdrop-filter: blur(1px))) {
+  .chrome-optimized {
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  }
+}
+
+/* =========================================
+   MEDIA QUERY OPTIMIZATIONS
+   ========================================= */
+
+@media (prefers-reduced-data: reduce) {
+  .glass-card {
+    backdrop-filter: none !important;
+    background: rgba(255,255,255,.05) !important;
+  }
+
+  .cosmic-forge-particles {
+    opacity: 0.4 !important;
+  }
+
+  .breathing-icon,
+  .icon-pulse-css,
+  .particle-css {
+    animation: none !important;
+    opacity: 0.3 !important;
+    transform: scale(1.1) translateZ(0) !important;
+  }
+
+  .forge-particle {
+    animation-duration: 45s !important;
+    opacity: 0.25 !important;
+    transform: translateZ(0) !important;
+    width: 1px !important;
+    height: 1px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breathing-icon,
+  .icon-pulse-css,
+  .particle-css,
+  .glass-shimmer {
+    animation: none !important;
+  }
+
+  .loader-essential {
+    animation: icon-spin-css 3s linear infinite !important;
+  }
+
+  * {
+    transition-duration: 0.1s !important;
+  }
+
+  .cosmic-forge-particles {
+    opacity: 0.4 !important;
+  }
+
+  .forge-particle {
+    animation-duration: 60s !important;
+    opacity: 0.4 !important;
+  }
+}

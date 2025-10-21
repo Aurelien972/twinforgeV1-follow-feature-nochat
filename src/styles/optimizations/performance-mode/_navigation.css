@@ -1,0 +1,238 @@
+/* =========================================
+   PERFORMANCE MODE - NAVIGATION
+   Header, Sidebar, Bottom Bar optimization
+   ========================================= */
+
+/* =========================================
+   PAGE HEADER - Branding & Icons
+   ========================================= */
+
+/* Logo - Preserve colored shadows (brand identity) */
+.performance-mode header [class*="logo"],
+.performance-mode header .header-logo,
+.performance-mode header .TwinForge,
+.performance-mode .HeaderLogo {
+  filter: none !important;
+}
+
+.performance-mode header [class*="logo"] span[style*="drop-shadow"],
+.performance-mode header [class*="logo"] span[style*="filter"] {
+  filter: inherit !important;
+}
+
+/* Logo text gradient - preserve */
+.performance-mode header span[style*="linear-gradient"] {
+  background: inherit !important;
+  -webkit-background-clip: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+}
+
+/* Token balance gradient - preserve */
+.performance-mode [style*="-webkit-background-clip: text"],
+.performance-mode [style*="background-clip: text"],
+.performance-mode [style*="-webkit-text-fill-color: transparent"] {
+  background: inherit !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Page header icons - force visibility */
+.performance-mode header .flex-shrink-0,
+.performance-mode header .breathing-icon,
+.performance-mode header [class*="breathing"] {
+  opacity: 1 !important;
+  display: flex !important;
+  visibility: visible !important;
+  animation: none !important;
+}
+
+.performance-mode header .flex-shrink-0 > div,
+.performance-mode header .breathing-icon > div {
+  opacity: 1 !important;
+  display: flex !important;
+  visibility: visible !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.performance-mode header .spatial-icon {
+  opacity: 1 !important;
+  display: inline-flex !important;
+  visibility: visible !important;
+  filter: none !important;
+  background: transparent !important;
+}
+
+.performance-mode header .spatial-icon svg,
+.performance-mode header .spatial-icon path,
+.performance-mode header .spatial-icon * {
+  opacity: 1 !important;
+  visibility: visible !important;
+  fill: currentColor !important;
+  display: inline !important;
+}
+
+.performance-mode header [role="img"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+}
+
+.performance-mode header [role="img"] * {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* =========================================
+   HEADER - Structure
+   ========================================= */
+
+body.performance-mode .header-liquid-glass,
+.performance-mode .header-liquid-glass,
+html.performance-mode .header-liquid-glass {
+  background: rgb(11, 14, 23) !important;
+  background-color: rgb(11, 14, 23) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.20),
+    0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  opacity: 1 !important;
+  isolation: isolate !important;
+}
+
+/* Force solid backdrop layer */
+body.performance-mode .header-liquid-glass::before,
+.performance-mode .header-liquid-glass::before,
+html.performance-mode .header-liquid-glass::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgb(11, 14, 23) !important;
+  background-color: rgb(11, 14, 23) !important;
+  background-image: none !important;
+  border-radius: inherit !important;
+  z-index: -1 !important;
+  display: block !important;
+  pointer-events: none !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+/* Remove decorative glow */
+body.performance-mode .header-liquid-glass::after,
+.performance-mode .header-liquid-glass::after,
+html.performance-mode .header-liquid-glass::after {
+  display: none !important;
+  content: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Header buttons */
+.performance-mode .header-liquid-glass .glass-orb-button {
+  background: #1A2332 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* =========================================
+   SIDEBAR
+   ========================================= */
+
+.performance-mode .sidebar-glass-enhanced {
+  background: #0F1927 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.20),
+    0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Preserve colored gradient border (static) */
+.performance-mode .sidebar-glass-enhanced::before {
+  animation: none !important;
+  opacity: 0.6 !important;
+  padding: 2px !important;
+}
+
+/* Simplify ambient glow */
+.performance-mode .sidebar-glass-enhanced::after {
+  opacity: 0.25 !important;
+  filter: blur(8px) !important;
+  animation: none !important;
+}
+
+/* Sidebar item icons */
+.performance-mode .sidebar-item-icon-container {
+  background: #1A2332 !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Active icon: preserve colored shadow */
+.performance-mode .sidebar-item-icon-container--active,
+.performance-mode .sidebar-item-icon-container[data-active="true"] {
+  border-color: var(--color-plasma-cyan, #18E3FF) !important;
+  box-shadow:
+    0 4px 16px rgba(24, 227, 255, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+.performance-mode .sidebar-glass-enhanced:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* =========================================
+   BOTTOM BAR
+   ========================================= */
+
+.performance-mode .new-mobile-bottom-bar-container {
+  background: rgb(11, 14, 23) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    0 -4px 24px rgba(0, 0, 0, 0.20),
+    0 -2px 8px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Force solid backdrop layer */
+.performance-mode .new-mobile-bottom-bar-container::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgb(11, 14, 23) !important;
+  border-radius: inherit !important;
+  z-index: -1 !important;
+  display: block !important;
+  pointer-events: none !important;
+  animation: none !important;
+}
+
+/* Remove decorative glow */
+.performance-mode .new-mobile-bottom-bar-container::after {
+  display: none !important;
+}
+
+/* Bottom bar icon containers */
+.performance-mode .new-bottom-bar-icon-container {
+  background: #1A2332 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Active state: preserve colored shadows (reduced) */
+.performance-mode .new-bottom-bar-icon-container--active {
+  box-shadow:
+    0 4px 16px color-mix(in srgb, var(--button-color) 15%, transparent),
+    0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}

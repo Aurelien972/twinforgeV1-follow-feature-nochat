@@ -1,0 +1,96 @@
+/* =========================================
+   PERFORMANCE MODE - SHADOWS OPTIMIZATION
+   Comprehensive Apple-like shadow simplification
+   ========================================= */
+
+/*
+  BOX-SHADOW OPTIMIZATION STRATEGY
+  =================================
+
+  CATEGORIES (781 occurrences audited):
+  - Essential (20%): depth, hierarchy, focus states
+  - Decorative (60%): colored glows, multi-layer effects
+  - Redundant (20%): duplicate/overlapping shadows
+
+  MODE QUALITY (Desktop/Tablet):
+  - All box-shadows preserved
+  - Multi-layer shadows for depth
+  - Colored glows for ambiance
+
+  MODE PERFORMANCE:
+  - Glass cards: 0 2px 8px rgba(0,0,0,0.15)
+  - Buttons: 0 2px 8px rgba(0,0,0,0.12)
+  - Modals: 0 12px 40px rgba(0,0,0,0.25)
+  - Chips: 0 1px 4px rgba(0,0,0,0.08)
+  - Inputs: inset 0 1px 3px rgba(0,0,0,0.1)
+  - Blur max: 16px (vs 40px+ in quality)
+
+  EXCEPTIONS - Colored shadows preserved:
+  ✓ Logo FØRGE header: colored drop-shadow (brand)
+  ✓ Sidebar gradient border: tricolor static
+  ✓ Sidebar active icon: cyan shadow (0.15 opacity)
+  ✓ Primary button: purple shadow (0.15-0.2 opacity)
+  ✓ Focus states: purple ring (0.25 opacity)
+*/
+
+/* Remove all colored shadows and glows */
+.performance-mode [class*="shadow"]:not(.sidebar-item-icon-container--active) {
+  filter: none !important;
+}
+
+/* Generic shadow simplification - exclude preserved elements */
+.performance-mode [style*="box-shadow"]:not(header [class*="logo"] *):not(header .breathing-icon *):not(.sidebar-glass-enhanced):not(.sidebar-item-icon-container--active) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Remove excessive inset shadows except inputs and page header icons */
+.performance-mode *:not(input):not(textarea):not(select):not(header .breathing-icon):not(header .breathing-icon *) {
+  box-shadow: none !important;
+}
+
+/* Restore simple shadow for interactive elements */
+.performance-mode .glass-card,
+.performance-mode button,
+.performance-mode [role="button"],
+.performance-mode [class*="modal"],
+.performance-mode [class*="drawer"] {
+  box-shadow: inherit !important;
+}
+
+/* Input fields keep subtle inset for depth */
+.performance-mode input,
+.performance-mode textarea,
+.performance-mode select {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Focus states: simple ring */
+.performance-mode *:focus-visible {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
+}
+
+/* Remove blur effects from shadows */
+.performance-mode [style*="blur"] {
+  filter: none !important;
+}
+
+/* Simplify all box-shadows to single layer */
+.performance-mode [style*="box-shadow"]:not(header [class*="logo"] *):not(header .breathing-icon *):not(header .flex-shrink-0 *):not(.sidebar-glass-enhanced):not(.sidebar-item-icon-container--active) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Text shadows - Simplified */
+.performance-mode * {
+  text-shadow: none !important;
+}
+
+/* Exception: Keep simple text-shadow for page titles */
+.performance-mode .page-header-title,
+.performance-mode h1 {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+.performance-mode header p,
+.performance-mode header .page-header-subtitle {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+}

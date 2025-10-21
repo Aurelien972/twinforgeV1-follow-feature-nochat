@@ -1,0 +1,42 @@
+/* =========================================
+   PERFORMANCE MODES - 3-TIER SYSTEM
+   Variables and replacements for each mode
+   ========================================= */
+
+/*
+  PERFORMANCE TIERS
+  =================
+
+  HIGH-PERFORMANCE (Mobile Default):
+  - 0% expensive effects
+  - 100% performance
+  - Solid backgrounds
+  - Simple shadows
+  - No animations except essential
+
+  BALANCED (Tablet / Mid-range):
+  - Moderate effects
+  - Good performance
+  - Semi-transparent backgrounds
+  - Moderate shadows
+  - Reduced animations
+
+  QUALITY (Desktop / High-end):
+  - All effects enabled
+  - Premium experience
+  - Full glassmorphism
+  - Complex shadows with glows
+  - All animations active
+
+  STRATEGY:
+  - Mobile: Solid opaque backgrounds, no blur
+  - Tablet: Reduced blur (8-12px), moderate effects
+  - Desktop: Full blur (16-20px), all effects
+*/
+
+/* Import mode-specific configurations */
+@import './_high-performance.css';
+@import './_balanced.css';
+@import './_quality.css';
+@import './_mobile.css';
+@import './_advanced.css';

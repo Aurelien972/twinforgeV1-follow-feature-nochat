@@ -1,0 +1,75 @@
+/* =========================================
+   MODE: QUALITY (Desktop / High-end)
+   All effects enabled, premium experience
+   ========================================= */
+
+.mode-quality {
+  /* Backdrop-filter: FULL */
+  --mobile-backdrop-filter: blur(16px) saturate(200%);
+  --mobile-backdrop-filter-header: blur(20px) saturate(200%);
+  --mobile-backdrop-filter-bottombar: blur(16px) saturate(200%);
+  --mobile-backdrop-filter-card: blur(12px) saturate(180%);
+  --mobile-backdrop-filter-drawer: blur(16px) saturate(200%);
+
+  /* Background: Transparent glassmorphism */
+  --mobile-bg-header: rgba(11, 14, 23, 0.7);
+  --mobile-bg-bottombar: rgba(11, 14, 23, 0.7);
+  --mobile-bg-card: rgba(11, 14, 23, 0.5);
+  --mobile-bg-drawer: rgba(11, 14, 23, 0.8);
+  --mobile-bg-modal: rgba(11, 14, 23, 0.9);
+
+  /* Box-shadow: Full complexity with colored glows */
+  --mobile-shadow-header: 0 8px 32px rgba(0, 0, 0, 0.25),
+                          0 4px 16px rgba(0, 0, 0, 0.15),
+                          0 2px 8px rgba(0, 0, 0, 0.1);
+  --mobile-shadow-bottombar: 0 -8px 32px rgba(0, 0, 0, 0.25),
+                             0 -4px 16px rgba(0, 0, 0, 0.15),
+                             0 -2px 8px rgba(0, 0, 0, 0.1);
+  --mobile-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.18),
+                        0 2px 8px rgba(0, 0, 0, 0.12);
+  --mobile-shadow-drawer: 0 12px 40px rgba(0, 0, 0, 0.28),
+                          0 6px 20px rgba(0, 0, 0, 0.18);
+  --mobile-shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.35),
+                         0 10px 30px rgba(0, 0, 0, 0.25);
+
+  /* Gradients: FULL */
+  --mobile-gradient-disabled: 0;
+
+  /* Animations: FULL */
+  --mobile-animations-disabled: 0;
+  --animation-duration-multiplier: 1;
+
+  /* Border: Premium with subtle glow */
+  --mobile-border: 1px solid rgba(255, 255, 255, 0.15);
+  --mobile-border-active: 1px solid rgba(24, 227, 255, 0.6);
+}
+
+/* Desktop tuning */
+@media (min-width: 1025px) {
+  .glass-card {
+    backdrop-filter: blur(var(--glass-blur-desktop)) saturate(var(--glass-saturate-desktop));
+    -webkit-backdrop-filter: blur(var(--glass-blur-desktop)) saturate(var(--glass-saturate-desktop));
+  }
+
+  .glass-card::before {
+    opacity: 0.8;
+  }
+
+  .glass-card::after {
+    opacity: 0.6;
+  }
+}
+
+/* High-end device capabilities */
+.high-end-device {
+  --glass-blur: var(--glass-blur-xl);
+  --glass-saturate: var(--glass-saturate-xl);
+  --animation-duration-multiplier: 1;
+}
+
+/* 120fps support */
+@media (min-resolution: 120dpi) and (min-width: 1024px) {
+  :root {
+    --supports-120fps: 1;
+  }
+}

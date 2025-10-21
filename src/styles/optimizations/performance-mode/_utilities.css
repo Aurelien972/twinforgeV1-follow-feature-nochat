@@ -1,0 +1,285 @@
+/* =========================================
+   PERFORMANCE MODE - UTILITIES
+   Global helpers, overrides, and optimizations
+   ========================================= */
+
+/* =========================================
+   WILL-CHANGE
+   ========================================= */
+
+.performance-mode * {
+  will-change: auto !important;
+}
+
+/* Exception: active elements */
+.performance-mode *:active {
+  will-change: transform !important;
+}
+
+/* =========================================
+   TRANSFORMS
+   ========================================= */
+
+/* Static except tap feedback and preserved elements */
+.performance-mode [style*="transform"]:not(:active):not(header .breathing-icon):not(header .breathing-icon *):not([role="img"]):not(.spatial-icon):not(.icon-container) {
+  transform: none !important;
+}
+
+/* =========================================
+   OPACITY
+   ========================================= */
+
+.performance-mode [style*="opacity"] {
+  transition: none !important;
+}
+
+/* =========================================
+   FILTERS
+   ========================================= */
+
+/* Remove filters globally except preserved elements */
+.performance-mode [style*="filter:"]:not(header .spatial-icon):not(header [class*="logo"] *),
+.performance-mode [class*="blur"],
+.performance-mode [class*="saturate"] {
+  filter: none !important;
+}
+
+/* =========================================
+   Z-INDEX & STACKING
+   ========================================= */
+
+.performance-mode * {
+  isolation: auto !important;
+  contain: none !important;
+}
+
+/* =========================================
+   PSEUDO-ELEMENTS
+   ========================================= */
+
+/* Disable decorative ::before and ::after except critical */
+.performance-mode *::before:not(header [class*="logo"] *)::before,
+.performance-mode *::after:not(header [class*="logo"] *)::after {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Glass sheen - disable */
+.performance-mode .glass-sheen::before,
+.performance-mode .glass-sheen::after,
+.performance-mode [class*="sheen"]::before,
+.performance-mode [class*="sheen"]::after {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+/* Thermal distortion - disable */
+.performance-mode .thermal-distortion::before,
+.performance-mode .thermal-distortion::after,
+.performance-mode [class*="distortion"]::before,
+.performance-mode [class*="distortion"]::after {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+/* Ambient effects - disable */
+.performance-mode .ambient-glow::before,
+.performance-mode .ambient-glow::after,
+.performance-mode [class*="ambient"]::before,
+.performance-mode [class*="ambient"]::after {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+/* =========================================
+   SCROLL REVEAL
+   ========================================= */
+
+.performance-mode .glass-card-scroll-reveal,
+.performance-mode [data-scroll-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* =========================================
+   PAGE-SPECIFIC OPTIMIZATIONS
+   ========================================= */
+
+/* Meals Progression Tab */
+.performance-mode .metric-card-enter,
+.performance-mode .metric-icon-glow-css,
+.performance-mode .metric-value-enter,
+.performance-mode .status-badge-enter,
+.performance-mode .chart-enter,
+.performance-mode .chart-enter-right,
+.performance-mode .hero-metrics-enter,
+.performance-mode .legend-item-enter,
+.performance-mode .heatmap-enter,
+.performance-mode .heatmap-cell-enter,
+.performance-mode .score-scale-enter {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+.performance-mode .progression-glow-css {
+  animation: none !important;
+  opacity: 0.15 !important;
+  filter: blur(8px) !important;
+}
+
+/* Meals History Tab */
+.performance-mode .meal-group-enter,
+.performance-mode .meal-item-enter {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+.performance-mode .progress-fill-css {
+  animation: none !important;
+  transition: width 0.3s ease-out !important;
+}
+
+.performance-mode .metric-icon-static {
+  animation: none !important;
+}
+
+.performance-mode .metric-particle-css {
+  display: none !important;
+  animation: none !important;
+}
+
+/* Body Scan */
+.performance-mode .body-keypoints {
+  opacity: 0.6 !important;
+}
+
+.performance-mode .keypoint {
+  animation: none !important;
+  box-shadow: 0 0 6px currentColor !important;
+}
+
+.performance-mode .scan-line-vertical,
+.performance-mode .scan-line-horizontal {
+  animation-duration: 4s !important;
+  box-shadow: 0 0 10px currentColor !important;
+}
+
+.performance-mode .analysis-grid {
+  opacity: 0.2 !important;
+}
+
+.performance-mode .grid-cell {
+  animation: none !important;
+  opacity: 0.3 !important;
+}
+
+.performance-mode .analysis-zone {
+  animation: none !important;
+  opacity: 0.4 !important;
+  transform: translate(-50%, -50%) translateZ(0) !important;
+}
+
+.performance-mode .ai-focus-overlay {
+  animation: none !important;
+  opacity: 0.3 !important;
+}
+
+.performance-mode .data-particle,
+.performance-mode .data-flow-container {
+  display: none !important;
+}
+
+.performance-mode .celebration-ambient-glow {
+  opacity: 0.3 !important;
+  filter: blur(12px) !important;
+}
+
+.performance-mode .celebration-ray {
+  animation: none !important;
+  opacity: 0.4 !important;
+}
+
+.performance-mode .guide-breathing {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+/* =========================================
+   SKELETON OPTIMIZATIONS
+   ========================================= */
+
+.performance-mode .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  ) !important;
+  background-size: 200% 100%;
+  animation: shimmer-performance 2s ease-in-out infinite !important;
+}
+
+.performance-mode .skeleton-glow::after {
+  display: none !important;
+}
+
+.performance-mode .animate-pulse-subtle {
+  animation: pulse-performance 3s ease-in-out infinite !important;
+}
+
+/* =========================================
+   NAVIGATION ELEMENTS
+   ========================================= */
+
+.performance-mode header,
+.performance-mode .sidebar,
+.performance-mode .mobile-drawer,
+.performance-mode .bottom-bar,
+.performance-mode .floating-chat-button {
+  animation: none !important;
+}
+
+/* =========================================
+   LOW-END DEVICE OVERRIDES
+   ========================================= */
+
+.low-end-device .glass-card,
+.perf-low .glass-card {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2) !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.low-end-device .glass-card:hover,
+.perf-low .glass-card:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  transform: translateZ(0) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2) !important;
+  transition: background 100ms ease;
+}
+
+.low-end-device .glass-card::before,
+.low-end-device .glass-card::after,
+.perf-low .glass-card::before,
+.perf-low .glass-card::after {
+  display: none !important;
+}
+
+.perf-low *[class*="shimmer"],
+.perf-low *[class*="pulse"],
+.perf-low *[class*="glow"],
+.perf-low *[class*="breathing"] {
+  animation: none !important;
+  opacity: 0.7 !important;
+}
+
+.perf-low .glass-card {
+  background-image: none !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}

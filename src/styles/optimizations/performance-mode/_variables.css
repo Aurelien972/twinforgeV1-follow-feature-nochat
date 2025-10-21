@@ -1,0 +1,37 @@
+/* =========================================
+   PERFORMANCE MODE - CSS VARIABLES
+   Global CSS custom properties for performance mode
+   ========================================= */
+
+:root {
+  /* Performance Budget */
+  --performance-budget-ms: 16.67;
+  --animation-budget-max: 8;
+  --will-change-timeout: 250ms;
+
+  /* GPU Acceleration */
+  --gpu-acceleration: translateZ(0);
+  --gpu-layer-promotion: translate3d(0, 0, 0);
+
+  /* Containment Strategies */
+  --contain-layout: layout;
+  --contain-style: style;
+  --contain-paint: paint;
+  --contain-size: size;
+  --contain-all: layout style paint size;
+
+  /* Content Visibility */
+  --content-visibility-auto: auto;
+  --content-visibility-hidden: hidden;
+  --content-visibility-visible: visible;
+
+  /* Scroll Performance */
+  --scroll-performance-mode: 0;
+  --scroll-blur-reduction: 0.7;
+
+  /* Device-specific blur levels */
+  --glass-blur-tablet: 12px;
+  --glass-blur-desktop: 16px;
+  --glass-saturate-tablet: 180%;
+  --glass-saturate-desktop: 200%;
+}
