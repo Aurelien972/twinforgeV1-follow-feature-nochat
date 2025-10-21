@@ -6,6 +6,7 @@ import { ICONS } from '../../../ui/icons/registry';
 import { useUserStore } from '../../../system/store/userStore';
 import { wearableDataService } from '../../../system/services/wearableDataService';
 import { activityWearableEnrichmentService } from '../../../system/services/activityWearableEnrichmentService';
+import { wearableOAuthService } from '../../../system/services/wearableOAuthService';
 import { useToast } from '../../../ui/components/ToastProvider';
 import { useFeedback } from '../../../hooks/useFeedback';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -117,16 +118,71 @@ const ConnectedWearablesTab: React.FC = () => {
     },
   });
 
-  const handleConnect = (provider: Provider) => {
+  // Mutation for backfilling historical data
+  const backfillMutation = useMutation({
+    mutationFn: async ({ deviceId, days }: { deviceId: string; days: number }) => {
+      return wearableDataService.triggerSync(deviceId, undefined);
+    },
+    onSuccess: () => {
+      showToast({
+        type: 'success',
+        title: 'Récupération historique lancée',
+        message: 'Vos données historiques sont en cours de récupération. Cela peut prendre quelques minutes.',
+        duration: 5000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['connected-devices'] });
+    },
+    onError: (error) => {
+      showToast({
+        type: 'error',
+        title: 'Erreur de récupération',
+        message: error instanceof Error ? error.message : 'Une erreur est survenue',
+        duration: 4000,
+      });
+    },
+  });
+
+  const handleConnect = async (provider: Provider) => {
     click();
     logger.info('WEARABLES_TAB', 'Connect button clicked', { provider });
 
-    showToast({
-      type: 'info',
-      title: 'Connexion en cours',
-      message: `La connexion OAuth pour ${PROVIDER_CONFIGS[provider].name} sera disponible prochainement`,
-      duration: 3000,
-    });
+    // Special handling for Apple Health (requires native app)
+    if (provider === 'apple_health') {
+      showToast({
+        type: 'info',
+        title: 'Apple Health',
+        message: 'Apple Health nécessite l\'application iOS. Veuillez utiliser l\'app mobile pour connecter votre Apple Watch.',
+        duration: 5000,
+      });
+      return;
+    }
+
+    try {
+      // Show loading toast
+      showToast({
+        type: 'info',
+        title: 'Connexion en cours',
+        message: `Redirection vers ${PROVIDER_CONFIGS[provider].name}...`,
+        duration: 2000,
+      });
+
+      // Initialize OAuth flow
+      await wearableOAuthService.initOAuthFlow(provider);
+    } catch (error) {
+      logger.error('WEARABLES_TAB', 'OAuth initialization failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        provider,
+      });
+
+      showToast({
+        type: 'error',
+        title: 'Erreur de connexion',
+        message: error instanceof Error
+          ? error.message
+          : 'Impossible d\'initialiser la connexion. Veuillez réessayer.',
+        duration: 5000,
+      });
+    }
   };
 
   const handleSync = (deviceId: string) => {
@@ -144,6 +200,11 @@ const ConnectedWearablesTab: React.FC = () => {
   const handleEnrichActivities = () => {
     click();
     enrichMutation.mutate();
+  };
+
+  const handleBackfill = (deviceId: string, days: number = 7) => {
+    click();
+    backfillMutation.mutate({ deviceId, days });
   };
 
   // Get MVP providers that are not yet connected
@@ -261,6 +322,20 @@ const ConnectedWearablesTab: React.FC = () => {
                       >
                         {device.status === 'syncing' ? 'Sync...' : 'Synchroniser'}
                       </button>
+                      {!device.lastSyncAt && (
+                        <button
+                          onClick={() => handleBackfill(device.id, 7)}
+                          disabled={backfillMutation.isPending}
+                          className="px-4 py-2 rounded-lg font-medium text-sm transition-all"
+                          style={{
+                            background: 'color-mix(in srgb, #10B981 20%, transparent)',
+                            border: '1px solid color-mix(in srgb, #10B981 40%, transparent)',
+                            color: '#10B981',
+                          }}
+                        >
+                          {backfillMutation.isPending ? 'Récup...' : 'Récupérer historique'}
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDisconnect(device.id)}
                         disabled={disconnectMutation.isPending}
