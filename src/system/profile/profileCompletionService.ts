@@ -54,7 +54,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'high'
   },
   {
-    key: 'allergies',
+    key: 'nutrition.allergies',
     label: 'Allergies',
     description: 'Important pour la sécurité alimentaire',
     profileTab: 'nutrition',
@@ -72,7 +72,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
   
   // Medium Priority - Important for personalization
   {
-    key: 'diet',
+    key: 'nutrition.diet',
     label: 'Régime alimentaire',
     description: 'Pour des recettes adaptées à votre style',
     profileTab: 'nutrition',
@@ -80,7 +80,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'medium'
   },
   {
-    key: 'mealPrepPreferences.cookingSkill',
+    key: 'nutrition.mealPrepPreferences.cookingSkill',
     label: 'Niveau de cuisine',
     description: 'Pour adapter la complexité des recettes',
     profileTab: 'nutrition',
@@ -88,7 +88,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'medium'
   },
   {
-    key: 'kitchenEquipment',
+    key: 'nutrition.kitchenEquipment',
     label: 'Équipement de cuisine',
     description: 'Pour des recettes réalisables chez vous',
     profileTab: 'nutrition',
@@ -105,7 +105,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
   
   // Low Priority - Nice to have for advanced personalization
   {
-    key: 'intolerances',
+    key: 'nutrition.intolerances',
     label: 'Intolérances',
     description: 'Pour éviter les inconforts digestifs',
     profileTab: 'nutrition',
@@ -113,7 +113,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'low'
   },
   {
-    key: 'foodPreferences.cuisines',
+    key: 'nutrition.foodPreferences.cuisines',
     label: 'Cuisines préférées',
     description: 'Pour des recettes qui vous plaisent',
     profileTab: 'nutrition',
@@ -121,7 +121,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
     priority: 'low'
   },
   {
-    key: 'macroTargets.kcal',
+    key: 'nutrition.macroTargets.kcal',
     label: 'Objectif calories',
     description: 'Pour des recettes équilibrées',
     profileTab: 'nutrition',
@@ -135,7 +135,7 @@ const CRITICAL_FIELDS: CriticalField[] = [
  */
 function hasValidValue(profile: any, fieldKey: string): boolean {
   // Special case for allergies - if user explicitly said they have no allergies, consider it valid
-  if (fieldKey === 'allergies') {
+  if (fieldKey === 'nutrition.allergies') {
     const hasAllergies = profile?.nutrition?.allergies && Array.isArray(profile.nutrition.allergies) && profile.nutrition.allergies.length > 0;
     const noKnownAllergies = profile?.nutrition?.noKnownAllergies === true;
     return hasAllergies || noKnownAllergies;
@@ -292,9 +292,9 @@ export function getFeatureSpecificGuidance(
   
   // Feature-specific requirements
   const featureRequirements = {
-    recipes: ['sex', 'weight_kg', 'allergies', 'householdDetails.adults'],
-    shopping: ['householdDetails.adults', 'allergies', 'shoppingPreferences.frequencyPerWeek'],
-    planning: ['householdDetails.adults', 'mealPrepPreferences.cookingSkill', 'macroTargets.kcal']
+    recipes: ['sex', 'weight_kg', 'nutrition.allergies', 'householdDetails.adults'],
+    shopping: ['householdDetails.adults', 'nutrition.allergies', 'nutrition.shoppingPreferences.frequencyPerWeek'],
+    planning: ['householdDetails.adults', 'nutrition.mealPrepPreferences.cookingSkill', 'nutrition.macroTargets.kcal']
   };
 
   const requiredFields = featureRequirements[feature] || [];
@@ -354,17 +354,19 @@ export function calculateMealTrackingCompletion(profile: UserProfile | null): Pr
       priority: 'high'
     },
     {
-      key: 'allergies',
+      key: 'nutrition.allergies',
       label: 'Allergies',
       description: 'Important pour la sécurité alimentaire',
       profileTab: 'nutrition',
+      sectionHash: 'restrictions-section',
       priority: 'medium'
     },
     {
-      key: 'macroTargets.kcal',
+      key: 'nutrition.macroTargets.kcal',
       label: 'Objectif calories',
       description: 'Pour suivre vos apports quotidiens',
-      profileTab: 'fasting',
+      profileTab: 'nutrition',
+      sectionHash: 'macros-section',
       priority: 'medium'
     }
   ];
