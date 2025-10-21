@@ -81,7 +81,7 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             style={{
-              zIndex: 999998,
+              zIndex: 10001,
               position: 'fixed',
               top: 0,
               left: 0,
@@ -94,7 +94,7 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
           <div
             className="fixed inset-0 flex items-center justify-center p-4"
             style={{
-              zIndex: 999999,
+              zIndex: 10002,
               position: 'fixed',
               top: 0,
               left: 0,
@@ -118,7 +118,7 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
               maxHeight: '90vh',
               overflowY: 'auto',
               position: 'relative',
-              zIndex: 1000000
+              zIndex: 10003
             }}
           >
               <GlassCard className="p-6 relative">
