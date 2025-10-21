@@ -13,6 +13,12 @@ export const useFridgeSessions = (userId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const [sessions, setSessions] = useState<FridgeSession[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Function to manually trigger refresh
+  const refreshSessions = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -74,13 +80,14 @@ export const useFridgeSessions = (userId: string | undefined) => {
 
     loadFridgeSessions();
     return () => { mounted = false; };
-  }, [userId]);
+  }, [userId, refreshTrigger]);
 
   return {
     loading,
     sessions,
     error,
     setSessions,
-    setLoading
+    setLoading,
+    refreshSessions
   };
 };

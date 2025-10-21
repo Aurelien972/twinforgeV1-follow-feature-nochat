@@ -4,10 +4,12 @@ import { ICONS } from '../../../../../../ui/icons/registry';
 
 interface InventoryManagementHeaderProps {
   onDeleteAllInventories: () => void;
+  onRefresh?: () => void;
 }
 
 const InventoryManagementHeader: React.FC<InventoryManagementHeaderProps> = ({
-  onDeleteAllInventories
+  onDeleteAllInventories,
+  onRefresh
 }) => {
   return (
     <div
@@ -79,6 +81,26 @@ const InventoryManagementHeader: React.FC<InventoryManagementHeaderProps> = ({
               Vos inventaires de frigo sauvegardés
             </p>
           </div>
+
+          {/* Refresh Button */}
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              className="flex-shrink-0 p-3 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(8px)'
+              }}
+              title="Rafraîchir les inventaires"
+            >
+              <SpatialIcon
+                Icon={ICONS.RefreshCw}
+                size={20}
+                style={{ color: '#06B6D4' }}
+              />
+            </button>
+          )}
         </div>
       </div>
     </div>

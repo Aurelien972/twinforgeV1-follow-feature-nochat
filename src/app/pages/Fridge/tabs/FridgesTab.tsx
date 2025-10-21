@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useUserStore } from '../../../../system/store/userStore';
@@ -32,7 +32,30 @@ const FridgesTab: React.FC = () => {
   const userId = session?.user?.id;
 
   // Custom hooks for state management
-  const { loading, sessions, error, setSessions, setLoading } = useFridgeSessions(userId);
+  const { loading, sessions, error, setSessions, setLoading, refreshSessions } = useFridgeSessions(userId);
+
+  // Refresh sessions when tab becomes visible or window gains focus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && userId) {
+        refreshSessions();
+      }
+    };
+
+    const handleFocus = () => {
+      if (userId) {
+        refreshSessions();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [userId, refreshSessions]);
   const { selectedInventorySessionId, handleInventorySelect, setSelectedInventorySessionId } = useInventorySelection();
   const { handleDeleteAllInventories, handleDeleteIndividualInventory } = useInventoryActions(
     userId,
@@ -58,6 +81,7 @@ const FridgesTab: React.FC = () => {
       {sessions.length > 0 && (
         <InventoryManagementHeader
           onDeleteAllInventories={handleDeleteAllInventories}
+          onRefresh={refreshSessions}
         />
       )}
 
