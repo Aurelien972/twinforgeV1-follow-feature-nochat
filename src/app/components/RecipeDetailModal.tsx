@@ -71,56 +71,56 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
 
   console.log('[RecipeDetailModal] About to return JSX - will render:', isOpen && !!recipe);
 
+  if (!isOpen || !recipe) {
+    return null;
+  }
+
   return (
-    <AnimatePresence mode="wait">
-      {isOpen && recipe && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            style={{
-              zIndex: 10001,
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              pointerEvents: 'auto'
-            }}
-            onClick={onClose}
-          />
-          <div
-            className="fixed inset-0 flex items-center justify-center p-4"
-            style={{
-              zIndex: 10002,
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              pointerEvents: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100vh',
-              width: '100vw'
-            }}
-          >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="w-full max-w-4xl pointer-events-auto"
-            style={{
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              position: 'relative',
-              zIndex: 10003
-            }}
-          >
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        style={{
+          zIndex: 99999,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+          pointerEvents: 'auto'
+        }}
+        onClick={onClose}
+      />
+      {/* Modal Container */}
+      <div
+        className="fixed inset-0 flex items-center justify-center p-4"
+        style={{
+          zIndex: 100000,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          width: '100vw'
+        }}
+      >
+        {/* Modal Content */}
+        <div
+          className="w-full max-w-4xl pointer-events-auto"
+          style={{
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            position: 'relative',
+            zIndex: 100001
+          }}
+        >
               <GlassCard className="p-6 relative">
                 <button
                   onClick={onClose}
@@ -228,11 +228,9 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
                   </div>
                 )}
               </GlassCard>
-            </motion.div>
-          </div>
-        </>
-      )}
-    </AnimatePresence>
+        </div>
+      </div>
+    </>
   );
 };
 
