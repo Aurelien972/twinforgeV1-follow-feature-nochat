@@ -8,7 +8,6 @@ import { useUserStore } from '../../../../system/store/userStore';
 import { supabase } from '../../../../system/supabase/client';
 import { generateMorphologyInsights } from './insights/insightsService';
 import { InsightCard } from './insights/InsightCard';
-import { MockInsightsDisplay } from './insights/MockInsightsDisplay';
 import { InsightsLoadingState } from './insights/InsightsLoadingState';
 import { InsightsErrorState } from './insights/InsightsErrorState';
 import { NoScanState } from './insights/NoScanState';
