@@ -157,10 +157,7 @@ Deno.serve(async (req)=>{
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Max-Age': '86400', // 24 hours cache for preflight
-      }
+      headers: corsHeaders
     });
   }
   try {

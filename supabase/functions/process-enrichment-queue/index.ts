@@ -36,7 +36,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     // Import Supabase dynamically
-    const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.54.0');
 
     const startTime = Date.now();
 

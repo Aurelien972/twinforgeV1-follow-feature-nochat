@@ -86,7 +86,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Verify state and get auth flow
-    const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.54.0');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: authFlow, error: flowError } = await supabase

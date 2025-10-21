@@ -31,7 +31,7 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.54.0');
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       global: {
         headers: {
