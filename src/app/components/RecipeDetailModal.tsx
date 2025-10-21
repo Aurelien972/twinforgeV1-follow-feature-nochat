@@ -39,11 +39,14 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
   }, [isOpen, onClose]);
 
-  if (!recipe) return null;
+  // Don't render anything if modal is not open or recipe is missing
+  if (!isOpen || !recipe) return null;
 
   return (
     <Portal containerId="recipe-modal-root">

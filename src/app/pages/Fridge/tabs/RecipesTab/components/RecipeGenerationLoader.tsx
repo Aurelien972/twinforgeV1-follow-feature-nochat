@@ -44,64 +44,34 @@ const RecipeGenerationLoader: React.FC = () => {
         }}
       >
         <div className="space-y-6">
-          {/* Enhanced Animated Icon with Green Glow */}
+          {/* Enhanced Icon with Green Glow - Simplified */}
           <div className="flex justify-center">
             <div
-              className="relative"
+              className="rounded-full flex items-center justify-center"
               style={{
                 width: '96px',
                 height: '96px',
-                overflow: 'hidden',
-                contain: 'paint layout'
+                background: `
+                  radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 60%),
+                  linear-gradient(135deg,
+                    color-mix(in srgb, #10B981 40%, transparent),
+                    color-mix(in srgb, #34D399 35%, transparent)
+                  )
+                `,
+                border: '3px solid color-mix(in srgb, #10B981 60%, transparent)',
+                boxShadow: isPerformanceMode ? 'none' : `
+                  0 0 30px color-mix(in srgb, #10B981 50%, transparent),
+                  0 0 60px color-mix(in srgb, #34D399 30%, transparent),
+                  inset 0 2px 0 rgba(255, 255, 255, 0.3)
+                `
               }}
             >
-              <div
-                className={`absolute inset-0 rounded-full flex items-center justify-center ${isPerformanceMode ? '' : 'recipe-gen-icon-pulse'}`}
-                style={{
-                  background: `
-                    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 60%),
-                    linear-gradient(135deg,
-                      color-mix(in srgb, #10B981 40%, transparent),
-                      color-mix(in srgb, #34D399 35%, transparent)
-                    )
-                  `,
-                  border: '3px solid color-mix(in srgb, #10B981 60%, transparent)',
-                  boxShadow: isPerformanceMode ? 'none' : `
-                    0 0 30px color-mix(in srgb, #10B981 50%, transparent),
-                    0 0 60px color-mix(in srgb, #34D399 30%, transparent),
-                    inset 0 2px 0 rgba(255, 255, 255, 0.3)
-                  `
-                }}
-              >
-                <MotionDiv
-                  {...(!isPerformanceMode && {
-                    animate: { rotate: 360 },
-                    transition: { repeat: Infinity, duration: 3, ease: "linear" }
-                  })}
-                >
-                  <SpatialIcon
-                    Icon={ICONS.ChefHat}
-                    size={48}
-                    color="#fff"
-                    variant="pure"
-                  />
-                </MotionDiv>
-              </div>
-
-              {/* Pulsing Ring Effect */}
-              {!isPerformanceMode && (
-                <div
-                  className="absolute rounded-full recipe-gen-ring-pulse"
-                  style={{
-                    border: '2px solid color-mix(in srgb, #10B981 40%, transparent)',
-                    top: '-10%',
-                    left: '-10%',
-                    right: '-10%',
-                    bottom: '-10%',
-                    pointerEvents: 'none'
-                  }}
-                />
-              )}
+              <SpatialIcon
+                Icon={ICONS.ChefHat}
+                size={56}
+                color="#fff"
+                variant="pure"
+              />
             </div>
           </div>
 
@@ -160,22 +130,19 @@ const RecipeGenerationLoader: React.FC = () => {
               <span>Analyse des ingrédients et génération des instructions...</span>
             </div>
 
-            {/* Enhanced Animated Progress Bar with Green Energy */}
+            {/* Enhanced Progress Bar with Green Energy - No Shimmer */}
             <div
-              className="w-full max-w-md mx-auto h-3 rounded-full relative"
+              className="w-full max-w-md mx-auto h-3 rounded-full relative overflow-hidden"
               style={{
                 background: 'rgba(16, 185, 129, 0.15)',
-                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
-                overflow: 'hidden',
-                contain: 'paint layout'
+                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)'
               }}
             >
               <MotionDiv
-                className="h-full rounded-full relative"
+                className="h-full rounded-full"
                 style={{
                   background: 'linear-gradient(90deg, #10B981, #34D399, #6EE7B7)',
-                  boxShadow: isPerformanceMode ? 'none' : '0 0 15px color-mix(in srgb, #10B981 60%, transparent)',
-                  maxWidth: '100%'
+                  boxShadow: isPerformanceMode ? 'none' : '0 0 15px color-mix(in srgb, #10B981 60%, transparent)'
                 }}
                 {...(!isPerformanceMode && {
                   animate: {
@@ -187,18 +154,7 @@ const RecipeGenerationLoader: React.FC = () => {
                     ease: "easeInOut"
                   }
                 })}
-              >
-                {!isPerformanceMode && (
-                  <div
-                    className="absolute inset-0 rounded-full"
-                    style={{
-                      background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
-                      animation: 'recipe-shimmer 1.5s ease-in-out infinite',
-                      overflow: 'hidden'
-                    }}
-                  />
-                )}
-              </MotionDiv>
+              />
             </div>
           </div>
 
@@ -225,41 +181,6 @@ const RecipeGenerationLoader: React.FC = () => {
 
       {/* Inline Keyframes for Custom Animations */}
       <style>{`
-        @keyframes recipe-gen-icon-pulse {
-          0%, 100% {
-            transform: scale(1);
-            box-shadow: 0 0 30px color-mix(in srgb, #10B981 50%, transparent),
-                        0 0 60px color-mix(in srgb, #34D399 30%, transparent),
-                        inset 0 2px 0 rgba(255, 255, 255, 0.3);
-          }
-          50% {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px color-mix(in srgb, #10B981 70%, transparent),
-                        0 0 80px color-mix(in srgb, #34D399 50%, transparent),
-                        inset 0 2px 0 rgba(255, 255, 255, 0.35);
-          }
-        }
-
-        @keyframes recipe-gen-ring-pulse {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.6;
-            transform: scale(1.15);
-          }
-        }
-
-        .recipe-gen-ring-pulse {
-          animation: recipe-gen-ring-pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes recipe-shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-
         @keyframes recipe-gen-particle {
           0%, 100% {
             transform: translateY(0) scale(1);
@@ -284,8 +205,6 @@ const RecipeGenerationLoader: React.FC = () => {
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .recipe-gen-icon-pulse,
-          .recipe-gen-ring-pulse,
           .recipe-gen-particle {
             animation: none !important;
           }

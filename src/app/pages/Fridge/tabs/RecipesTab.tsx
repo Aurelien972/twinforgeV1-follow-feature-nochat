@@ -128,6 +128,8 @@ const RecipesTab: React.FC = () => {
 
   // Handle recipe view
   const handleViewRecipe = (recipe: Recipe) => {
+    click();
+
     // Validate recipe has required data before opening modal
     if (!recipe) {
       showToast({
@@ -139,8 +141,8 @@ const RecipesTab: React.FC = () => {
       return;
     }
 
-    // Check if recipe has at least basic info
-    if (!recipe.title && !recipe.ingredients && !recipe.instructions) {
+    // Check if recipe has at least basic info (relaxed validation)
+    if (!recipe.title) {
       showToast({
         type: 'error',
         title: 'Recette incomplète',
@@ -150,6 +152,7 @@ const RecipesTab: React.FC = () => {
       return;
     }
 
+    // Set selected recipe and open modal
     setSelectedRecipeForDetail(recipe);
     setShowRecipeDetailModal(true);
   };

@@ -485,6 +485,27 @@ export const createRecipeGenerationActions = (
             const jsonString = trimmedData.substring(firstBrace, lastBrace + 1);
             const recipeData = JSON.parse(jsonString);
             
+            // Transform instructions from string[] to RecipeInstruction[]
+            const transformedInstructions = Array.isArray(recipeData.instructions)
+              ? recipeData.instructions.map((instruction: any, index: number) => {
+                  // If instruction is already an object with step and instruction properties, use it
+                  if (typeof instruction === 'object' && instruction.instruction) {
+                    return {
+                      step: instruction.step || index + 1,
+                      instruction: instruction.instruction,
+                      timeMin: instruction.timeMin || instruction.time_min,
+                      temperature: instruction.temperature,
+                      equipment: instruction.equipment
+                    };
+                  }
+                  // If instruction is a string, convert it to the expected format
+                  return {
+                    step: index + 1,
+                    instruction: typeof instruction === 'string' ? instruction : String(instruction || '')
+                  };
+                })
+              : [];
+
             // Convert API response to Recipe format with backend-provided ID
             const recipe: Recipe = {
               id: recipeData.id || crypto.randomUUID(), // Use backend ID or fallback
@@ -492,7 +513,7 @@ export const createRecipeGenerationActions = (
               title: recipeData.title,
               description: recipeData.description,
               ingredients: recipeData.ingredients || [],
-              instructions: recipeData.instructions || [],
+              instructions: transformedInstructions,
               prepTimeMin: recipeData.prep_time_min || 0,
               cookTimeMin: recipeData.cook_time_min || 0,
               servings: recipeData.servings || 2,
