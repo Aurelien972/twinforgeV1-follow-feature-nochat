@@ -104,38 +104,7 @@ export function useAvatarData() {
           throw bodyScanError;
         }
 
-        // Fetch latest face scan (optional - table may not exist yet)
-        let faceScans = null;
-        let faceCount = 0;
-
-        const { data: faceScansData, error: faceScanError } = await supabase
-          .from('face_scans')
-          .select('id, created_at, photo_url, final_face_params, skin_tone_v2')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (faceScanError) {
-          // Table may not exist yet - log but don't throw
-          logger.warn('AVATAR_DATA', 'face_scans table not accessible (may not exist yet)', {
-            userId: user.id,
-            error: faceScanError.message,
-            errorCode: faceScanError.code,
-            philosophy: 'face_scans_optional'
-          });
-        } else {
-          faceScans = faceScansData;
-
-          // Count face scans only if table exists
-          const { count: faceCountData, error: faceCountError } = await supabase
-            .from('face_scans')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id);
-
-          if (!faceCountError) {
-            faceCount = faceCountData || 0;
-          }
-        }
+        // Face scans are no longer used - removed
 
         // Count total body scans
         const { count: bodyCount, error: bodyCountError } = await supabase
@@ -238,32 +207,21 @@ export function useAvatarData() {
           });
         }
 
-        const latestFaceScan = faceScans?.[0] || null;
-
         // Determine last scan date
-        let lastScanDate: Date | null = null;
-        if (latestBodyScan && latestFaceScan) {
-          const bodyDate = new Date(latestBodyScan.created_at);
-          const faceDate = new Date(latestFaceScan.created_at);
-          lastScanDate = bodyDate > faceDate ? bodyDate : faceDate;
-        } else if (latestBodyScan) {
-          lastScanDate = new Date(latestBodyScan.created_at);
-        } else if (latestFaceScan) {
-          lastScanDate = new Date(latestFaceScan.created_at);
-        }
+        const lastScanDate: Date | null = latestBodyScan
+          ? new Date(latestBodyScan.created_at)
+          : null;
 
-        // Calculate completion percentage
-        let completion = 0;
-        if (latestBodyScan) completion += 50;
-        if (latestFaceScan) completion += 50;
+        // Calculate completion percentage (only body scan required)
+        const completion = latestBodyScan ? 100 : 0;
 
         setData({
           hasBodyScan: !!latestBodyScan,
-          hasFaceScan: !!latestFaceScan,
+          hasFaceScan: false,
           latestBodyScan,
-          latestFaceScan,
+          latestFaceScan: null,
           bodyScanCount: bodyCount || 0,
-          faceScanCount: faceCount || 0,
+          faceScanCount: 0,
           lastScanDate,
           completionPercentage: completion,
         });
@@ -271,10 +229,7 @@ export function useAvatarData() {
         logger.info('AVATAR_DATA', 'Avatar data fetch completed successfully', {
           userId: user.id,
           hasBodyScan: !!latestBodyScan,
-          hasFaceScan: !!latestFaceScan,
           bodyScanCount: bodyCount,
-          faceScanCount: faceCount,
-          lastScanDate: lastScanDate?.toISOString(),
           completionPercentage: completion,
           philosophy: 'avatar_data_fetch_complete'
         });
