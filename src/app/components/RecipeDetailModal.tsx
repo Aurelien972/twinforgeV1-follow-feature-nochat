@@ -13,6 +13,12 @@ interface RecipeDetailModalProps {
 }
 
 const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, onClose }) => {
+  console.log('[RecipeDetailModal] Component rendered');
+  console.log('[RecipeDetailModal] isOpen:', isOpen);
+  console.log('[RecipeDetailModal] recipe:', recipe);
+  console.log('[RecipeDetailModal] recipe?.id:', recipe?.id);
+  console.log('[RecipeDetailModal] recipe?.title:', recipe?.title);
+
   // Lock body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -43,6 +49,27 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
       return () => document.removeEventListener('keydown', handleEscape);
     }
   }, [isOpen, onClose]);
+
+  // Log when render conditions change
+  React.useEffect(() => {
+    console.log('[RecipeDetailModal] Render effect - isOpen:', isOpen, 'recipe exists:', !!recipe);
+    if (isOpen && recipe) {
+      console.log('[RecipeDetailModal] Modal SHOULD be visible now');
+      console.log('[RecipeDetailModal] Recipe to display:', {
+        id: recipe.id,
+        title: recipe.title,
+        hasImage: !!recipe.imageUrl,
+        hasIngredients: recipe.ingredients?.length > 0,
+        hasInstructions: recipe.instructions?.length > 0
+      });
+    } else if (isOpen && !recipe) {
+      console.error('[RecipeDetailModal] Modal is open but NO RECIPE!');
+    } else {
+      console.log('[RecipeDetailModal] Modal is closed');
+    }
+  }, [isOpen, recipe]);
+
+  console.log('[RecipeDetailModal] About to return JSX - will render:', isOpen && !!recipe);
 
   return (
     <AnimatePresence mode="wait">
