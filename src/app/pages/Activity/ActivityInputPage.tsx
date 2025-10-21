@@ -120,6 +120,22 @@ const ActivityInputPage: React.FC = () => {
       return;
     }
 
+    // Validation de la taille minimale du blob audio (au moins 1KB)
+    if (audioBlob.size < 1000) {
+      errorSound();
+      showToast({
+        type: 'error',
+        title: 'Audio Trop Court',
+        message: 'L\'enregistrement est trop court. Veuillez parler au moins 2 secondes.',
+        duration: 4000
+      });
+      logger.error('ACTIVITY_INPUT', 'Audio blob too small', {
+        blobSize: audioBlob.size,
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+
     if (!session?.user?.id) {
       errorSound();
       showToast({
@@ -139,25 +155,57 @@ const ActivityInputPage: React.FC = () => {
       const reader = new FileReader();
       const audioBase64Promise = new Promise<string>((resolve, reject) => {
         reader.onloadend = () => {
-          const base64 = (reader.result as string).split(',')[1];
+          const result = reader.result as string;
+          if (!result || result.length < 100) {
+            reject(new Error('Failed to read audio blob or blob is empty'));
+            return;
+          }
+          const base64 = result.split(',')[1];
+          if (!base64 || base64.length === 0) {
+            reject(new Error('Failed to extract base64 from audio blob'));
+            return;
+          }
           resolve(base64);
         };
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error('FileReader error'));
         reader.readAsDataURL(audioBlob);
       });
 
       const audioBase64 = await audioBase64Promise;
       actions.setAudioData(audioBase64);
 
+      logger.info('ACTIVITY_INPUT', 'Audio blob converted to base64', {
+        originalBlobSize: audioBlob.size,
+        base64Length: audioBase64.length,
+        userId: session.user.id,
+        timestamp: new Date().toISOString()
+      });
+
       // Étape 1: Transcription avec activity-transcriber
       logger.info('ACTIVITY_INPUT', 'Calling activity-transcriber', {
         userId: session.user.id,
         audioSize: audioBlob.size,
+        base64Length: audioBase64.length,
         timestamp: new Date().toISOString()
       });
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const payload = {
+        audioData: audioBase64,
+        userId: session.user.id,
+        clientTraceId: `activity_transcription_${Date.now()}`
+      };
+
+      logger.info('ACTIVITY_INPUT', 'Transcription payload prepared', {
+        hasAudioData: !!payload.audioData,
+        audioDataLength: payload.audioData?.length || 0,
+        hasUserId: !!payload.userId,
+        userId: payload.userId,
+        clientTraceId: payload.clientTraceId,
+        timestamp: new Date().toISOString()
+      });
 
       const transcriptionResponse = await fetch(`${supabaseUrl}/functions/v1/activity-transcriber`, {
         method: 'POST',
@@ -165,11 +213,7 @@ const ActivityInputPage: React.FC = () => {
           'Authorization': `Bearer ${supabaseKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          audioBase64,
-          userId: session.user.id,
-          clientTraceId: `activity_transcription_${Date.now()}`
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!transcriptionResponse.ok) {

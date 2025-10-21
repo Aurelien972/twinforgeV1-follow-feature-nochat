@@ -13,7 +13,6 @@ import ActivityAnalysisLoadingSkeleton from './components/Progression/ActivityAn
 import ActivityInsightCards from './components/Progression/ActivityInsightCards';
 import GlobalStatsCard from './components/Progression/GlobalStatsCard';
 import ProgressionPeriodSelector from './components/Insights/ProgressionPeriodSelector';
-import BiometricInsightsSection from './components/Insights/BiometricInsightsSection';
 import EmptyActivityInsightsState from './components/Insights/EmptyActivityInsightsState';
 import { useFeedback } from '../../../hooks/useFeedback';
 import logger from '../../../lib/utils/logger';
@@ -405,10 +404,7 @@ const ActivityInsightsTab: React.FC = () => {
             apiPeriod={apiPeriod}
           />
 
-          {/* Insights Biométriques */}
-          <BiometricInsightsSection period={selectedPeriod} />
-
-          {/* Cartes d'Insights */}
+          {/* Cartes d'Insights - Forge énergétique (plus complet) */}
           <ActivityInsightCards
             insights={insightsData?.insights || []}
             summary={insightsData?.summary}

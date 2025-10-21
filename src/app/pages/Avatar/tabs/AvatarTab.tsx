@@ -71,6 +71,32 @@ const AvatarTab: React.FC = () => {
     });
   }, [isViewerReady, latestScanData?.id]);
 
+  // Validation plus souple: accepter les scans avec données partielles
+  const hasMinimalData = latestScanData &&
+    latestScanData.morph_values &&
+    Object.keys(latestScanData.morph_values).length > 0 &&
+    latestScanData.limb_masses &&
+    Object.keys(latestScanData.limb_masses).length > 0;
+
+  // Add timeout safety to prevent infinite skeleton - MUST BE BEFORE CONDITIONAL RETURNS
+  useEffect(() => {
+    if (!isViewerReady && latestScanData?.id) {
+      const safetyTimer = setTimeout(() => {
+        if (!isViewerReady) {
+          logger.warn('AVATAR_TAB', 'Safety timeout: forcing viewer ready after 10s', {
+            scanId: latestScanData.id,
+            isLoading,
+            isComponentMounting,
+            philosophy: 'safety_timeout_force_ready'
+          });
+          setIsViewerReady(true);
+        }
+      }, 10000); // 10 seconds safety timeout
+
+      return () => clearTimeout(safetyTimer);
+    }
+  }, [isViewerReady, latestScanData?.id, isLoading, isComponentMounting]);
+
   // Log diagnostic information
   logger.info('AVATAR_TAB', 'Scan data loaded', {
     hasScan: !!latestScanData,
@@ -86,7 +112,7 @@ const AvatarTab: React.FC = () => {
     philosophy: 'avatar_tab_diagnostics'
   });
 
-  // Handle error state
+  // Handle error state - AFTER ALL HOOKS
   if (error) {
     return (
       // Removed 'profile-section-container' and added 'p-8' directly to GlassCard for consistent padding
@@ -118,13 +144,6 @@ const AvatarTab: React.FC = () => {
     );
   }
 
-  // Validation plus souple: accepter les scans avec données partielles
-  const hasMinimalData = latestScanData &&
-    latestScanData.morph_values &&
-    Object.keys(latestScanData.morph_values).length > 0 &&
-    latestScanData.limb_masses &&
-    Object.keys(latestScanData.limb_masses).length > 0;
-
   // Log validation result
   if (latestScanData && !hasMinimalData) {
     logger.warn('AVATAR_TAB', 'Scan data incomplete', {
@@ -146,25 +165,6 @@ const AvatarTab: React.FC = () => {
   // Combined loading state: show skeleton until ALL conditions are met
   // Only show skeleton when we have data but it's still loading/initializing
   const isFullyLoading = isLoading || isComponentMounting || !isViewerReady;
-
-  // Add timeout safety to prevent infinite skeleton
-  useEffect(() => {
-    if (!isViewerReady && latestScanData?.id) {
-      const safetyTimer = setTimeout(() => {
-        if (!isViewerReady) {
-          logger.warn('AVATAR_TAB', 'Safety timeout: forcing viewer ready after 10s', {
-            scanId: latestScanData.id,
-            isLoading,
-            isComponentMounting,
-            philosophy: 'safety_timeout_force_ready'
-          });
-          setIsViewerReady(true);
-        }
-      }, 10000); // 10 seconds safety timeout
-
-      return () => clearTimeout(safetyTimer);
-    }
-  }, [isViewerReady, latestScanData?.id, isLoading, isComponentMounting]);
 
   // Handle loading state - show skeleton until viewer is fully ready
   // At this point we know we have data (checked above), so skeleton is appropriate
