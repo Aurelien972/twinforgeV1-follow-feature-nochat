@@ -50,7 +50,11 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
   };
 
   const handleNavigateToProfile = () => {
-    navigate('/profile?tab=nutrition');
+    navigateWithScroll(navigate, '/profile', {
+      tab: 'nutrition',
+      smooth: true,
+      delay: 150
+    });
   };
 
   // Dynamic content based on meal plans availability

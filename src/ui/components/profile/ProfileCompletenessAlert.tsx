@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from '../../../app/nav/Link';
+import { useNavigate } from 'react-router-dom';
 import GlassCard from '../../cards/GlassCard';
 import SpatialIcon from '../../icons/SpatialIcon';
 import { ICONS } from '../../icons/registry';
@@ -11,6 +11,8 @@ import {
   type ForgeContext
 } from '../../../lib/profile/profileCompleteness';
 import logger from '../../../lib/utils/logger';
+import { navigateWithScroll } from '../../../utils/navigationUtils';
+import { useFeedback } from '../../../hooks';
 
 interface ProfileCompletenessAlertProps {
   profile: any;
@@ -42,6 +44,8 @@ const ProfileCompletenessAlert: React.FC<ProfileCompletenessAlertProps> = ({
 }) => {
   const { isPerformanceMode } = usePerformanceMode();
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
+  const navigate = useNavigate();
+  const { click, success } = useFeedback();
 
   // Calculer la complétude du profil pour cette forge spécifique
   const profileAnalysis = React.useMemo(() => {
@@ -140,8 +144,16 @@ const ProfileCompletenessAlert: React.FC<ProfileCompletenessAlertProps> = ({
             </div>
           </div>
 
-          <Link
-            to="/profile#identity"
+          <button
+            onClick={() => {
+              click();
+              navigateWithScroll(navigate, '/profile', {
+                tab: 'identity',
+                smooth: true,
+                delay: 150
+              });
+              success();
+            }}
             className="btn-glass--secondary-nav px-3 py-1.5 text-xs"
             style={{
               background: 'rgba(59, 130, 246, 0.15)',
@@ -153,7 +165,7 @@ const ProfileCompletenessAlert: React.FC<ProfileCompletenessAlertProps> = ({
               <SpatialIcon Icon={ICONS.User} size={12} />
               <span>{statusMessage.actionText || 'Compléter'}</span>
             </div>
-          </Link>
+          </button>
         </div>
       </GlassCard>
     </MotionDiv>

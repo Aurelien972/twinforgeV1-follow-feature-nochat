@@ -6,6 +6,7 @@ import SpatialIcon from '../icons/SpatialIcon';
 import { ICONS } from '../icons/registry';
 import { useFeedback } from '../../hooks/useFeedback';
 import type { ProfileCompletionResult } from '../../system/profile/profileCompletionService';
+import { navigateWithScroll } from '../../utils/navigationUtils';
 
 // Storage key for dismissed nudges
 const NUDGE_DISMISS_KEY = 'twinforge:profile-nudge:dismissed';
@@ -87,9 +88,23 @@ const ProfileNudge: React.FC<ProfileNudgeProps> = ({
 
   const handleNavigateToProfile = () => {
     click();
-    
+
     if (completion.nextAction) {
-      navigate(completion.nextAction.route);
+      // Parse route to extract path, tab and hash
+      const route = completion.nextAction.route;
+      const [path, search] = route.split('?');
+      const [basePath, hash] = path.split('#');
+
+      // Extract tab from search params if present
+      const params = new URLSearchParams(search);
+      const tab = params.get('tab');
+
+      navigateWithScroll(navigate, basePath, {
+        tab: tab || undefined,
+        hash: hash || undefined,
+        smooth: true,
+        delay: 150
+      });
       success();
     }
   };
