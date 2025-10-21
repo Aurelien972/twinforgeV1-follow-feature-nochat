@@ -17,9 +17,9 @@ export type Provider =
   | 'google_fit';
 
 // MVP Providers - Essential devices for initial launch
-export type MVPProvider = 'apple_health' | 'google_fit' | 'strava';
+export type MVPProvider = 'apple_health' | 'google_fit';
 
-export const MVP_PROVIDERS: MVPProvider[] = ['apple_health', 'google_fit', 'strava'];
+export const MVP_PROVIDERS: MVPProvider[] = ['apple_health', 'google_fit'];
 
 export type DeviceType =
   | 'smartwatch'
