@@ -6,7 +6,9 @@
   Modèle: gpt-5-mini (optimisé pour l'analyse de données et la génération d'insights)
   Fréquence: Avec mise en cache intelligente (évite les appels inutiles à OpenAI)
 */ import { corsHeaders } from '../_shared/cors.ts';
-import { createClient } from 'npm:@supabase/supabase-js@2';
+
+// Initialize Supabase client (will be imported dynamically)
+let createClient: any;
 
 // Configuration du cache par période d'analyse
 const CACHE_VALIDITY_HOURS = {
@@ -161,6 +163,10 @@ Deno.serve(async (req)=>{
     });
   }
   try {
+    // Import Supabase dynamically
+    const supabaseModule = await import('https://esm.sh/@supabase/supabase-js@2.54.0');
+    createClient = supabaseModule.createClient;
+
     const { userId, period = 'last7Days', userProfile, clientTraceId } = await req.json();
     const startTime = Date.now();
     console.log('🔥 [ACTIVITY_INSIGHTS] Starting insights generation', {
