@@ -78,7 +78,7 @@ const WearableConnectionStatus: React.FC<WearableConnectionStatusProps> = ({
     return (
       <div className={`wearable-status-empty ${className}`}>
         <div className="wearable-status-icon">
-          <SpatialIcon Icon={ICONS.WatchOff} size={24} color="#64748B" />
+          <SpatialIcon Icon={ICONS.Watch} size={24} color="#64748B" />
         </div>
         <div className="wearable-status-text">
           <h4>Aucun appareil connecté</h4>
@@ -124,7 +124,7 @@ const WearableConnectionStatus: React.FC<WearableConnectionStatusProps> = ({
       <div className="wearable-status-header">
         <div className="status-title">
           <SpatialIcon
-            Icon={hasActiveConnection ? ICONS.Watch : ICONS.WatchOff}
+            Icon={ICONS.Watch}
             size={24}
             color={hasActiveConnection ? '#10B981' : '#64748B'}
           />
