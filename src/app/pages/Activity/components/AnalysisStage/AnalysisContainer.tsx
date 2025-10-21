@@ -43,21 +43,19 @@ const AnalysisContainer: React.FC<AnalysisContainerProps> = ({
         className="p-8 text-center relative overflow-hidden analysis-stage-card"
         style={{
           background: `
-            radial-gradient(circle at 30% 20%, color-mix(in srgb, #3B82F6 15%, transparent) 0%, transparent 60%),
-            radial-gradient(circle at 70% 80%, color-mix(in srgb, #06B6D4 12%, transparent) 0%, transparent 50%),
-            linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.08)),
+            radial-gradient(circle at 30% 20%, color-mix(in srgb, #3B82F6 8%, transparent) 0%, transparent 60%),
+            radial-gradient(circle at 70% 80%, color-mix(in srgb, #06B6D4 6%, transparent) 0%, transparent 50%),
+            linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06)),
             var(--glass-opacity)
           `,
-          borderColor: 'color-mix(in srgb, #3B82F6 30%, transparent)',
+          borderColor: 'color-mix(in srgb, #3B82F6 25%, transparent)',
           boxShadow: `
-            0 20px 60px rgba(0, 0, 0, 0.4),
-            0 0 40px color-mix(in srgb, #3B82F6 20%, transparent),
-            0 0 80px color-mix(in srgb, #06B6D4 18%, transparent),
-            inset 0 2px 0 rgba(255, 255, 255, 0.25),
-            inset 0 -2px 0 rgba(0, 0, 0, 0.15)
+            0 20px 60px rgba(0, 0, 0, 0.35),
+            0 0 25px color-mix(in srgb, #3B82F6 12%, transparent),
+            inset 0 1px 0 rgba(255, 255, 255, 0.20)
           `,
-          backdropFilter: 'blur(28px) saturate(170%)',
-          WebkitBackdropFilter: 'blur(28px) saturate(170%)'
+          backdropFilter: 'blur(24px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(150%)'
         }}
       >
         {/* Effets de Fond Énergétiques */}

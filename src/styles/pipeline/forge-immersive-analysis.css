@@ -140,32 +140,32 @@
 
 /* Energy theme */
 .forge-analysis-module--energy {
-  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--forge-energy-primary) 20%, transparent) 0%, transparent 65%),
-              rgba(255, 255, 255, 0.08);
-  border: 2px solid color-mix(in srgb, var(--forge-energy-primary) 30%, rgba(255, 255, 255, 0.15));
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--forge-energy-primary) 12%, transparent) 0%, transparent 65%),
+              rgba(255, 255, 255, 0.06);
+  border: 2px solid color-mix(in srgb, var(--forge-energy-primary) 25%, rgba(255, 255, 255, 0.12));
   box-shadow: var(--shadow-md),
-              0 0 30px color-mix(in srgb, var(--forge-energy-primary) 15%, transparent),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+              0 0 20px color-mix(in srgb, var(--forge-energy-primary) 10%, transparent),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* Body theme */
 .forge-analysis-module--body {
-  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--forge-body-primary) 20%, transparent) 0%, transparent 65%),
-              rgba(255, 255, 255, 0.08);
-  border: 2px solid color-mix(in srgb, var(--forge-body-primary) 30%, rgba(255, 255, 255, 0.15));
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--forge-body-primary) 12%, transparent) 0%, transparent 65%),
+              rgba(255, 255, 255, 0.06);
+  border: 2px solid color-mix(in srgb, var(--forge-body-primary) 25%, rgba(255, 255, 255, 0.12));
   box-shadow: var(--shadow-md),
-              0 0 30px color-mix(in srgb, var(--forge-body-primary) 15%, transparent),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+              0 0 20px color-mix(in srgb, var(--forge-body-primary) 10%, transparent),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* Face theme */
 .forge-analysis-module--face {
-  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--forge-face-primary) 20%, transparent) 0%, transparent 65%),
-              rgba(255, 255, 255, 0.08);
-  border: 2px solid color-mix(in srgb, var(--forge-face-primary) 30%, rgba(255, 255, 255, 0.15));
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--forge-face-primary) 12%, transparent) 0%, transparent 65%),
+              rgba(255, 255, 255, 0.06);
+  border: 2px solid color-mix(in srgb, var(--forge-face-primary) 25%, rgba(255, 255, 255, 0.12));
   box-shadow: var(--shadow-md),
-              0 0 30px color-mix(in srgb, var(--forge-face-primary) 15%, transparent),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+              0 0 20px color-mix(in srgb, var(--forge-face-primary) 10%, transparent),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* Processing state with shimmer */
@@ -331,17 +331,17 @@
 
 .forge-analysis-spinner--energy {
   border-top-color: var(--forge-energy-primary);
-  box-shadow: 0 0 40px color-mix(in srgb, var(--forge-energy-primary) 30%, transparent);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--forge-energy-primary) 20%, transparent);
 }
 
 .forge-analysis-spinner--body {
   border-top-color: var(--forge-body-primary);
-  box-shadow: 0 0 40px color-mix(in srgb, var(--forge-body-primary) 30%, transparent);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--forge-body-primary) 20%, transparent);
 }
 
 .forge-analysis-spinner--face {
   border-top-color: var(--forge-face-primary);
-  box-shadow: 0 0 40px color-mix(in srgb, var(--forge-face-primary) 30%, transparent);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--forge-face-primary) 20%, transparent);
 }
 
 .forge-analysis-text {
@@ -441,24 +441,24 @@
 
 .analysis-photo-card--front {
   background:
-    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--color-plasma-cyan) 15%, transparent) 0%, transparent 65%),
-    rgba(255, 255, 255, 0.08);
-  border: 2px solid color-mix(in srgb, var(--color-plasma-cyan) 30%, rgba(255, 255, 255, 0.15));
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--color-plasma-cyan) 10%, transparent) 0%, transparent 65%),
+    rgba(255, 255, 255, 0.06);
+  border: 2px solid color-mix(in srgb, var(--color-plasma-cyan) 25%, rgba(255, 255, 255, 0.12));
   box-shadow:
     var(--shadow-md),
-    0 0 40px color-mix(in srgb, var(--color-plasma-cyan) 20%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 0 25px color-mix(in srgb, var(--color-plasma-cyan) 12%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .analysis-photo-card--profile {
   background:
-    radial-gradient(circle at 30% 20%, color-mix(in srgb, #A855F7 15%, transparent) 0%, transparent 65%),
-    rgba(255, 255, 255, 0.08);
-  border: 2px solid color-mix(in srgb, #A855F7 30%, rgba(255, 255, 255, 0.15));
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, #A855F7 10%, transparent) 0%, transparent 65%),
+    rgba(255, 255, 255, 0.06);
+  border: 2px solid color-mix(in srgb, #A855F7 25%, rgba(255, 255, 255, 0.12));
   box-shadow:
     var(--shadow-md),
-    0 0 40px color-mix(in srgb, #A855F7 20%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 0 25px color-mix(in srgb, #A855F7 12%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .analysis-photo {
@@ -553,8 +553,8 @@
 }
 
 .grid-cell {
-  background: color-mix(in srgb, var(--color-plasma-cyan) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-plasma-cyan) 15%, transparent);
+  background: color-mix(in srgb, var(--color-plasma-cyan) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-plasma-cyan) 10%, transparent);
   animation: gridCellPulse 2s ease-in-out infinite;
   animation-delay: calc(var(--cell-index) * 0.1s);
   will-change: opacity, background-color;
@@ -603,10 +603,10 @@
   width: 80px;
   height: 80px;
   background: radial-gradient(circle,
-    color-mix(in srgb, var(--color-plasma-cyan) calc(var(--zone-intensity) * 30%), transparent) 0%,
+    color-mix(in srgb, var(--color-plasma-cyan) calc(var(--zone-intensity) * 20%), transparent) 0%,
     transparent 70%
   );
-  border: 2px solid color-mix(in srgb, var(--color-plasma-cyan) calc(var(--zone-intensity) * 50%), transparent);
+  border: 2px solid color-mix(in srgb, var(--color-plasma-cyan) calc(var(--zone-intensity) * 35%), transparent);
   border-radius: 50%;
   transform: translate(-50%, -50%) translateZ(0);
   animation: analysisZone 3s ease-in-out infinite;
@@ -633,14 +633,14 @@
 .ai-focus-overlay--front {
   background: radial-gradient(circle at 50% 50%,
     transparent 30%,
-    color-mix(in srgb, var(--color-plasma-cyan) 10%, transparent) 100%
+    color-mix(in srgb, var(--color-plasma-cyan) 6%, transparent) 100%
   );
 }
 
 .ai-focus-overlay--profile {
   background: radial-gradient(circle at 50% 50%,
     transparent 30%,
-    color-mix(in srgb, #A855F7 10%, transparent) 100%
+    color-mix(in srgb, #A855F7 6%, transparent) 100%
   );
 }
 

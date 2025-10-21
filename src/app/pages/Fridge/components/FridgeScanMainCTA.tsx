@@ -130,26 +130,20 @@ const FridgeScanMainCTA: React.FC = () => {
             className="w-28 h-28 mx-auto rounded-full flex items-center justify-center relative"
             style={{
               background: `
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 60%),
-                radial-gradient(circle at 70% 70%, color-mix(in srgb, #EC4899 35%, transparent) 0%, transparent 50%),
-                linear-gradient(135deg, color-mix(in srgb, #EC4899 65%, transparent), color-mix(in srgb, #F472B6 55%, transparent))
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25) 0%, transparent 60%),
+                radial-gradient(circle at 70% 70%, color-mix(in srgb, #EC4899 20%, transparent) 0%, transparent 50%),
+                linear-gradient(135deg, color-mix(in srgb, #EC4899 40%, transparent), color-mix(in srgb, #F472B6 35%, transparent))
               `,
-              border: '4px solid color-mix(in srgb, #EC4899 75%, transparent)',
+              border: '3px solid color-mix(in srgb, #EC4899 50%, transparent)',
               boxShadow: `
-                0 0 50px color-mix(in srgb, #EC4899 70%, transparent),
-                0 0 100px color-mix(in srgb, #F472B6 50%, transparent),
-                inset 0 4px 0 rgba(255,255,255,0.5)
+                0 0 30px color-mix(in srgb, #EC4899 40%, transparent),
+                inset 0 2px 0 rgba(255,255,255,0.3)
               `,
               willChange: isPerformanceMode ? 'auto' : 'transform'
             }}
             {...(!isPerformanceMode && {
               animate: {
-                scale: [1, 1.06, 1],
-                boxShadow: [
-                  '0 0 50px rgba(236, 72, 153, 0.7), 0 0 100px rgba(244, 114, 182, 0.5)',
-                  '0 0 55px rgba(236, 72, 153, 0.75), 0 0 110px rgba(244, 114, 182, 0.55)',
-                  '0 0 50px rgba(236, 72, 153, 0.7), 0 0 100px rgba(244, 114, 182, 0.5)'
-                ]
+                scale: [1, 1.04, 1]
               },
               transition: { duration: 3, repeat: Infinity, ease: [0.45, 0.05, 0.55, 0.95] }
             })}
@@ -160,78 +154,6 @@ const FridgeScanMainCTA: React.FC = () => {
               color="rgba(255, 255, 255, 0.95)"
               variant="pure"
             />
-
-            {/* Anneau de Pulsation - Désactivé en performance mode */}
-            {!isPerformanceMode && (
-              <motion.div
-                className="absolute inset-0 rounded-full border-3"
-                style={{
-                  borderColor: 'color-mix(in srgb, #EC4899 70%, transparent)',
-                  willChange: 'transform, opacity'
-                }}
-                animate={{
-                  scale: [1, 1.5, 1.5],
-                  opacity: [0.7, 0, 0]
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: 'easeOut'
-                }}
-              />
-            )}
-
-            {/* Bulles Animées - Désactivées en performance mode */}
-            {!isPerformanceMode && [
-              { size: 16, distance: 70, angle: 45, delay: 0 },
-              { size: 20, distance: 80, angle: 135, delay: 0.4 },
-              { size: 14, distance: 75, angle: 225, delay: 0.8 },
-              { size: 18, distance: 85, angle: 315, delay: 1.2 }
-            ].map((bubble, index) => (
-              <motion.div
-                key={`bubble-${index}`}
-                className="absolute rounded-full pointer-events-none"
-                style={{
-                  width: `${bubble.size}px`,
-                  height: `${bubble.size}px`,
-                  left: '50%',
-                  top: '50%',
-                  marginLeft: `-${bubble.size / 2}px`,
-                  marginTop: `-${bubble.size / 2}px`,
-                  background: `
-                    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6) 0%, transparent 70%),
-                    linear-gradient(135deg,
-                      color-mix(in srgb, #EC4899 70%, transparent),
-                      color-mix(in srgb, #F472B6 50%, transparent)
-                    )
-                  `,
-                  border: '2px solid color-mix(in srgb, #EC4899 80%, transparent)',
-                  boxShadow: `
-                    0 0 20px color-mix(in srgb, #EC4899 60%, transparent),
-                    inset 0 2px 4px rgba(255,255,255,0.4)
-                  `,
-                  willChange: 'transform, opacity'
-                }}
-                animate={{
-                  x: [
-                    0,
-                    Math.cos((bubble.angle * Math.PI) / 180) * bubble.distance
-                  ],
-                  y: [
-                    0,
-                    Math.sin((bubble.angle * Math.PI) / 180) * bubble.distance
-                  ],
-                  scale: [0.6, 1],
-                  opacity: [0.9, 0]
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: [0.33, 1, 0.68, 1],
-                  delay: bubble.delay
-                }}
-              />
-            ))}
           </MotionDiv>
         </div>
 
@@ -271,26 +193,24 @@ const FridgeScanMainCTA: React.FC = () => {
             style={{
               background: `
                 linear-gradient(135deg,
-                  color-mix(in srgb, #EC4899 90%, transparent),
-                  color-mix(in srgb, #F472B6 75%, transparent),
-                  color-mix(in srgb, #DB2777 65%, transparent)
+                  color-mix(in srgb, #EC4899 85%, transparent),
+                  color-mix(in srgb, #F472B6 70%, transparent),
+                  color-mix(in srgb, #DB2777 60%, transparent)
                 )
               `,
-              border: '3px solid color-mix(in srgb, #EC4899 80%, transparent)',
+              border: '2px solid color-mix(in srgb, #EC4899 60%, transparent)',
               boxShadow: `
-                0 20px 65px color-mix(in srgb, #EC4899 65%, transparent),
-                0 0 110px color-mix(in srgb, #F472B6 55%, transparent),
-                inset 0 5px 0 rgba(255,255,255,0.6)
+                0 20px 50px color-mix(in srgb, #EC4899 45%, transparent),
+                inset 0 3px 0 rgba(255,255,255,0.5)
               `,
               color: 'white'
             }}
             onMouseEnter={(e) => {
               if (!isPerformanceMode && window.matchMedia('(hover: hover)').matches) {
-                e.currentTarget.style.transform = 'translateY(-4px) scale(1.04)';
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)';
                 e.currentTarget.style.boxShadow = `
-                  0 26px 85px color-mix(in srgb, #EC4899 80%, transparent),
-                  0 0 140px color-mix(in srgb, #F472B6 70%, transparent),
-                  inset 0 5px 0 rgba(255,255,255,0.7)
+                  0 24px 60px color-mix(in srgb, #EC4899 55%, transparent),
+                  inset 0 3px 0 rgba(255,255,255,0.6)
                 `;
               }
             }}
@@ -298,9 +218,8 @@ const FridgeScanMainCTA: React.FC = () => {
               if (!isPerformanceMode && window.matchMedia('(hover: hover)').matches) {
                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
                 e.currentTarget.style.boxShadow = `
-                  0 20px 65px color-mix(in srgb, #EC4899 65%, transparent),
-                  0 0 110px color-mix(in srgb, #F472B6 55%, transparent),
-                  inset 0 5px 0 rgba(255,255,255,0.6)
+                  0 20px 50px color-mix(in srgb, #EC4899 45%, transparent),
+                  inset 0 3px 0 rgba(255,255,255,0.5)
                 `;
               }
             }}
