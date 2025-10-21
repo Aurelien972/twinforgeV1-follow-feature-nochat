@@ -239,7 +239,7 @@ const ActivityInputPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: transcriptionResult.cleanText,
+          cleanText: transcriptionResult.cleanText,
           userId: session.user.id,
           userProfile: {
             weight_kg: profile?.weight_kg || 70,
