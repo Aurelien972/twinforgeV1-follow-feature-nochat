@@ -1,10 +1,12 @@
 /*
   Fonction Edge: activity-analyzer
   Agent 2 - Analyse des activités avec gpt-5-mini
-  
+
   Rôle: Extraire les activités, durées, intensités et calculer les calories
   Modèle: gpt-5-mini (optimisé pour le raisonnement et l'analyse)
-*/ import { corsHeaders } from '../_shared/cors.ts';
+*/
+
+import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 // Table MET pour différentes activités (valeurs de référence)
 const MET_VALUES = {
