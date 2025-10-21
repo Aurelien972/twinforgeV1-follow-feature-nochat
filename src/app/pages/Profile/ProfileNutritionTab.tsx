@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useProfilePerformance } from './hooks/useProfilePerformance';
 import { ConditionalMotionSlide } from './components/shared/ConditionalMotionProfile';
@@ -27,9 +28,28 @@ import Haptics from '../../../utils/haptics';
  */
 const ProfileNutritionTab: React.FC = () => {
   const { profile } = useUserStore();
+  const location = useLocation();
 
   // Performance optimization
   const performanceConfig = useProfilePerformance();
+
+  // Handle hash navigation for deep linking to sections
+  useEffect(() => {
+    if (location.hash) {
+      const hash = location.hash.replace('#', '');
+      const element = document.getElementById(hash);
+      if (element) {
+        // Wait for tab to be fully rendered
+        setTimeout(() => {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
+          });
+        }, 300);
+      }
+    }
+  }, [location.hash]);
 
   // Check profile completion for Recipe Workshop
   const profileCompletion = calculateRecipeWorkshopCompletion(profile);

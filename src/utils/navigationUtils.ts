@@ -23,7 +23,7 @@ export function navigateWithScroll(
 ) {
   const { hash, tab, smooth = true, delay = 100 } = options || {};
 
-  // Build the full route with query params
+  // Build the full route with query params and hash
   let fullRoute = route;
   const params = new URLSearchParams();
 
@@ -36,10 +36,15 @@ export function navigateWithScroll(
     fullRoute += `?${queryString}`;
   }
 
-  // Navigate to the route
+  // Add hash to URL if provided
+  if (hash) {
+    fullRoute += `#${hash}`;
+  }
+
+  // Navigate to the route with hash
   navigate(fullRoute);
 
-  // Scroll to element if hash is provided
+  // Also ensure element is scrolled into view after navigation
   if (hash) {
     setTimeout(() => {
       const element = document.getElementById(hash);
