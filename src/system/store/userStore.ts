@@ -787,7 +787,11 @@ async function mapDbProfileToProfile(dbProfile: any): Promise<Profile> {
     fastingWindow: dbProfile.nutrition?.fastingWindow || {},
     health: dbProfile.health || {},
     // Enhanced nutrition preferences for Recipe Workshop
-    householdDetails: dbProfile.household_details || {},
+    householdDetails: dbProfile.household_details ? {
+      adults: dbProfile.household_details.adults ?? 1,
+      children: dbProfile.household_details.children ?? 0,
+      dietaryRestrictions: dbProfile.household_details.dietaryRestrictions || []
+    } : { adults: 1, children: 0, dietaryRestrictions: [] },
     mealPrepPreferences: dbProfile.meal_prep_preferences || {},
     kitchenEquipment: dbProfile.kitchen_equipment || {},
     foodPreferences: dbProfile.food_preferences || { cuisines: [], ingredients: [], flavors: [] },
@@ -831,7 +835,7 @@ function mapProfileToDb(profile: Profile, userId: string): any {
     health: profile.health || {},
     preferences: profile.preferences || {},
     // Enhanced nutrition preferences for Recipe Workshop
-    household_details: profile.householdDetails || {},
+    household_details: profile.householdDetails || { adults: 1, children: 0, dietaryRestrictions: [] },
     meal_prep_preferences: profile.mealPrepPreferences || {},
     kitchen_equipment: profile.kitchenEquipment || {},
     food_preferences: profile.foodPreferences || { cuisines: [], ingredients: [], flavors: [] },

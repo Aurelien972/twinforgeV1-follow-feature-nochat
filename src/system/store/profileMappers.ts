@@ -23,12 +23,14 @@ export interface Profile extends UserProfile {
 
 // Database columns whitelist
 const DB_COLUMNS = new Set([
-  'user_id', 'display_name', 'birthdate', 'sex', 'height_cm', 'weight_kg', 
+  'user_id', 'display_name', 'birthdate', 'sex', 'height_cm', 'weight_kg',
   'target_weight_kg', 'body_fat_perc', 'activity_level', 'job_category', 'phone_number',
   'objective', 'avatar_status', 'avatar_url', 'created_at', 'updated_at',
   'goals', 'constraints', 'preferences', 'emotion_baseline', 'role',
   'emotions', 'nutrition', 'health', 'avatar_onboarding_completed',
-  'portrait_url', 'portrait_source'
+  'portrait_url', 'portrait_source',
+  'household_details', 'meal_prep_preferences', 'kitchen_equipment',
+  'food_preferences', 'sensory_preferences', 'macro_targets', 'shopping_preferences'
 ]);
 
 // Text fields that should be null instead of empty strings
@@ -82,6 +84,13 @@ export function mapProfileUpdatesToDb(updates: Partial<Profile>): any {
     else if (key === 'portraitUrl') dbKey = 'portrait_url';
     else if (key === 'portraitSource') dbKey = 'portrait_source';
     else if (key === 'emotionBaseline') dbKey = 'emotion_baseline';
+    else if (key === 'householdDetails') dbKey = 'household_details';
+    else if (key === 'mealPrepPreferences') dbKey = 'meal_prep_preferences';
+    else if (key === 'kitchenEquipment') dbKey = 'kitchen_equipment';
+    else if (key === 'foodPreferences') dbKey = 'food_preferences';
+    else if (key === 'sensoryPreferences') dbKey = 'sensory_preferences';
+    else if (key === 'macroTargets') dbKey = 'macro_targets';
+    else if (key === 'shoppingPreferences') dbKey = 'shopping_preferences';
 
     // Only include valid database columns
     if (DB_COLUMNS.has(dbKey)) {
@@ -226,6 +235,17 @@ export async function mapDbProfileToProfile(dbProfile: any): Promise<Profile> {
       allergies: Array.isArray(dbProfile.nutrition?.allergies) ? dbProfile.nutrition.allergies : [],
       intolerances: Array.isArray(dbProfile.nutrition?.intolerances) ? dbProfile.nutrition.intolerances : [],
     },
+    householdDetails: dbProfile.household_details ? {
+      adults: dbProfile.household_details.adults ?? 1,
+      children: dbProfile.household_details.children ?? 0,
+      dietaryRestrictions: dbProfile.household_details.dietaryRestrictions || []
+    } : { adults: 1, children: 0, dietaryRestrictions: [] },
+    mealPrepPreferences: dbProfile.meal_prep_preferences || {},
+    kitchenEquipment: dbProfile.kitchen_equipment || {},
+    foodPreferences: dbProfile.food_preferences || {},
+    sensoryPreferences: dbProfile.sensory_preferences || {},
+    macroTargets: dbProfile.macro_targets || {},
+    shoppingPreferences: dbProfile.shopping_preferences || {},
     health: dbProfile.health || {},
     emotions: dbProfile.emotions || {},
     // Legacy support
