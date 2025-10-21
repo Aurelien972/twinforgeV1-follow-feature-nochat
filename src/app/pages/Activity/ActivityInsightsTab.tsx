@@ -229,7 +229,7 @@ const ActivityInsightsTab: React.FC = () => {
     );
   }
 
-  // Affichage pour les données de fallback
+  // Affichage pour les données de fallback (mode local)
   if (isFallbackData && insightsData) {
     return (
       <div className="space-y-6">
@@ -242,11 +242,38 @@ const ActivityInsightsTab: React.FC = () => {
           accentColor="#F59E0B"
         />
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-          <p className="text-amber-800 text-sm">
-            Analyse détaillée temporairement indisponible. Voici un résumé basique de vos activités.
-          </p>
-        </div>
+        {/* Bannière mode fallback local */}
+        <GlassCard
+          className="p-4"
+          style={{
+            background: `
+              radial-gradient(circle at 30% 20%, color-mix(in srgb, #F59E0B 8%, transparent) 0%, transparent 60%),
+              var(--glass-opacity)
+            `,
+            borderColor: 'color-mix(in srgb, #F59E0B 25%, transparent)',
+            boxShadow: `0 0 16px color-mix(in srgb, #F59E0B 15%, transparent)`
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{
+                background: 'color-mix(in srgb, #F59E0B 15%, transparent)',
+                border: '1px solid color-mix(in srgb, #F59E0B 25%, transparent)'
+              }}
+            >
+              <SpatialIcon Icon={ICONS.Info} size={14} style={{ color: '#F59E0B' }} />
+            </div>
+            <div>
+              <p className="text-orange-300 font-medium text-sm">
+                Mode Analyse Locale
+              </p>
+              <p className="text-orange-200 text-xs mt-0.5">
+                Insights générés localement à partir de vos données d'activité
+              </p>
+            </div>
+          </div>
+        </GlassCard>
 
         <div className="space-y-6">
           <GlobalStatsCard
@@ -282,8 +309,42 @@ const ActivityInsightsTab: React.FC = () => {
         accentColor="#F59E0B"
       />
 
-      {/* Indicateur de cache si les données proviennent du cache */}
-      {isCachedData && (
+      {/* Indicateur de fallback ou de cache */}
+      {isFallbackData && (
+        <GlassCard
+          className="p-4"
+          style={{
+            background: `
+              radial-gradient(circle at 30% 20%, color-mix(in srgb, #F59E0B 8%, transparent) 0%, transparent 60%),
+              var(--glass-opacity)
+            `,
+            borderColor: 'color-mix(in srgb, #F59E0B 25%, transparent)',
+            boxShadow: `0 0 16px color-mix(in srgb, #F59E0B 15%, transparent)`
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{
+                background: 'color-mix(in srgb, #F59E0B 15%, transparent)',
+                border: '1px solid color-mix(in srgb, #F59E0B 25%, transparent)'
+              }}
+            >
+              <SpatialIcon Icon={ICONS.Info} size={14} style={{ color: '#F59E0B' }} />
+            </div>
+            <div>
+              <p className="text-orange-300 font-medium text-sm">
+                Mode Analyse Locale
+              </p>
+              <p className="text-orange-200 text-xs mt-0.5">
+                Insights générés localement à partir de vos données d'activité
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+      )}
+
+      {isCachedData && !isFallbackData && (
         <GlassCard
           className="p-4"
           style={{

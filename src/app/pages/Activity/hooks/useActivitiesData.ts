@@ -53,6 +53,7 @@ export function useActivityHistory(limit: number = 100) {
 
 /**
  * Hook pour générer des insights d'activité avec l'IA
+ * Utilise l'edge function en priorité, avec fallback local en cas d'erreur
  */
 export function useActivityInsightsGenerator(period: 'last7Days' | 'last30Days' | 'last3Months' | 'last6Months' | 'last1Year' = 'last7Days') {
   const { session, profile } = useUserStore();
@@ -60,139 +61,157 @@ export function useActivityInsightsGenerator(period: 'last7Days' | 'last30Days' 
   return useQuery({
     queryKey: ['activities', 'insights', session?.user?.id, period],
     queryFn: async () => {
-      // DIAGNOSTIC: Log au début de la queryFn pour tracer les exécutions
       logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'queryFn execution started', {
         userId: session?.user?.id,
         period,
         executionTime: new Date().toISOString(),
         reason: 'react_query_triggered_execution',
-        cacheStrategy: 'server_side_cache_first',
+        cacheStrategy: 'edge_function_with_local_fallback',
         timestamp: new Date().toISOString()
       });
-      
+
       if (!session?.user?.id) {
         throw new Error('User not authenticated');
       }
 
-      // Préparer le profil utilisateur pour l'analyzer
-      const userProfileForAnalysis = {
-        weight_kg: profile?.weight_kg || 70,
-        height_cm: profile?.height_cm,
-        sex: profile?.sex,
-        birthdate: profile?.birthdate,
-        activity_level: profile?.activity_level,
-        objective: profile?.objective
-      };
-
-      // Appel à la fonction Edge activity-insights-generator
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
+
       if (!supabaseUrl || !supabaseKey) {
         throw new Error('Configuration Supabase manquante. Vérifiez vos variables d\'environnement VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY.');
       }
-      
-      // DIAGNOSTIC: Log juste avant l'appel fetch (maintenant avec cache côté serveur)
-      logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'MAKING FETCH CALL WITH SERVER-SIDE CACHE', {
-        userId: session.user.id,
-        period,
-        endpoint: `${supabaseUrl}/functions/v1/activity-progress-generator`,
-        cacheStrategy: 'Server will check cache first, then call OpenAI if needed',
-        timestamp: new Date().toISOString()
-      });
-      
-      const response = await fetch(`${supabaseUrl}/functions/v1/activity-progress-generator`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+
+      // Essayer d'abord l'edge function
+      try {
+        const userProfileForAnalysis = {
+          weight_kg: profile?.weight_kg || 70,
+          height_cm: profile?.height_cm,
+          sex: profile?.sex,
+          birthdate: profile?.birthdate,
+          activity_level: profile?.activity_level,
+          objective: profile?.objective
+        };
+
+        logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Attempting edge function call', {
           userId: session.user.id,
           period,
-          userProfile: userProfileForAnalysis,
-          clientTraceId: `activity_insights_${Date.now()}`
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        
-        // Gestion spéciale pour "pas assez de données" (maintenant géré côté serveur)
-        if (response.status === 400 && errorData.error === 'Insufficient data') {
-          logger.info('ACTIVITY_INSIGHTS', 'Insufficient data for insights generation', {
-            userId: session.user.id,
-            period,
-            requiredActivities: errorData.required_activities,
-            currentActivities: errorData.current_activities,
-            timestamp: new Date().toISOString()
-          });
-          
-          return {
-            insufficient_data: true,
-            required_activities: errorData.required_activities,
-            current_activities: errorData.current_activities,
-            message: errorData.message
-          };
-        }
-        
-        throw new Error(`Erreur de génération d'insights: ${response.statusText}`);
-      }
-
-      const insightsData = await response.json();
-
-      // CORRECTION CRITIQUE: Validation et enrichissement de current_activities
-      let currentActivities = insightsData.current_activities;
-
-      // Si current_activities n'est pas défini, le calculer depuis summary.total_activities
-      if (currentActivities === undefined || currentActivities === null) {
-        currentActivities = insightsData.summary?.total_activities || 0;
-        logger.warn('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'current_activities missing, calculated from summary', {
-          userId: session.user.id,
-          period,
-          calculatedValue: currentActivities,
-          summaryTotalActivities: insightsData.summary?.total_activities,
+          endpoint: `${supabaseUrl}/functions/v1/activity-progress-generator`,
           timestamp: new Date().toISOString()
         });
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/activity-progress-generator`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: session.user.id,
+            period,
+            userProfile: userProfileForAnalysis,
+            clientTraceId: `activity_insights_${Date.now()}`
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+
+          if (response.status === 400 && errorData.error === 'Insufficient data') {
+            logger.info('ACTIVITY_INSIGHTS', 'Insufficient data for insights generation', {
+              userId: session.user.id,
+              period,
+              requiredActivities: errorData.required_activities,
+              currentActivities: errorData.current_activities,
+              timestamp: new Date().toISOString()
+            });
+
+            return {
+              insufficient_data: true,
+              required_activities: errorData.required_activities,
+              current_activities: errorData.current_activities,
+              message: errorData.message
+            };
+          }
+
+          throw new Error(`Edge function error: ${response.statusText}`);
+        }
+
+        const insightsData = await response.json();
+
+        let currentActivities = insightsData.current_activities;
+        if (currentActivities === undefined || currentActivities === null) {
+          currentActivities = insightsData.summary?.total_activities || 0;
+        }
+
+        const enrichedData = {
+          ...insightsData,
+          current_activities: currentActivities
+        };
+
+        logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Edge function call successful', {
+          userId: session.user.id,
+          period,
+          insightsCount: insightsData.insights?.length || 0,
+          currentActivities,
+          cached: insightsData.cached || false,
+          timestamp: new Date().toISOString()
+        });
+
+        return enrichedData;
+
+      } catch (edgeFunctionError) {
+        // L'edge function a échoué - basculer sur le fallback local
+        logger.warn('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Edge function failed, falling back to local processing', {
+          userId: session.user.id,
+          period,
+          error: edgeFunctionError instanceof Error ? edgeFunctionError.message : 'Unknown error',
+          fallbackStrategy: 'local_insights_processor',
+          timestamp: new Date().toISOString()
+        });
+
+        // Import dynamique du processeur local
+        const { generateLocalActivityInsights } = await import('../utils/localActivityInsightsProcessor');
+
+        try {
+          const localInsights = await generateLocalActivityInsights(
+            session.user.id,
+            period,
+            supabase
+          );
+
+          logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Local fallback completed successfully', {
+            userId: session.user.id,
+            period,
+            insightsCount: localInsights.insights.length,
+            currentActivities: localInsights.current_activities,
+            fallback: true,
+            timestamp: new Date().toISOString()
+          });
+
+          return localInsights;
+
+        } catch (localError) {
+          logger.error('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'Both edge function and local fallback failed', {
+            userId: session.user.id,
+            period,
+            edgeFunctionError: edgeFunctionError instanceof Error ? edgeFunctionError.message : 'Unknown',
+            localError: localError instanceof Error ? localError.message : 'Unknown',
+            timestamp: new Date().toISOString()
+          });
+
+          throw new Error('Impossible de générer les insights. Vérifiez votre connexion.');
+        }
       }
-
-      // Ajouter current_activities dans la réponse si manquant
-      const enrichedData = {
-        ...insightsData,
-        current_activities: currentActivities
-      };
-
-      // DIAGNOSTIC: Log de succès avec information sur le cache et current_activities
-      logger.info('ACTIVITY_INSIGHTS_DIAGNOSTIC', 'API CALL COMPLETED', {
-        userId: session.user.id,
-        period,
-        insightsCount: insightsData.insights?.length || 0,
-        currentActivities: currentActivities,
-        summaryTotalActivities: insightsData.summary?.total_activities,
-        dataConsistency: currentActivities === insightsData.summary?.total_activities ? 'consistent' : 'inconsistent',
-        costUsd: insightsData.costUsd,
-        processingTime: insightsData.processingTime,
-        cached: insightsData.cached || false,
-        cacheAge: insightsData.cache_age_hours,
-        fallback: insightsData.fallback || false,
-        creditsConsumed: !insightsData.cached && !insightsData.fallback,
-        enrichmentApplied: currentActivities !== insightsData.current_activities,
-        timestamp: new Date().toISOString()
-      });
-
-      return enrichedData;
     },
     enabled: !!session?.user?.id,
-    staleTime: getStaleTimeForPeriod(period), // Cache client adaptatif selon la période
-    gcTime: getGcTimeForPeriod(period), // Garbage collection adaptative
-    refetchOnWindowFocus: false, // Éviter les appels coûteux
-    refetchOnMount: true, // IMPORTANT: Refetch on mount pour nouveaux insights
+    staleTime: getStaleTimeForPeriod(period),
+    gcTime: getGcTimeForPeriod(period),
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     retry: (failureCount, error) => {
-      // Ne pas retry si c'est une erreur de données insuffisantes
       if (error?.message?.includes('Insufficient data')) {
         return false;
       }
-      // Une seule tentative pour les autres erreurs
       return failureCount < 1;
     },
   });
