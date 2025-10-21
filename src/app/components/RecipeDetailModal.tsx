@@ -44,12 +44,9 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
     }
   }, [isOpen, onClose]);
 
-  // Don't render anything if modal is not open or recipe is missing
-  if (!isOpen || !recipe) return null;
-
   return (
     <AnimatePresence mode="wait">
-      {isOpen && (
+      {isOpen && recipe && (
         <>
           <motion.div
             initial={{ opacity: 0 }}
