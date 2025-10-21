@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import type { Recipe } from '../../domain/recipe';
 import GlassCard from '../../ui/cards/GlassCard';
 import SpatialIcon from '../../ui/icons/SpatialIcon';
 import { ICONS } from '../../ui/icons/registry';
+import Portal from '../../ui/components/Portal';
 
 interface RecipeDetailModalProps {
   recipe: Recipe | null;
@@ -13,20 +14,54 @@ interface RecipeDetailModalProps {
 }
 
 const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, onClose }) => {
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen]);
+
+  // Handle ESC key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   if (!recipe) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-            onClick={onClose}
-          />
-          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
+    <Portal containerId="recipe-modal-root">
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              style={{ zIndex: 9999 }}
+              onClick={onClose}
+            />
+            <div
+              className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
+              style={{ zIndex: 10000 }}
+            >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -34,7 +69,7 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="w-full max-w-4xl max-h-[90vh] overflow-auto pointer-events-auto"
             >
-              <GlassCard className="p-6 relative">
+              <GlassCard className="p-6 relative" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
                 <button
                   onClick={onClose}
                   className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
@@ -143,9 +178,10 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
               </GlassCard>
             </motion.div>
           </div>
-        </>
-      )}
-    </AnimatePresence>
+          </>
+        )}
+      </AnimatePresence>
+    </Portal>
   );
 };
 

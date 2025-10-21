@@ -1,6 +1,7 @@
 import React from 'react';
 import ForgeHammerIcon from '../../icons/ForgeHammerIcon';
 import { usePerformanceMode } from '../../../system/context/PerformanceModeContext';
+import { usePerformanceMode } from '../../../system/context/PerformanceModeContext';
 
 interface TwinForgeLogoProps {
   variant?: 'desktop' | 'mobile';
@@ -14,6 +15,18 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
   className = ''
 }) => {
   const isDesktop = variant === 'desktop';
+  const { mode } = usePerformanceMode();
+
+  // Use simplified gradient in high-performance mode for better compatibility
+  const isHighPerformance = mode === 'high-performance';
+
+  // Simplified 2-color gradient for ultra performance mode
+  const gradientStyle = isHighPerformance
+    ? 'linear-gradient(135deg, #FF6B35 0%, #FDC830 100%)'
+    : 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)';
+
+  // Fallback solid color for maximum compatibility
+  const fallbackColor = '#FF8C42';
 
   if (isDesktop) {
     return (
@@ -47,7 +60,8 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
               fontSize: '25px',
               fontWeight: 800,
               letterSpacing: '1.2px',
-              background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)',
+              color: fallbackColor,
+              background: gradientStyle,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -115,7 +129,8 @@ export const TwinForgeLogo: React.FC<TwinForgeLogoProps> = ({
             fontSize: '15px',
             fontWeight: 800,
             letterSpacing: '0.8px',
-            background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%)',
+            color: fallbackColor,
+            background: gradientStyle,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
