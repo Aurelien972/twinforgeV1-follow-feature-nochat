@@ -136,9 +136,13 @@ const ActivityDailyTab: React.FC = () => {
   }
 
   // Afficher l'empty state si aucune activité du tout
-  if (!statsLoading && !hasAnyActivityHistory) {
+  // IMPORTANT: Ne pas afficher si on est en train de charger
+  if (!statsLoading && !recentLoading && !hasAnyActivityHistory) {
     return <EmptyActivityDailyState />;
   }
+
+  // Si on a un historique d'activités, toujours afficher l'UI complète
+  // même si il n'y a pas d'activités aujourd'hui
 
   return (
     <motion.div

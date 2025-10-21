@@ -303,33 +303,34 @@ const ReviewStage: React.FC<ReviewStageProps> = ({ analysisResult, onComplete, o
         });
       }
 
-      // Invalider les caches React Query pour forcer le rechargement des données
-      await queryClient.invalidateQueries({
-        queryKey: ['activities', 'daily', session.user.id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['activities', 'stats', session.user.id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['activities', 'recent', session.user.id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['activities', 'has-history', session.user.id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['activities', 'history', session.user.id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['activities', 'insights', session.user.id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['activities', 'progression', session.user.id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['training-goals', session.user.id]
+      // CRITIQUE: Invalider TOUS les caches d'activité et forcer le refetch
+      // Stratégie agressive pour garantir que l'UI se met à jour immédiatement
+      logger.info('ACTIVITY_REVIEW', 'Starting aggressive cache invalidation', {
+        userId: session.user.id,
+        timestamp: new Date().toISOString()
       });
 
-      logger.info('ACTIVITY_REVIEW', 'All activity caches invalidated', {
+      // Invalider et refetch immédiatement toutes les requêtes d'activités
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['activities'],
+          refetchType: 'all' // Refetch active and inactive queries
+        }),
+        queryClient.refetchQueries({
+          queryKey: ['activities', 'daily', session.user.id],
+          type: 'all'
+        }),
+        queryClient.refetchQueries({
+          queryKey: ['activities', 'has-history', session.user.id],
+          type: 'all'
+        }),
+        queryClient.refetchQueries({
+          queryKey: ['activities', 'recent', session.user.id],
+          type: 'all'
+        })
+      ]);
+
+      logger.info('ACTIVITY_REVIEW', 'All activity caches invalidated and refetched', {
         userId: session.user.id,
         timestamp: new Date().toISOString()
       });

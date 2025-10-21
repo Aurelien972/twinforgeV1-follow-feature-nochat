@@ -186,6 +186,7 @@ export function useActivityInsightsGenerator(period: 'last7Days' | 'last30Days' 
     staleTime: getStaleTimeForPeriod(period), // Cache client adaptatif selon la période
     gcTime: getGcTimeForPeriod(period), // Garbage collection adaptative
     refetchOnWindowFocus: false, // Éviter les appels coûteux
+    refetchOnMount: true, // IMPORTANT: Refetch on mount pour nouveaux insights
     retry: (failureCount, error) => {
       // Ne pas retry si c'est une erreur de données insuffisantes
       if (error?.message?.includes('Insufficient data')) {
@@ -213,9 +214,10 @@ export function useTodayActivities() {
       return fetchActivitiesForDate(session.user.id, today);
     },
     enabled: !!session?.user?.id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always fresh - données changent fréquemment
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: true,
+    refetchOnMount: 'always', // CRITIQUE: Always refetch on mount
     retry: 2,
   });
 }
@@ -254,8 +256,9 @@ export function useRecentActivities(limit: number = 10) {
       return fetchRecentActivities(session.user.id, limit);
     },
     enabled: !!session?.user?.id,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 0, // Always fresh - données changent fréquemment
     gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnMount: 'always', // CRITIQUE: Always refetch on mount
     retry: 2,
   });
 }
@@ -418,7 +421,8 @@ export function useHasActivityHistory() {
       return (data?.length || 0) > 0;
     },
     enabled: !!session?.user?.id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always fresh - change après chaque activité sauvegardée
+    refetchOnMount: 'always', // CRITIQUE: Always refetch on mount
     retry: 1,
   });
 }
