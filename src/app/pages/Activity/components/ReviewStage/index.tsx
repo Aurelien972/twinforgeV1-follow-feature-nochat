@@ -242,44 +242,65 @@ const ReviewStage: React.FC<ReviewStageProps> = ({ analysisResult, onComplete, o
         timestamp: new Date().toISOString()
       });
 
-      // Appeler sync-wearable-goals pour chaque activité créée
+      // Appeler sync-wearable-goals pour chaque activité créée (non-bloquant)
       if (data && data.length > 0) {
-        logger.info('ACTIVITY_REVIEW', 'Syncing wearable goals', {
+        logger.info('ACTIVITY_REVIEW', 'Starting async wearable goals sync', {
           userId: session.user.id,
           activitiesCount: data.length,
           timestamp: new Date().toISOString()
         });
 
-        for (const activity of data) {
-          try {
-            const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-wearable-goals', {
-              body: {
-                activity_id: activity.id,
-                user_id: session.user.id
-              }
-            });
+        // Exécuter les syncs en arrière-plan sans bloquer l'UI
+        Promise.allSettled(
+          data.map(async (activity) => {
+            try {
+              // Timeout de 5 secondes pour chaque appel
+              const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Sync timeout after 5s')), 5000)
+              );
 
-            if (syncError) {
-              logger.error('ACTIVITY_REVIEW', 'Failed to sync wearable goals', {
-                activityId: activity.id,
-                error: syncError.message,
-                timestamp: new Date().toISOString()
+              const syncPromise = supabase.functions.invoke('sync-wearable-goals', {
+                body: {
+                  activity_id: activity.id,
+                  user_id: session.user.id
+                }
               });
-            } else {
-              logger.info('ACTIVITY_REVIEW', 'Wearable goals synced successfully', {
+
+              const { data: syncResult, error: syncError } = await Promise.race([
+                syncPromise,
+                timeoutPromise
+              ]) as any;
+
+              if (syncError) {
+                logger.warn('ACTIVITY_REVIEW', 'Failed to sync wearable goals (non-blocking)', {
+                  activityId: activity.id,
+                  error: syncError.message,
+                  timestamp: new Date().toISOString()
+                });
+              } else {
+                logger.info('ACTIVITY_REVIEW', 'Wearable goals synced successfully', {
+                  activityId: activity.id,
+                  goalsUpdated: syncResult?.goals_updated || 0,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            } catch (syncErr) {
+              logger.warn('ACTIVITY_REVIEW', 'Exception during wearable goal sync (non-blocking)', {
                 activityId: activity.id,
-                goalsUpdated: syncResult?.goals_updated || 0,
+                error: syncErr instanceof Error ? syncErr.message : 'Unknown error',
                 timestamp: new Date().toISOString()
               });
             }
-          } catch (syncErr) {
-            logger.error('ACTIVITY_REVIEW', 'Exception during wearable goal sync', {
-              activityId: activity.id,
-              error: syncErr instanceof Error ? syncErr.message : 'Unknown error',
-              timestamp: new Date().toISOString()
-            });
-          }
-        }
+          })
+        ).then((results) => {
+          const successCount = results.filter(r => r.status === 'fulfilled').length;
+          logger.info('ACTIVITY_REVIEW', 'Wearable goals sync completed', {
+            total: results.length,
+            successful: successCount,
+            failed: results.length - successCount,
+            timestamp: new Date().toISOString()
+          });
+        });
       }
 
       // Invalider les caches React Query pour forcer le rechargement des données
