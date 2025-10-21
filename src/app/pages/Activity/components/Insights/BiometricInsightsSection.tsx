@@ -32,7 +32,12 @@ const BiometricInsightsSection: React.FC<BiometricInsightsSectionProps> = ({ per
 
       try {
         setLoading(true);
-        logger.info('BIOMETRIC_INSIGHTS', 'Fetching biometric insights', { userId: profile.id, period });
+        logger.info('BIOMETRIC_INSIGHTS_SECTION', 'Fetching biometric insights from local service', {
+          userId: profile.id,
+          period,
+          periodDays,
+          timestamp: new Date().toISOString()
+        });
 
         const [corrData, overtrainData, windowsData, goalsData] = await Promise.all([
           biometricAnalysisService.analyzeHRPerformanceCorrelation(profile.id, periodDays),
@@ -46,13 +51,20 @@ const BiometricInsightsSection: React.FC<BiometricInsightsSectionProps> = ({ per
         setWindows(windowsData);
         setGoalsProgress(goalsData);
 
-        logger.info('BIOMETRIC_INSIGHTS', 'Biometric insights fetched successfully', {
+        logger.info('BIOMETRIC_INSIGHTS_SECTION', 'Biometric insights fetched successfully', {
           hasCorrelation: !!corrData,
           overtrainingSeverity: overtrainData?.severity,
           windowsCount: windowsData?.length,
+          hasGoals: goalsData?.length > 0,
+          timestamp: new Date().toISOString()
         });
       } catch (error) {
-        logger.error('BIOMETRIC_INSIGHTS', 'Failed to fetch biometric insights', { error });
+        logger.error('BIOMETRIC_INSIGHTS_SECTION', 'Failed to fetch biometric insights', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          userId: profile.id,
+          period,
+          timestamp: new Date().toISOString()
+        });
       } finally {
         setLoading(false);
       }

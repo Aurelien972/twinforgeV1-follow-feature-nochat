@@ -14,7 +14,9 @@ import ActivityInsightCards from './components/Progression/ActivityInsightCards'
 import GlobalStatsCard from './components/Progression/GlobalStatsCard';
 import ProgressionPeriodSelector from './components/Insights/ProgressionPeriodSelector';
 import EmptyActivityInsightsState from './components/Insights/EmptyActivityInsightsState';
+import BiometricInsightsSection from './components/Insights/BiometricInsightsSection';
 import { useFeedback } from '../../../hooks/useFeedback';
+import { useBiometricInsights } from '../../../hooks/useSharedActivityInsights';
 import logger from '../../../lib/utils/logger';
 import './styles/index.css';
 
@@ -48,6 +50,34 @@ const ActivityInsightsTab: React.FC = () => {
 
   // Générateur d'insights
   const { data: insightsData, isLoading, error } = useActivityInsightsGenerator(apiPeriod);
+
+  // Générateur d'insights biométriques (activités enrichies uniquement)
+  const {
+    data: biometricData,
+    isLoading: biometricLoading,
+    error: biometricError
+  } = useBiometricInsights({ period: apiPeriod, enabled: !!insightsData && !insightsData.insufficient_data });
+
+  // Vérifier si on a des activités avec données biométriques
+  const hasEnrichedActivities = React.useMemo(() => {
+    return biometricData &&
+           !biometricData.insufficient_data &&
+           biometricData.enriched_activities &&
+           biometricData.enriched_activities.length > 0;
+  }, [biometricData]);
+
+  // Logs de diagnostic pour le biométrique
+  React.useEffect(() => {
+    if (biometricData) {
+      logger.info('ACTIVITY_INSIGHTS_TAB_BIOMETRIC', 'Biometric data received', {
+        hasData: !!biometricData,
+        insufficient: biometricData.insufficient_data,
+        enrichedCount: biometricData.enriched_activities?.length || 0,
+        insightsCount: biometricData.biometric_insights?.length || 0,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [biometricData]);
 
   // Détecter si l'onglet insights est actif (vérifie le hash de l'URL)
   const [isTabActive, setIsTabActive] = React.useState(false);
@@ -411,6 +441,100 @@ const ActivityInsightsTab: React.FC = () => {
             period={selectedPeriod}
             apiPeriod={apiPeriod}
           />
+
+          {/* Section Insights Biométriques - Données enrichies uniquement */}
+          {hasEnrichedActivities && (
+            <div className="space-y-6">
+              <GlassCard
+                className="p-6"
+                style={{
+                  background: `
+                    radial-gradient(circle at 30% 20%, color-mix(in srgb, #8B5CF6 8%, transparent) 0%, transparent 60%),
+                    var(--glass-opacity)
+                  `,
+                  borderColor: 'color-mix(in srgb, #8B5CF6 20%, transparent)'
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{
+                      background: `
+                        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
+                        linear-gradient(135deg, color-mix(in srgb, #8B5CF6 30%, transparent), color-mix(in srgb, #8B5CF6 20%, transparent))
+                      `,
+                      border: '2px solid color-mix(in srgb, #8B5CF6 40%, transparent)',
+                      boxShadow: '0 0 20px color-mix(in srgb, #8B5CF6 30%, transparent)'
+                    }}
+                  >
+                    <SpatialIcon Icon={ICONS.Activity} size={20} style={{ color: '#8B5CF6' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Analyse Biométrique Avancée</h3>
+                    <p className="text-purple-200 text-sm">Insights basés sur vos données de fréquence cardiaque et performance</p>
+                  </div>
+                </div>
+              </GlassCard>
+
+              {biometricLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-48 rounded-2xl animate-pulse"
+                      style={{
+                        background: 'linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))',
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : biometricError ? (
+                <GlassCard className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{
+                    background: 'linear-gradient(135deg, color-mix(in srgb, #EF4444 20%, transparent), color-mix(in srgb, #EF4444 10%, transparent))',
+                    border: '1px solid color-mix(in srgb, #EF4444 30%, transparent)'
+                  }}>
+                    <SpatialIcon Icon={ICONS.AlertCircle} size={32} style={{ color: '#EF4444' }} />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Erreur d'analyse biométrique</h3>
+                  <p className="text-white/70 text-base">Impossible de charger les insights biométriques</p>
+                </GlassCard>
+              ) : (
+                <BiometricInsightsSection period={selectedPeriod} />
+              )}
+            </div>
+          )}
+
+          {/* Encouragement à connecter un wearable si pas d'activités enrichies */}
+          {!biometricLoading && !hasEnrichedActivities && insightsData && !insightsData.insufficient_data && (
+            <GlassCard
+              className="p-6 text-center"
+              style={{
+                background: `
+                  radial-gradient(circle at 30% 20%, color-mix(in srgb, #3B82F6 8%, transparent) 0%, transparent 60%),
+                  var(--glass-opacity)
+                `,
+                borderColor: 'color-mix(in srgb, #3B82F6 20%, transparent)'
+              }}
+            >
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{
+                background: 'linear-gradient(135deg, color-mix(in srgb, #3B82F6 20%, transparent), color-mix(in srgb, #3B82F6 10%, transparent))',
+                border: '1px solid color-mix(in srgb, #3B82F6 30%, transparent)'
+              }}>
+                <SpatialIcon Icon={ICONS.Watch} size={32} style={{ color: '#3B82F6' }} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Débloquez l'Analyse Biométrique
+              </h3>
+              <p className="text-white/70 text-base mb-4 max-w-md mx-auto leading-relaxed">
+                Connectez une montre ou un capteur cardiaque pour accéder à des insights avancés:
+                corrélation FC/Performance, détection de surentraînement, fenêtres optimales d'entraînement.
+              </p>
+              <div className="text-blue-300 text-sm">
+                Rendez-vous dans Paramètres → Objets Connectés
+              </div>
+            </GlassCard>
+          )}
 
           {/* Message "Aucun insight généré" */}
           {insightsData && (!insightsData.insights || insightsData.insights.length === 0) && (

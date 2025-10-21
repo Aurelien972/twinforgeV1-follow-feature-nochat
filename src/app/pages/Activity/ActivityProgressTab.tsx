@@ -135,6 +135,22 @@ const ActivityProgressTab: React.FC = () => {
   // Générateur d'insights
   const { data: insightsData, isLoading, error } = useActivityInsightsGenerator(apiPeriod);
 
+  // Logs de diagnostic pour l'onglet Progression
+  React.useEffect(() => {
+    if (insightsData) {
+      logger.info('ACTIVITY_PROGRESS_TAB_DATA', 'Insights data received', {
+        hasData: !!insightsData,
+        hasDistribution: !!insightsData.distribution,
+        hasActivities: !!insightsData.activities,
+        activitiesCount: insightsData.activities?.length || 0,
+        distributionKeys: insightsData.distribution ? Object.keys(insightsData.distribution) : [],
+        hasSummary: !!insightsData.summary,
+        summaryKeys: insightsData.summary ? Object.keys(insightsData.summary) : [],
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [insightsData]);
+
   // Détecter si l'onglet progression est actif (vérifie le hash de l'URL)
   const [isTabActive, setIsTabActive] = React.useState(false);
 
@@ -529,18 +545,47 @@ const ActivityProgressTab: React.FC = () => {
           </GlassCard>
 
           {/* Graphiques d'Analyse */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ActivityDistributionChart
-              data={insightsData?.distribution}
-              period={selectedPeriod}
-              apiPeriod={apiPeriod}
-            />
-            <ActivityHeatmap
-              activities={insightsData?.activities || []}
-              period={selectedPeriod}
-              apiPeriod={apiPeriod}
-            />
-          </div>
+          {insightsData && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {insightsData.distribution ? (
+                <ActivityDistributionChart
+                  data={insightsData.distribution}
+                  period={selectedPeriod}
+                  apiPeriod={apiPeriod}
+                />
+              ) : (
+                <GlassCard className="p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{
+                    background: 'linear-gradient(135deg, color-mix(in srgb, #F59E0B 20%, transparent), color-mix(in srgb, #F59E0B 10%, transparent))',
+                    border: '1px solid color-mix(in srgb, #F59E0B 30%, transparent)'
+                  }}>
+                    <SpatialIcon Icon={ICONS.BarChart3} size={24} style={{ color: '#F59E0B' }} />
+                  </div>
+                  <h4 className="text-lg font-semibold text-white mb-2">Distribution non disponible</h4>
+                  <p className="text-white/70 text-sm">Continuez à enregistrer des activités pour générer ce graphique</p>
+                </GlassCard>
+              )}
+
+              {insightsData.activities && insightsData.activities.length > 0 ? (
+                <ActivityHeatmap
+                  activities={insightsData.activities}
+                  period={selectedPeriod}
+                  apiPeriod={apiPeriod}
+                />
+              ) : (
+                <GlassCard className="p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{
+                    background: 'linear-gradient(135deg, color-mix(in srgb, #F59E0B 20%, transparent), color-mix(in srgb, #F59E0B 10%, transparent))',
+                    border: '1px solid color-mix(in srgb, #F59E0B 30%, transparent)'
+                  }}>
+                    <SpatialIcon Icon={ICONS.Calendar} size={24} style={{ color: '#F59E0B' }} />
+                  </div>
+                  <h4 className="text-lg font-semibold text-white mb-2">Heatmap non disponible</h4>
+                  <p className="text-white/70 text-sm">Enregistrez plus d'activités pour visualiser votre heatmap</p>
+                </GlassCard>
+              )}
+            </div>
+          )}
 
           {/* Nouveaux Graphiques d'Évolution */}
           {profile?.id && (
