@@ -12,6 +12,7 @@
   width: 100%;
   margin-top: var(--body-forge-mt, 0.75rem);
   margin-bottom: 1rem;
+  position: relative;
 }
 
 /* Sticky behavior - not on mobile for capture step */
@@ -19,8 +20,13 @@
   .wrap[data-step="capture"] {
     position: static !important;
     top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
     transform: none !important;
     z-index: auto !important;
+    margin-top: 0 !important;
+    margin-bottom: 1.5rem !important;
   }
 
   .wrap[data-step="capture"] .card {
@@ -35,6 +41,8 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    margin-top: 0;
+    margin-bottom: 1rem;
   }
 }
 
