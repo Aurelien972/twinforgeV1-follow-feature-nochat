@@ -407,7 +407,6 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
             model: 'gpt-5-mini',
             messages: [{ role: 'user', content: prompt }],
             max_completion_tokens: 15000,
-            temperature: 1.0,
             stream: true
           })
         });

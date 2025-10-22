@@ -405,7 +405,6 @@ async function generateProgressionAnalysis(
           content: prompt
         }
       ],
-      temperature: 1,
       max_completion_tokens: 2500,
       response_format: { type: 'json_object' }
     }),
@@ -428,7 +427,6 @@ async function generateProgressionAnalysis(
       requestBody: JSON.stringify({
         model: 'gpt-5-mini',
         messages: [{ role: 'system', content: 'Tu es un expert...' }, { role: 'user', content: prompt.substring(0, 200) + '...' }],
-        temperature: 1,
         max_completion_tokens: 2500
       }),
       timestamp: new Date().toISOString()

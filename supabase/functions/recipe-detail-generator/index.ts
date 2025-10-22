@@ -170,14 +170,12 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
         content: prompt
       }
     ],
-    temperature: 0.8,
     max_completion_tokens: 2000
   };
 
   console.log('📤 Sending request to OpenAI:', {
     model: requestBody.model,
     max_completion_tokens: requestBody.max_completion_tokens,
-    temperature: requestBody.temperature,
     messages_count: requestBody.messages.length
   });
 

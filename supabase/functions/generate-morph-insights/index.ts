@@ -297,7 +297,6 @@ async function callGPT5Mini(scanData: ScanData, userProfile: UserProfile): Promi
     model: "gpt-5-mini",
     messages: messages,
     response_format: { type: "json_object" },
-    temperature: 1,
     max_completion_tokens: 4000
   };
 
