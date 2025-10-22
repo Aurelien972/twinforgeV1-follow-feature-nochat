@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/ui/cards/GlassCard';
 import SpatialIcon from '@/ui/icons/SpatialIcon';
 import { ICONS } from '@/ui/icons/registry';
-import { useExitModalStore } from '@/system/store/exitModalStore';
 import { usePerformanceMode } from '@/system/context/PerformanceModeContext';
 import { useFastingTimerTick } from '../../hooks/useFastingPipeline';
+import EarlyStopWarningModal from '../Modals/EarlyStopWarningModal';
+import { getThresholdColor, getThresholdLabel, FASTING_THRESHOLDS } from '@/lib/nutrition/fastingValidation';
+import { getCurrentFastingPhase } from '@/lib/nutrition/fastingPhases';
 
 interface FastingSession {
   id?: string;
@@ -46,31 +48,65 @@ const FastingActiveStage: React.FC<FastingActiveStageProps> = ({
   // Enable real-time timer updates
   useFastingTimerTick();
 
-  const { showModal: showExitModal } = useExitModalStore();
   const { isPerformanceMode } = usePerformanceMode();
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
   // Conditional motion components
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
 
-  const handleStopFasting = () => {
-    const elapsedHours = Math.floor(elapsedSeconds / 3600);
-    const elapsedMinutes = Math.floor((elapsedSeconds % 3600) / 60);
-    const elapsedTimeDisplay = `${elapsedHours}h ${elapsedMinutes.toString().padStart(2, '0')}m`;
+  // Calculer les métriques en temps réel
+  const elapsedHours = elapsedSeconds / 3600;
+  const currentPhase = getCurrentFastingPhase(elapsedHours);
+  const thresholdColor = getThresholdColor(elapsedHours);
+  const thresholdLabel = getThresholdLabel(elapsedHours);
 
-    showExitModal({
-      title: "Terminer votre jeûne ?",
-      message: `Vous avez jeûné pendant ${elapsedTimeDisplay}. Voulez-vous vraiment terminer votre session maintenant ?`,
-      processName: "Fin de Jeûne",
-      onConfirm: () => {
-        onStopFasting();
-      },
-      onCancel: () => {
-        // Modal will close automatically
-      }
-    });
+  // Calculer le temps jusqu'au prochain palier scientifique
+  let nextThreshold = null;
+  if (elapsedHours < FASTING_THRESHOLDS.MINIMUM_LIGHT) {
+    nextThreshold = {
+      hours: FASTING_THRESHOLDS.MINIMUM_LIGHT,
+      remaining: FASTING_THRESHOLDS.MINIMUM_LIGHT - elapsedHours,
+      label: 'Bénéfices Métaboliques'
+    };
+  } else if (elapsedHours < FASTING_THRESHOLDS.MINIMUM_MODERATE) {
+    nextThreshold = {
+      hours: FASTING_THRESHOLDS.MINIMUM_MODERATE,
+      remaining: FASTING_THRESHOLDS.MINIMUM_MODERATE - elapsedHours,
+      label: 'Cétose Active'
+    };
+  } else if (elapsedHours < FASTING_THRESHOLDS.MINIMUM_EFFECTIVE) {
+    nextThreshold = {
+      hours: FASTING_THRESHOLDS.MINIMUM_EFFECTIVE,
+      remaining: FASTING_THRESHOLDS.MINIMUM_EFFECTIVE - elapsedHours,
+      label: 'Optimal Scientifique'
+    };
+  } else if (elapsedHours < FASTING_THRESHOLDS.OPTIMAL_ADVANCED) {
+    nextThreshold = {
+      hours: FASTING_THRESHOLDS.OPTIMAL_ADVANCED,
+      remaining: FASTING_THRESHOLDS.OPTIMAL_ADVANCED - elapsedHours,
+      label: 'Cétose Profonde'
+    };
+  }
+
+  const handleStopFasting = () => {
+    setShowWarningModal(true);
+  };
+
+  const handleContinue = () => {
+    setShowWarningModal(false);
+  };
+
+  const handleStopAnyway = () => {
+    setShowWarningModal(false);
+    onStopFasting();
+  };
+
+  const handleCancelModal = () => {
+    setShowWarningModal(false);
   };
 
   return (
+    <>
     <GlassCard
       className="p-6 md:p-8"
       style={{
@@ -130,23 +166,62 @@ const FastingActiveStage: React.FC<FastingActiveStageProps> = ({
           </div>
         </div>
 
-        {/* Temps Écoulé et Progression - Version simplifiée */}
-        <div className="text-center space-y-3">
-          <div className="text-5xl md:text-6xl font-black text-red-400">
+        {/* Temps Écoulé avec Code Couleur */}
+        <div className="text-center space-y-4">
+          <div className="text-5xl md:text-6xl font-black" style={{ color: thresholdColor }}>
             {formatElapsedTime(elapsedSeconds)}
+          </div>
+          <div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+            style={{
+              background: `color-mix(in srgb, ${thresholdColor} 15%, transparent)`,
+              border: `2px solid color-mix(in srgb, ${thresholdColor} 40%, transparent)`
+            }}
+          >
+            <span className="font-bold" style={{ color: thresholdColor }}>
+              {thresholdLabel}
+            </span>
           </div>
           <p className="text-white/70 text-base">
             Objectif : {session?.targetHours}h • {progressPercentage?.toFixed(1) || '0.0'}% accompli
           </p>
 
-          {/* Barre de Progression */}
-          <div className="max-w-md mx-auto">
-            <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+          {/* Barre de Progression avec Paliers */}
+          <div className="max-w-md mx-auto space-y-2">
+            {/* Indicateurs de paliers */}
+            <div className="relative h-8 flex items-center justify-between px-1">
+              {[8, 12, 16, 18].map((threshold) => {
+                const isPassed = elapsedHours >= threshold;
+                const isCurrent = elapsedHours >= threshold && elapsedHours < threshold + 2;
+                return (
+                  <div
+                    key={threshold}
+                    className="flex flex-col items-center"
+                    style={{ position: 'absolute', left: `${(threshold / targetHours) * 100}%`, transform: 'translateX(-50%)' }}
+                  >
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        !isPerformanceMode && isCurrent ? 'animate-pulse' : ''
+                      }`}
+                      style={{
+                        background: isPassed ? getThresholdColor(threshold) : '#FFFFFF20',
+                        border: isPassed ? `2px solid ${getThresholdColor(threshold)}` : '2px solid #FFFFFF40',
+                        boxShadow: !isPerformanceMode && isPassed ? `0 0 12px ${getThresholdColor(threshold)}80` : 'none'
+                      }}
+                    />
+                    <span className="text-xs text-white/60 mt-1">{threshold}h</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Barre principale */}
+            <div className="w-full bg-white/10 rounded-full h-4 overflow-hidden">
               <MotionDiv
-                className="h-3 rounded-full relative overflow-hidden"
+                className="h-4 rounded-full relative overflow-hidden"
                 style={{
-                  background: `linear-gradient(90deg, #EF4444, #F59E0B)`,
-                  boxShadow: isPerformanceMode ? 'none' : `0 0 12px color-mix(in srgb, #EF4444 60%, transparent)`,
+                  background: `linear-gradient(90deg, ${thresholdColor}, ${getThresholdColor(elapsedHours + 2)})`,
+                  boxShadow: isPerformanceMode ? 'none' : `0 0 16px ${thresholdColor}60`,
                   width: `${progressPercentage || 0}%`
                 }}
                 {...(!isPerformanceMode && {
@@ -161,7 +236,7 @@ const FastingActiveStage: React.FC<FastingActiveStageProps> = ({
                     style={{
                       background: `linear-gradient(90deg,
                         transparent 0%,
-                        rgba(255,255,255,0.4) 50%,
+                        rgba(255,255,255,0.5) 50%,
                         transparent 100%
                       )`,
                       animation: 'progressShimmer 2s ease-in-out infinite'
@@ -172,6 +247,53 @@ const FastingActiveStage: React.FC<FastingActiveStageProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Phase Métabolique Actuelle */}
+        <div
+          className="p-4 rounded-xl"
+          style={{
+            background: `color-mix(in srgb, ${currentPhase.color} 8%, transparent)`,
+            border: `1px solid color-mix(in srgb, ${currentPhase.color} 25%, transparent)`
+          }}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <SpatialIcon Icon={ICONS[currentPhase.icon as keyof typeof ICONS]} size={18} style={{ color: currentPhase.color }} />
+            <span className="text-base font-semibold" style={{ color: currentPhase.color }}>
+              {currentPhase.name}
+            </span>
+          </div>
+          <p className="text-sm text-white/80 mb-2">{currentPhase.description}</p>
+          <div className="text-xs text-white/70">État : {currentPhase.metabolicState}</div>
+        </div>
+
+        {/* Prochain Palier */}
+        {nextThreshold && (
+          <div
+            className="p-4 rounded-xl"
+            style={{
+              background: 'color-mix(in srgb, #06B6D4 8%, transparent)',
+              border: '1px solid color-mix(in srgb, #06B6D4 25%, transparent)'
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <SpatialIcon Icon={ICONS.Target} size={16} className="text-cyan-400" />
+                  <span className="text-sm font-semibold text-cyan-300">Prochain Palier</span>
+                </div>
+                <div className="text-base font-bold text-white">{nextThreshold.label}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-black text-cyan-400">
+                  {nextThreshold.remaining < 1
+                    ? `${Math.round(nextThreshold.remaining * 60)}m`
+                    : `${nextThreshold.remaining.toFixed(1)}h`}
+                </div>
+                <div className="text-xs text-white/60">restantes</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Message d'information */}
         <div
@@ -224,6 +346,17 @@ const FastingActiveStage: React.FC<FastingActiveStageProps> = ({
         </div>
       </div>
     </GlassCard>
+
+    {/* Modal d'Avertissement Enrichi */}
+    <EarlyStopWarningModal
+      isOpen={showWarningModal}
+      elapsedSeconds={elapsedSeconds}
+      targetHours={targetHours}
+      onContinue={handleContinue}
+      onStopAnyway={handleStopAnyway}
+      onCancel={handleCancelModal}
+    />
+  </>
   );
 };
 

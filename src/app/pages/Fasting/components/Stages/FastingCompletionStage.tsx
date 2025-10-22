@@ -6,6 +6,7 @@ import SpatialIcon from '@/ui/icons/SpatialIcon';
 import { ICONS } from '@/ui/icons/registry';
 import { usePerformanceMode } from '@/system/context/PerformanceModeContext';
 import { formatElapsedTimeHours, determineSessionOutcome, getOutcomeTheme } from '@/app/pages/Fasting/utils/fastingUtils';
+import { validateFastingSession, getEducationalMessage, isScientificallyValid } from '@/lib/nutrition/fastingValidation';
 import FastingSessionSummaryCard from '@/app/pages/Fasting/components/Cards/FastingSessionSummaryCard';
 import FastingAchievementsCard from '@/app/pages/Fasting/components/Cards/FastingAchievementsCard';
 
@@ -41,17 +42,30 @@ const FastingCompletionStage: React.FC<FastingCompletionStageProps> = ({
   // Conditional motion components
   const MotionDiv = isPerformanceMode ? 'div' : motion.div;
   // Déterminer l'outcome de la session
-  const sessionOutcome = session?.actualDurationHours ? 
-    determineSessionOutcome(session.actualDurationHours, session.targetHours || targetHours) : 
+  const sessionOutcome = session?.actualDurationHours ?
+    determineSessionOutcome(session.actualDurationHours, session.targetHours || targetHours) :
     'missed';
-  
+
   // Obtenir le thème dynamique
   const theme = getOutcomeTheme(sessionOutcome);
-  
+
   // Formater la durée avec précision
-  const actualDuration = session?.actualDurationHours ? 
-    formatElapsedTimeHours(session.actualDurationHours) : 
+  const actualDuration = session?.actualDurationHours ?
+    formatElapsedTimeHours(session.actualDurationHours) :
     '0h 00m 00s';
+
+  // Validation scientifique
+  const validationResult = session?.actualDurationHours
+    ? validateFastingSession(session.actualDurationHours, session.targetHours || targetHours)
+    : null;
+
+  const educationalMessage = session?.actualDurationHours
+    ? getEducationalMessage(session.actualDurationHours)
+    : '';
+
+  const scientificallyValid = session?.actualDurationHours
+    ? isScientificallyValid(session.actualDurationHours)
+    : false;
 
   return (
     <div className="space-y-6">
@@ -204,6 +218,44 @@ const FastingCompletionStage: React.FC<FastingCompletionStageProps> = ({
                 {theme.subtitle}
               </MotionDiv>
 
+              {/* Message éducatif scientifique */}
+              {educationalMessage && (
+                <MotionDiv
+                  className="p-4 rounded-xl max-w-2xl mx-auto"
+                  style={{
+                    background: scientificallyValid
+                      ? 'color-mix(in srgb, #22C55E 10%, transparent)'
+                      : 'color-mix(in srgb, #F59E0B 10%, transparent)',
+                    border: scientificallyValid
+                      ? '1px solid color-mix(in srgb, #22C55E 30%, transparent)'
+                      : '1px solid color-mix(in srgb, #F59E0B 30%, transparent)'
+                  }}
+                  {...(!isPerformanceMode && {
+                    initial: { opacity: 0, y: 10 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { duration: 0.6, delay: 0.7 }
+                  })}
+                >
+                  <div className="flex items-start gap-3">
+                    <SpatialIcon
+                      Icon={scientificallyValid ? ICONS.CheckCircle : ICONS.Info}
+                      size={20}
+                      className={scientificallyValid ? 'text-green-400' : 'text-amber-400'}
+                    />
+                    <div className="flex-1 text-left">
+                      <div className={`text-sm font-semibold mb-1 ${
+                        scientificallyValid ? 'text-green-300' : 'text-amber-300'
+                      }`}>
+                        {scientificallyValid ? 'Validation Scientifique' : 'Point d\'Amélioration'}
+                      </div>
+                      <p className="text-sm text-white/90 leading-relaxed">
+                        {educationalMessage}
+                      </p>
+                    </div>
+                  </div>
+                </MotionDiv>
+              )}
+
               {/* Durée Réelle avec Animation */}
               <MotionDiv
                 className="text-4xl font-black"
@@ -213,7 +265,7 @@ const FastingCompletionStage: React.FC<FastingCompletionStageProps> = ({
                   animate: { opacity: 1, scale: 1 },
                   transition: {
                     duration: 0.8,
-                    delay: 0.7
+                    delay: 0.8
                   }
                 })}
               >
@@ -224,7 +276,7 @@ const FastingCompletionStage: React.FC<FastingCompletionStageProps> = ({
                 {...(!isPerformanceMode && {
                   initial: { opacity: 0 },
                   animate: { opacity: 1 },
-                  transition: { duration: 0.6, delay: 0.8 }
+                  transition: { duration: 0.6, delay: 0.9 }
                 })}
               >
                 Durée réelle de votre jeûne
