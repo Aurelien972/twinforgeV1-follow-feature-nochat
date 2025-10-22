@@ -17,6 +17,9 @@ export interface TokenConsumptionResult {
   consumed: number;
   error?: string;
   needsUpgrade?: boolean;
+  requestId?: string;
+  duplicate?: boolean;
+  retryAfterSeconds?: number;
 }
 
 export interface TokenCheckResult {
@@ -243,14 +246,23 @@ export async function checkTokenBalance(
   }
 }
 
-export async function consumeTokens(
+/**
+ * ATOMIC Token Consumption - Uses the new secure consume_tokens_atomic function
+ * This replaces the old two-step process with a single atomic operation
+ */
+export async function consumeTokensAtomic(
   supabase: SupabaseClient,
-  request: TokenConsumptionRequest
+  request: TokenConsumptionRequest,
+  requestId?: string
 ): Promise<TokenConsumptionResult> {
   try {
+    // Generate unique request ID if not provided (idempotence key)
+    const actualRequestId = requestId || crypto.randomUUID();
+
     let tokensToConsume = 0;
     let actualCostUsd = request.openaiCostUsd || 0;
 
+    // Calculate tokens to consume
     if (request.openaiModel && (request.openaiInputTokens || request.openaiOutputTokens)) {
       actualCostUsd = calculateOpenAICost(
         request.openaiModel,
@@ -262,7 +274,7 @@ export async function consumeTokens(
       tokensToConsume = convertUsdToTokens(request.openaiCostUsd);
     } else {
       const estimatedCosts: Record<string, number> = {
-        "image-generation": 15,  // Updated for gpt-image-1 ($0.015)
+        "image-generation": 15,
         "audio-transcription": 10,
         "voice-realtime": 100,
         "chat-completion": 20,
@@ -270,23 +282,12 @@ export async function consumeTokens(
         "meal-analysis": 100,
         "training-analysis": 120,
       };
-
       tokensToConsume = estimatedCosts[request.operationType] || 50;
     }
 
-    const checkResult = await checkTokenBalance(supabase, request.userId, tokensToConsume);
-
-    if (!checkResult.hasEnoughTokens) {
-      return {
-        success: false,
-        remainingBalance: checkResult.currentBalance,
-        consumed: 0,
-        error: "Insufficient tokens",
-        needsUpgrade: !checkResult.isSubscribed,
-      };
-    }
-
-    const { data, error } = await supabase.rpc("consume_tokens", {
+    // Call the atomic consumption function
+    const { data, error } = await supabase.rpc("consume_tokens_atomic", {
+      p_request_id: actualRequestId,
       p_user_id: request.userId,
       p_token_amount: tokensToConsume,
       p_edge_function_name: request.edgeFunctionName,
@@ -299,15 +300,79 @@ export async function consumeTokens(
     });
 
     if (error) {
-      console.error("Error consuming tokens:", error);
+      console.error("[ATOMIC_CONSUMPTION_ERROR]", {
+        error: error.message,
+        requestId: actualRequestId,
+        userId: request.userId,
+        function: request.edgeFunctionName
+      });
       return {
         success: false,
-        remainingBalance: checkResult.currentBalance,
+        remainingBalance: 0,
         consumed: 0,
         error: error.message,
+        requestId: actualRequestId,
       };
     }
 
+    // Handle different response types from atomic function
+    if (!data.success) {
+      // Handle duplicate requests (idempotent)
+      if (data.duplicate) {
+        console.log("[IDEMPOTENT_REQUEST]", {
+          requestId: actualRequestId,
+          message: data.message
+        });
+        return {
+          success: true,
+          duplicate: true,
+          remainingBalance: data.balance_after || 0,
+          consumed: 0,
+          requestId: actualRequestId,
+        };
+      }
+
+      // Handle rate limiting
+      if (data.error === 'rate_limit_exceeded') {
+        return {
+          success: false,
+          remainingBalance: 0,
+          consumed: 0,
+          error: data.message,
+          retryAfterSeconds: data.retry_after_seconds || 5,
+          requestId: actualRequestId,
+        };
+      }
+
+      // Handle insufficient tokens
+      if (data.error === 'insufficient_tokens') {
+        const { data: subscription } = await supabase
+          .from("user_subscriptions")
+          .select("status")
+          .eq("user_id", request.userId)
+          .single();
+
+        return {
+          success: false,
+          remainingBalance: data.available_tokens || 0,
+          consumed: 0,
+          error: data.message,
+          needsUpgrade: subscription?.status !== "active",
+          requestId: actualRequestId,
+        };
+      }
+
+      // Handle other errors
+      return {
+        success: false,
+        remainingBalance: 0,
+        consumed: 0,
+        error: data.message || data.error,
+        requestId: actualRequestId,
+      };
+    }
+
+    // Success case - log analytics
     const marginPercentage = ((PROFIT_MARGIN_MULTIPLIER - 1) / PROFIT_MARGIN_MULTIPLIER) * 100;
     const profitUsd = actualCostUsd * (PROFIT_MARGIN_MULTIPLIER - 1);
     const revenueUsd = tokensToConsume * 0.001;
@@ -325,6 +390,7 @@ export async function consumeTokens(
       timestamp: new Date().toISOString(),
     });
 
+    // Log to analytics (non-blocking)
     try {
       await supabase.from('ai_cost_analytics').insert({
         user_id: request.userId,
@@ -339,16 +405,17 @@ export async function consumeTokens(
         revenue_usd: revenueUsd,
       });
     } catch (analyticsError) {
-      console.error('Failed to log to ai_cost_analytics:', analyticsError);
+      console.error('[ANALYTICS_ERROR]', analyticsError);
     }
 
     return {
-      success: data.success,
-      remainingBalance: data.new_balance,
-      consumed: tokensToConsume,
+      success: true,
+      remainingBalance: data.balance_after,
+      consumed: data.tokens_consumed,
+      requestId: actualRequestId,
     };
   } catch (error) {
-    console.error("Unexpected error in consumeTokens:", error);
+    console.error("[ATOMIC_CONSUMPTION_EXCEPTION]", error);
     return {
       success: false,
       remainingBalance: 0,
@@ -356,6 +423,18 @@ export async function consumeTokens(
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+}
+
+/**
+ * Legacy function - kept for backward compatibility
+ * @deprecated Use consumeTokensAtomic instead
+ */
+export async function consumeTokens(
+  supabase: SupabaseClient,
+  request: TokenConsumptionRequest
+): Promise<TokenConsumptionResult> {
+  console.warn('[DEPRECATED] consumeTokens is deprecated. Use consumeTokensAtomic instead.');
+  return consumeTokensAtomic(supabase, request);
 }
 
 export async function addTokens(

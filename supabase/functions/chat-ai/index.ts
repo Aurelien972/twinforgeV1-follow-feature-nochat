@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from "../_shared/tokenMiddleware.ts";
+import { consumeTokensAtomic, createInsufficientTokensResponse } from "../_shared/tokenMiddleware.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,28 +102,13 @@ Deno.serve(async (req: Request) => {
       throw new Error("Messages array is required");
     }
 
-    const estimatedInputTokens = messages.reduce((sum, msg) => sum + Math.ceil(msg.content.length / 4), 0);
-    const estimatedOutputTokens = 200;
-
-    const tokenCheck = await checkTokenBalance(supabase, user.id, 20);
-    if (!tokenCheck.hasEnoughTokens) {
-      log('warn', 'Insufficient tokens', requestId, {
-        balance: tokenCheck.currentBalance,
-        required: 20,
-        isSubscribed: tokenCheck.isSubscribed
-      });
-      return createInsufficientTokensResponse(
-        tokenCheck.currentBalance,
-        20,
-        !tokenCheck.isSubscribed,
-        corsHeaders
-      );
-    }
-
-    log('info', 'Calling OpenAI API', requestId, {
+    // NOTE: With atomic consumption, we no longer check balance beforehand
+    // The atomic function will handle verification and consumption in one transaction
+    log('info', 'Calling OpenAI API with atomic token consumption', requestId, {
       model: 'gpt-5-mini',
       messageCount: messages.length,
-      stream
+      stream,
+      requestId
     });
 
     const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -180,9 +165,9 @@ Deno.serve(async (req: Request) => {
                 log('info', 'Stream completed', requestId, { chunkCount });
                 controller.close();
 
-                // CRITICAL FIX: Consume tokens after stream completion
+                // ATOMIC token consumption after stream completion
                 try {
-                  const consumptionResult = await consumeTokens(supabase, {
+                  const consumptionResult = await consumeTokensAtomic(supabase, {
                     userId: user.id,
                     edgeFunctionName: 'chat-ai',
                     operationType: 'chat-completion',
@@ -192,14 +177,21 @@ Deno.serve(async (req: Request) => {
                     metadata: { mode, requestId, streaming: true }
                   });
 
-                  log('info', 'Tokens consumed after stream', requestId, {
-                    consumed: consumptionResult.consumed,
-                    remaining: consumptionResult.remainingBalance,
-                    inputTokens: accumulatedInputTokens || estimatedInputTokens,
-                    outputTokens: accumulatedOutputTokens || estimatedOutputTokens
-                  });
+                  if (consumptionResult.success) {
+                    log('info', '✅ Tokens consumed atomically after stream', requestId, {
+                      consumed: consumptionResult.consumed,
+                      remaining: consumptionResult.remainingBalance,
+                      requestId: consumptionResult.requestId,
+                      duplicate: consumptionResult.duplicate || false
+                    });
+                  } else {
+                    log('error', '❌ Atomic token consumption failed', requestId, {
+                      error: consumptionResult.error,
+                      requestId: consumptionResult.requestId
+                    });
+                  }
                 } catch (tokenError) {
-                  log('error', 'Failed to consume tokens after stream', requestId, {
+                  log('error', '💥 Exception during atomic token consumption', requestId, {
                     error: tokenError instanceof Error ? tokenError.message : String(tokenError)
                   });
                 }
@@ -271,19 +263,38 @@ Deno.serve(async (req: Request) => {
       tokensUsed: data.usage?.total_tokens
     });
 
-    const consumptionResult = await consumeTokens(supabase, {
+    const consumptionResult = await consumeTokensAtomic(supabase, {
       userId: user.id,
       edgeFunctionName: 'chat-ai',
       operationType: 'chat-completion',
       openaiModel: 'gpt-5-mini',
-      openaiInputTokens: data.usage?.prompt_tokens || estimatedInputTokens,
-      openaiOutputTokens: data.usage?.completion_tokens || estimatedOutputTokens,
+      openaiInputTokens: data.usage?.prompt_tokens,
+      openaiOutputTokens: data.usage?.completion_tokens,
       metadata: { mode, requestId }
-    });
+    }, requestId);
 
-    log('info', 'Tokens consumed', requestId, {
+    if (!consumptionResult.success) {
+      log('error', '❌ Atomic token consumption failed', requestId, {
+        error: consumptionResult.error,
+        needsUpgrade: consumptionResult.needsUpgrade
+      });
+
+      // Return error response if consumption failed
+      if (consumptionResult.error === 'insufficient_tokens' || consumptionResult.needsUpgrade) {
+        return createInsufficientTokensResponse(
+          consumptionResult.remainingBalance,
+          consumptionResult.consumed,
+          consumptionResult.needsUpgrade || false,
+          corsHeaders
+        );
+      }
+    }
+
+    log('info', '✅ Tokens consumed atomically', requestId, {
       consumed: consumptionResult.consumed,
-      remaining: consumptionResult.remainingBalance
+      remaining: consumptionResult.remainingBalance,
+      requestId: consumptionResult.requestId,
+      duplicate: consumptionResult.duplicate || false
     });
 
     return new Response(
