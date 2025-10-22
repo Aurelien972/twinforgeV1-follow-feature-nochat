@@ -9,6 +9,7 @@
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 // Configuration du cache par période d'analyse
 const CACHE_VALIDITY_HOURS = {
@@ -156,6 +157,25 @@ Deno.serve(async (req: Request) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // TOKEN PRE-CHECK - Estimate tokens based on prompt and expected response
+    const estimatedTokens = 60;
+    const tokenCheck = await checkTokenBalance(supabase, userId, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('🔥 [BIOMETRIC_INSIGHTS] Insufficient tokens', {
+        userId,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
 
     // Fetch enriched activities (only those with wearable data)
     const { startDate, endDate } = getDateRange(period);
@@ -386,6 +406,30 @@ RÉPONSE REQUISE (JSON uniquement):
     const totalTokens = insightsData.usage?.total_tokens || 0;
     const costUsd = (inputTokens / 1000000) * 0.25 + (outputTokens / 1000000) * 2.0;
 
+    // TOKEN CONSUMPTION - Use actual OpenAI usage data
+    await consumeTokens(supabase, {
+      userId,
+      edgeFunctionName: 'biometric-insights-analyzer',
+      operationType: 'biometric_analysis',
+      openaiModel: 'gpt-5-mini',
+      openaiInputTokens: inputTokens,
+      openaiOutputTokens: outputTokens,
+      openaiCostUsd: costUsd,
+      metadata: {
+        period,
+        enrichedActivitiesCount: enrichedActivities.length,
+        insightsGenerated: insightsResult.biometric_insights?.length || 0,
+        clientTraceId
+      }
+    });
+
+    console.log('💰 [BIOMETRIC_INSIGHTS] Tokens consumed', {
+      userId,
+      inputTokens,
+      outputTokens,
+      costUsd: costUsd.toFixed(6)
+    });
+
     const processingTime = Date.now() - startTime;
 
     console.log('✅ [BIOMETRIC_INSIGHTS] Analysis completed', {
@@ -404,54 +448,6 @@ RÉPONSE REQUISE (JSON uniquement):
       timestamp: new Date().toISOString(),
     });
 
-    // Store cost tracking
-    try {
-      await supabase.from('ai_analysis_jobs').insert({
-        user_id: userId,
-        analysis_type: 'biometric_analysis',
-        status: 'completed',
-        request_payload: {
-          clientTraceId,
-          period,
-          enrichedActivitiesCount: enrichedActivities.length,
-          userProfile: {
-            weight_kg: userProfile?.weight_kg,
-            sex: userProfile?.sex,
-            activity_level: userProfile?.activity_level,
-          },
-        },
-        result_payload: {
-          biometric_insights: insightsResult.biometric_insights,
-          zone_distribution: insightsResult.zone_distribution,
-          performance_trends: insightsResult.performance_trends,
-          recovery_recommendations: insightsResult.recovery_recommendations,
-          summary: insightsResult.summary,
-          confidence: 0.9,
-          processingTime,
-          costUsd,
-          tokenUsage: {
-            input: inputTokens,
-            output: outputTokens,
-            total: totalTokens,
-          },
-          model: 'gpt-5-mini',
-        },
-        model_used: 'gpt-5-mini',
-        tokens_used: totalTokens,
-      });
-
-      console.log('💰 [BIOMETRIC_INSIGHTS] Cost tracking saved', {
-        userId,
-        costUsd: costUsd.toFixed(6),
-        timestamp: new Date().toISOString(),
-      });
-    } catch (dbError) {
-      console.error('💰 [BIOMETRIC_INSIGHTS] Failed to save cost tracking', {
-        error: dbError instanceof Error ? dbError.message : 'Unknown error',
-        userId,
-        timestamp: new Date().toISOString(),
-      });
-    }
 
     const response = {
       biometric_insights: insightsResult.biometric_insights || [],
@@ -463,6 +459,7 @@ RÉPONSE REQUISE (JSON uniquement):
       processingTime,
       costUsd,
       confidence: 0.9,
+      tokens_consumed: estimatedTokens,
       timestamp: new Date().toISOString(),
     };
 

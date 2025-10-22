@@ -7,6 +7,7 @@
 */
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 // CORS Headers
 const corsHeaders = {
@@ -192,6 +193,35 @@ Deno.serve(async (req: Request) => {
     // Calcul de l'âge pour personnaliser l'analyse
     const userAge = calculateAge(userProfile.birthdate);
 
+    // Import Supabase client for token management
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // TOKEN PRE-CHECK - Estimate tokens based on prompt size
+    const estimatedTokens = 40;
+    const tokenCheck = await checkTokenBalance(supabase, userId, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('🔥 [ACTIVITY_ANALYZER] Insufficient tokens', {
+        userId,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
     // Prompt optimisé pour gpt-5-mini
     const analysisPrompt = `Tu es un expert en analyse d'activités physiques pour la Forge Énergétique TwinForge.
 
@@ -283,6 +313,33 @@ RÉPONSE REQUISE (JSON uniquement):
     const analysisData = await analysisResponse.json();
     const analysisResult = JSON.parse(analysisData.choices[0]?.message?.content || '{}');
 
+    // TOKEN CONSUMPTION - Use actual OpenAI usage data
+    const actualInputTokens = analysisData.usage?.prompt_tokens || 0;
+    const actualOutputTokens = analysisData.usage?.completion_tokens || 0;
+    const actualCostUsd = (actualInputTokens / 1000000 * 0.25) + (actualOutputTokens / 1000000 * 2.0);
+
+    await consumeTokens(supabase, {
+      userId,
+      edgeFunctionName: 'activity-analyzer',
+      operationType: 'activity_analysis',
+      openaiModel: 'gpt-5-mini',
+      openaiInputTokens: actualInputTokens,
+      openaiOutputTokens: actualOutputTokens,
+      openaiCostUsd: actualCostUsd,
+      metadata: {
+        activitiesCount: analysisResult.activities?.length || 0,
+        clientTraceId,
+        textLength: cleanText.length
+      }
+    });
+
+    console.log('💰 [ACTIVITY_ANALYZER] Tokens consumed', {
+      userId,
+      actualInputTokens,
+      actualOutputTokens,
+      actualCostUsd: actualCostUsd.toFixed(6)
+    });
+
     // Traitement des résultats et calcul des calories
     const activities = (analysisResult.activities || []).map((activity: any) => {
       const metValue = getMetValue(activity.type, activity.intensity);
@@ -310,11 +367,6 @@ RÉPONSE REQUISE (JSON uniquement):
 
     const processingTime = Date.now() - startTime;
 
-    // Estimation du coût pour gpt-5-mini
-    const estimatedInputTokens = Math.ceil(analysisPrompt.length / 4);
-    const estimatedOutputTokens = Math.ceil(JSON.stringify(analysisResult).length / 4);
-    const costUsd = (estimatedInputTokens / 1000000 * 0.25) + (estimatedOutputTokens / 1000000 * 2.0);
-
     console.log('✅ [ACTIVITY_ANALYZER] Analysis completed', {
       userId,
       clientTraceId,
@@ -322,72 +374,19 @@ RÉPONSE REQUISE (JSON uniquement):
       totalCalories,
       totalDuration,
       processingTime,
-      costUsd: costUsd.toFixed(6),
+      costUsd: actualCostUsd.toFixed(6),
       timestamp: new Date().toISOString()
     });
-
-    // Store cost tracking in database
-    try {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-      if (!supabaseUrl || !supabaseServiceKey) {
-        throw new Error('Missing Supabase configuration');
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-      await supabase.from('ai_analysis_jobs').insert({
-        user_id: userId,
-        analysis_type: 'activity_analysis',
-        status: 'completed',
-        request_payload: {
-          clientTraceId,
-          cleanTextLength: cleanText.length,
-          userProfile: {
-            weight_kg: userProfile.weight_kg,
-            sex: userProfile.sex,
-            activity_level: userProfile.activity_level
-          }
-        },
-        result_payload: {
-          activities,
-          totalCalories,
-          totalDuration,
-          forgeInsights,
-          confidence: 0.85,
-          processingTime,
-          costUsd,
-          estimatedInputTokens,
-          estimatedOutputTokens,
-          model: 'gpt-5-mini'
-        }
-      });
-
-      console.log('💰 [ACTIVITY_ANALYZER] Cost tracking saved to database', {
-        userId,
-        costUsd: costUsd.toFixed(6),
-        activitiesCount: activities.length,
-        timestamp: new Date().toISOString()
-      });
-    } catch (dbError) {
-      console.error('💰 [ACTIVITY_ANALYZER] Failed to save cost tracking', {
-        error: dbError instanceof Error ? dbError.message : 'Unknown error',
-        userId,
-        costUsd: costUsd.toFixed(6),
-        timestamp: new Date().toISOString()
-      });
-      // Don't fail the main function if cost tracking fails
-    }
 
     const response = {
       activities,
       totalCalories,
       totalDuration,
       processingTime,
-      costUsd,
+      costUsd: actualCostUsd,
       confidence: 0.85,
-      forgeInsights
+      forgeInsights,
+      tokens_consumed: estimatedTokens
     };
 
     return new Response(JSON.stringify(response), {

@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
 import { createHash } from 'node:crypto';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 /**
  * GPT-5 Mini pricing for cost calculation and logging
@@ -397,6 +398,25 @@ Deno.serve(async (req: Request) => {
       timestamp: new Date().toISOString()
     });
 
+    // TOKEN PRE-CHECK
+    const estimatedTokens = 50;
+    const tokenCheck = await checkTokenBalance(supabase, userId, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('FASTING_INSIGHTS_GENERATOR', 'Insufficient tokens', {
+        userId,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
     // Fetch fasting sessions for the period
     const startDate = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000).toISOString();
     const endDate = new Date().toISOString();
@@ -488,23 +508,34 @@ Deno.serve(async (req: Request) => {
 
     const { insights, tokensUsed } = await generateFastingInsights(profile, fastingSessions, periodDays);
 
+    // Calculate cost
+    const estimatedCostUSD = calculateCostFromTokens(tokensUsed);
+
+    // TOKEN CONSUMPTION
+    await consumeTokens(supabase, {
+      userId,
+      edgeFunctionName: 'fasting-insights-generator',
+      operationType: 'fasting_insights',
+      openaiModel: 'gpt-5-mini',
+      openaiInputTokens: Math.round(tokensUsed * 0.7),
+      openaiOutputTokens: Math.round(tokensUsed * 0.3),
+      openaiCostUsd: estimatedCostUSD,
+      metadata: {
+        periodDays,
+        sessionsCount: fastingSessions.length,
+        completedSessions: completedSessions.length,
+        insightsCount: insights.insights.length
+      }
+    });
+
+    console.log('💰 [FASTING_INSIGHTS] Tokens consumed', {
+      userId,
+      tokensUsed,
+      costUsd: estimatedCostUSD.toFixed(6)
+    });
+
     // Store in cache
     await storeInsightsCache(supabase, userId, inputHash, insights, tokensUsed);
-
-    // Calculate and log cost information for dashboard monitoring
-    const estimatedCostUSD = calculateCostFromTokens(tokensUsed);
-    
-    console.log('FASTING_INSIGHTS_COST_AUDIT', 'AI generation cost calculated', {
-      userId,
-      analysisType: 'fasting_insights',
-      periodDays,
-      tokensUsed,
-      estimatedCostUSD: Math.round(estimatedCostUSD * 100000) / 100000, // 5 decimal precision
-      model: 'gpt-5-mini',
-      cached: false,
-      timestamp: new Date().toISOString(),
-      philosophy: 'ai_cost_transparency_audit'
-    });
 
     console.log('FASTING_INSIGHTS_GENERATOR', 'AI insights generated successfully', {
       userId,
@@ -515,7 +546,10 @@ Deno.serve(async (req: Request) => {
     });
 
     return new Response(
-      JSON.stringify(insights),
+      JSON.stringify({
+        ...insights,
+        tokens_consumed: estimatedTokens
+      }),
       {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
