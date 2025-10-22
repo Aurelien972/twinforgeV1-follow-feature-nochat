@@ -184,8 +184,7 @@ serve(async (req) => {
         model: 'gpt-5-mini',
         prompt_length: prompt.length,
         has_system_message: true,
-        temperature: 0.7,
-        max_tokens: 15000
+        max_completion_tokens: 15000
       });
 
       console.log('SHOPPING_LIST_GENERATOR Calling OpenAI GPT-5-mini API...', {
@@ -212,8 +211,7 @@ serve(async (req) => {
               content: prompt
             }
           ],
-          temperature: 0.7,
-          max_completion_tokens: 15000,
+          max_completion_tokens: 15000
         }),
       })
 
