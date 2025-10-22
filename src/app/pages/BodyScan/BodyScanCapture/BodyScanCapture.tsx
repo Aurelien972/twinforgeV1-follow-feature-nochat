@@ -19,7 +19,14 @@ import BodyScanProgressHeader from '../BodyScanProgressHeader';
 
 const BodyScanCapture: React.FC = () => {
   const navigate = useNavigate();
-  const { startProgress, progress, message, subMessage, isActive, steps, currentStep: progressCurrentStep } = useProgressStore();
+  // Use selector to ensure component re-renders when progress changes
+  const progress = useProgressStore(state => state.overallProgress);
+  const message = useProgressStore(state => state.message);
+  const subMessage = useProgressStore(state => state.subMessage);
+  const isActive = useProgressStore(state => state.isActive);
+  const steps = useProgressStore(state => state.steps);
+  const progressCurrentStep = useProgressStore(state => state.currentStep);
+  const startProgress = useProgressStore(state => state.startProgress);
   const performanceConfig = useBodyScanPerformance();
 
   // Stable scan id
