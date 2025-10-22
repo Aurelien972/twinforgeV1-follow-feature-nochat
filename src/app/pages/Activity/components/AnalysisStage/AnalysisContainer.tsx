@@ -4,7 +4,7 @@ import AnalysisIcon from './AnalysisIcon';
 import AnalysisProgress from './AnalysisProgress';
 import AnalysisModules from './AnalysisModules';
 import AnalysisEffects from './AnalysisEffects';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
 interface AnalysisContainerProps {
   isProcessing: boolean;
@@ -13,35 +13,27 @@ interface AnalysisContainerProps {
   subMessage?: string;
 }
 
-/**
- * Analysis Container - Conteneur principal de l'analyse
- * Orchestrateur des composants d'analyse avec effets visuels
- */
 const AnalysisContainer: React.FC<AnalysisContainerProps> = ({
   isProcessing,
   progress,
   currentMessage,
   subMessage
 }) => {
-  const perf = useActivityPerformance();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      const perfClass = `activity-perf-${perf.mode}`;
-      containerRef.current.classList.add(perfClass);
-      return () => {
-        containerRef.current?.classList.remove(perfClass);
-      };
-    }
-  }, [perf.mode]);
-
   return (
-    <div className="space-y-6 relative overflow-hidden analysis-stage-container" ref={containerRef}>
-      {/* Conteneur Principal d'Analyse */}
+    <div
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+      }}
+    >
       <GlassCard
-        className="p-8 text-center relative overflow-hidden analysis-stage-card"
         style={{
+          padding: '2rem',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
           background: `
             radial-gradient(circle at 30% 20%, color-mix(in srgb, #3B82F6 8%, transparent) 0%, transparent 60%),
             radial-gradient(circle at 70% 80%, color-mix(in srgb, #06B6D4 6%, transparent) 0%, transparent 50%),
@@ -55,32 +47,43 @@ const AnalysisContainer: React.FC<AnalysisContainerProps> = ({
             inset 0 1px 0 rgba(255, 255, 255, 0.20)
           `,
           backdropFilter: 'blur(24px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(150%)'
+          WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
         }}
       >
-        {/* Effets de Fond Énergétiques */}
         <AnalysisEffects />
 
-        <div className="space-y-6 relative z-10">
-          {/* Icône Centrale de la Forge Énergétique */}
-          <AnalysisIcon
-            progress={progress}
-          />
+        <div style={{ position: 'relative', zIndex: 10 }}>
+          <AnalysisIcon progress={progress} />
 
-          {/* Messages Dynamiques de la Forge */}
-          <div className="space-y-3">
-            <h2 className="text-3xl font-bold text-white mb-2">
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h2
+              style={{
+                fontSize: '2rem',
+                fontWeight: 700,
+                color: '#fff',
+                marginBottom: '1rem',
+                lineHeight: 1.2,
+              }}
+            >
               {currentMessage || "Analyse de Forge en Cours"}
             </h2>
-            <p className="text-white/80 text-lg leading-relaxed max-w-lg mx-auto">
+            <p
+              style={{
+                fontSize: '1.125rem',
+                color: 'rgba(255, 255, 255, 0.8)',
+                lineHeight: 1.6,
+                maxWidth: '32rem',
+                margin: '0 auto',
+              }}
+            >
               {subMessage || "Votre empreinte énergétique est en cours de traitement par la Forge Spatiale"}
             </p>
-            
-            {/* Barre de Progression Énergétique */}
+
             <AnalysisProgress progress={progress} />
           </div>
 
-          {/* Modules de Traitement Énergétique */}
           <AnalysisModules progress={progress} />
         </div>
       </GlassCard>
