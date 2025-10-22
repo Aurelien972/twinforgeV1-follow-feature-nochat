@@ -61,14 +61,21 @@ export class TokenService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
+      // Use maybeSingle() instead of single() to avoid PGRST116 error when row doesn't exist
       const { data, error } = await supabase
         .from('user_token_balance')
         .select('available_tokens, last_monthly_reset')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching token balance:', error);
+        return null;
+      }
+
+      // If no data, user token balance hasn't been initialized yet
+      if (!data) {
+        console.warn('Token balance not found for user - may need initialization:', user.id);
         return null;
       }
 
@@ -123,11 +130,12 @@ export class TokenService {
 
   static async getPricingConfig(): Promise<PricingConfig | null> {
     try {
+      // Use maybeSingle() for pricing config too
       const { data, error } = await supabase
         .from('token_pricing_config')
         .select('subscription_plans, token_packs')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching pricing config:', error);
@@ -149,17 +157,20 @@ export class TokenService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
+      // Use maybeSingle() instead of single() to avoid PGRST116 error
       const { data, error } = await supabase
         .from('user_subscriptions')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          return null;
-        }
         console.error('Error fetching user subscription:', error);
+        return null;
+      }
+
+      if (!data) {
+        // No subscription found
         return null;
       }
 

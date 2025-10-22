@@ -4,6 +4,7 @@ import TokenIcon from '../../ui/icons/TokenIcon';
 import SpatialIcon from '../../ui/icons/SpatialIcon';
 import { ICONS } from '../../ui/icons/registry';
 import { TokenService, type TokenBalance } from '../../system/services/tokenService';
+import { TokenBalanceInitializer } from '../../system/services/tokenBalanceInitializer';
 import { useFeedback } from '@/hooks';
 import { useOverlayStore } from '../../system/store/overlayStore';
 import { supabase } from '../../system/supabase/client';
@@ -86,7 +87,22 @@ const TokenBalanceWidget: React.FC = () => {
           logger.error('TOKEN_BALANCE_WIDGET', 'Balance validation failed', { source });
         }
       } else {
-        logger.warn('TOKEN_BALANCE_WIDGET', 'No balance data received', { source });
+        logger.warn('TOKEN_BALANCE_WIDGET', 'No balance data received - user may need token balance initialization', { source });
+
+        // Try to auto-initialize via Edge Function if balance is missing
+        if (source === 'initial') {
+          logger.info('TOKEN_BALANCE_WIDGET', 'Attempting auto-initialization of token balance');
+
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const initialized = await TokenBalanceInitializer.ensureTokenBalanceExists(user.id);
+            if (initialized) {
+              // Reload balance after successful initialization
+              logger.info('TOKEN_BALANCE_WIDGET', 'Auto-initialization successful, reloading balance');
+              await loadBalanceSecure('manual');
+            }
+          }
+        }
       }
     } catch (error) {
       logger.error('TOKEN_BALANCE_WIDGET', 'Error loading balance', {
@@ -193,7 +209,45 @@ const TokenBalanceWidget: React.FC = () => {
     return null;
   }
 
-  if (!balance || !validateBalance(balance)) {
+  // Show "Initialisation..." state if no balance yet
+  if (!balance) {
+    return (
+      <button
+        onClick={handleClick}
+        className="sidebar-token-widget sidebar-token-widget--loading"
+        title="Initialisation de votre compte..."
+      >
+        <div className="sidebar-token-widget-content">
+          <div className="sidebar-token-widget-icon">
+            <TokenIcon
+              size={24}
+              variant="warning"
+              withGlow={true}
+            />
+          </div>
+          <div className="sidebar-token-widget-info">
+            <div className="sidebar-token-widget-balance">
+              ...
+            </div>
+            <div className="sidebar-token-widget-label">
+              Initialisation...
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="sidebar-token-widget-arrow">
+              <SpatialIcon
+                Icon={ICONS.ChevronRight}
+                size={12}
+                className="opacity-40"
+              />
+            </div>
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  if (!validateBalance(balance)) {
     return null;
   }
 
