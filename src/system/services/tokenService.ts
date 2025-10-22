@@ -276,7 +276,9 @@ export class TokenService {
       return '0';
     }
     if (tokens >= 1000) {
-      return `${(tokens / 1000).toFixed(1)}k`;
+      // Use Math.floor to avoid rounding up (14973 → 14.9k not 15.0k)
+      const thousands = Math.floor(tokens / 100) / 10;
+      return `${thousands.toFixed(1)}k`;
     }
     return tokens.toString();
   }
