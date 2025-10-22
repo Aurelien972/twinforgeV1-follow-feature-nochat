@@ -29,22 +29,45 @@ export interface TokenCheckResult {
 }
 
 const OPENAI_PRICING = {
-  "gpt-4o": {
-    inputCostPer1M: 2.50,
+  // GPT-5 models (latest - 2025)
+  "gpt-5": {
+    inputCostPer1M: 1.25,
     outputCostPer1M: 10.00,
   },
   "gpt-5-mini": {
-    inputCostPer1M: 0.15,
-    outputCostPer1M: 0.60,
+    inputCostPer1M: 0.25,
+    outputCostPer1M: 2.00,
+  },
+  "gpt-5-nano": {
+    inputCostPer1M: 0.05,
+    outputCostPer1M: 0.40,
+  },
+  // GPT-4 models (legacy)
+  "gpt-4o": {
+    inputCostPer1M: 2.50,
+    outputCostPer1M: 10.00,
   },
   "gpt-4o-mini": {
     inputCostPer1M: 0.15,
     outputCostPer1M: 0.60,
   },
+  "gpt-4-turbo": {
+    inputCostPer1M: 10.00,
+    outputCostPer1M: 30.00,
+  },
+  "gpt-4": {
+    inputCostPer1M: 30.00,
+    outputCostPer1M: 60.00,
+  },
+  // Image generation models
+  "gpt-image-1": {
+    perImage: 0.015,  // $0.015 per 1024x1024 image
+  },
   "dall-e-3": {
-    standard: 0.040,
+    standard: 0.040,  // $0.040 per 1024x1024 image (legacy)
     hd: 0.080,
   },
+  // Audio models
   "whisper-1": {
     perMinute: 0.006,
   },
@@ -59,7 +82,8 @@ function calculateOpenAICost(
   model: string,
   inputTokens?: number,
   outputTokens?: number,
-  audioTokens?: number
+  audioTokens?: number,
+  imageCount?: number
 ): number {
   const pricing = OPENAI_PRICING[model as keyof typeof OPENAI_PRICING];
   if (!pricing) {
@@ -78,6 +102,11 @@ function calculateOpenAICost(
 
   if ("audioCostPer1M" in pricing && audioTokens) {
     totalCost += (audioTokens / 1_000_000) * pricing.audioCostPer1M;
+  }
+
+  // Handle image generation models
+  if ("perImage" in pricing && imageCount) {
+    totalCost += imageCount * pricing.perImage;
   }
 
   return totalCost;
@@ -186,7 +215,7 @@ export async function consumeTokens(
       tokensToConsume = convertUsdToTokens(request.openaiCostUsd);
     } else {
       const estimatedCosts: Record<string, number> = {
-        "image-generation": 80,
+        "image-generation": 15,  // Updated for gpt-image-1 ($0.015)
         "audio-transcription": 10,
         "voice-realtime": 100,
         "chat-completion": 20,

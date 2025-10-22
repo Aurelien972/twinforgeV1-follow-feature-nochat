@@ -191,7 +191,7 @@ Retourne uniquement un JSON valide avec cette structure:
 
 Assure-toi que le JSON est parfaitement formaté et valide.`;
 
-    // Call OpenAI API
+    // Call OpenAI API with GPT-5-mini
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -199,7 +199,7 @@ Assure-toi que le JSON est parfaitement formaté et valide.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-mini',
         messages: [
           {
             role: 'system',
@@ -211,7 +211,7 @@ Assure-toi que le JSON est parfaitement formaté et valide.`;
           }
         ],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_completion_tokens: 15000,
       }),
     });
 
@@ -232,7 +232,7 @@ Assure-toi que le JSON est parfaitement formaté et valide.`;
       raw_content_preview: aiContent.substring(0, 200),
       input_tokens: openaiData.usage?.prompt_tokens,
       output_tokens: openaiData.usage?.completion_tokens,
-      model_used: 'gpt-4o',
+      model_used: 'gpt-5-mini',
       timestamp: new Date().toISOString()
     });
 
@@ -294,10 +294,10 @@ Assure-toi que le JSON est parfaitement formaté et valide.`;
       categories_suggested: [...new Set(normalizedItems.map(item => item.category))],
       high_priority_items: normalizedItems.filter(item => item.priority === 'high').length,
       processing_time_ms: Date.now() - new Date().getTime(),
-      cost_usd: (openaiData.usage?.prompt_tokens * 0.00001 + openaiData.usage?.completion_tokens * 0.00003).toFixed(5),
+      cost_usd: ((openaiData.usage?.prompt_tokens * 0.25 / 1000000) + (openaiData.usage?.completion_tokens * 2.00 / 1000000)).toFixed(5),
       input_tokens: openaiData.usage?.prompt_tokens,
       output_tokens: openaiData.usage?.completion_tokens,
-      model_used: 'gpt-4o',
+      model_used: 'gpt-5-mini',
       timestamp: new Date().toISOString()
     });
 

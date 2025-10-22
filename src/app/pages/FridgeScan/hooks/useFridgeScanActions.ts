@@ -131,7 +131,7 @@ export const useFridgeScanActions = ({
       logger.info('FRIDGE_SCAN_PAGE', 'Starting vision analysis with OpenAI', {
         photosCount: photos.length,
         sessionId: currentSessionId,
-        aiModel: 'gpt-4o',
+        aiModel: 'gpt-5-mini',
         timestamp: new Date().toISOString()
       });
 
@@ -182,7 +182,7 @@ export const useFridgeScanActions = ({
         costUsd: visionData.cost_usd,
         imagesProcessed: visionData.images_processed,
         cacheHit: visionData.cache_hit,
-        aiModel: 'gpt-4o',
+        aiModel: 'gpt-5-mini',
         timestamp: new Date().toISOString()
       });
 

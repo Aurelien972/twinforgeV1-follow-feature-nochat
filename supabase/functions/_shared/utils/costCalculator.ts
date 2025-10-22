@@ -38,6 +38,13 @@ const MODEL_PRICING = {
   'gpt-3.5-turbo': {
     input: 0.50,   // $0.50 per 1M input tokens
     output: 1.50   // $1.50 per 1M output tokens
+  },
+  // Image generation models
+  'gpt-image-1': {
+    per_image: 0.015  // $0.015 per 1024x1024 image (75% cheaper than DALL-E 3)
+  },
+  'dall-e-3': {
+    per_image: 0.040  // $0.040 per 1024x1024 image (legacy)
   }
 };
 

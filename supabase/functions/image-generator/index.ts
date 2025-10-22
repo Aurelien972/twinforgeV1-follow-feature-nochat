@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // AI-FIRST IMAGE GENERATION - Use DALL-E 3 with stock fallback
+    // AI-FIRST IMAGE GENERATION - Use GPT Image 1 with stock fallback
     const imageResult = await generateImageWithFallback(recipe_details, image_signature);
     const processingTime = Date.now() - startTime;
 
@@ -210,7 +210,7 @@ Deno.serve(async (req) => {
       generation_method: imageResult.method,
       cost_usd: imageResult.cost,
       database_updated: !recipeUpdateError,
-      ai_powered: imageResult.method === 'dall_e_3',
+      ai_powered: imageResult.method === 'gpt_image_1',
       timestamp: new Date().toISOString()
     });
 
@@ -241,12 +241,12 @@ Deno.serve(async (req) => {
   }
 });
 
-// AI Image Generation Function - DALL-E 3 Integration
+// AI Image Generation Function - GPT Image 1 Integration
 async function generateAIImage(recipeDetails: any, openaiApiKey: string): Promise<{ url: string, cost: number }> {
-  console.log('IMAGE_GENERATOR', 'Starting DALL-E 3 generation', {
+  console.log('IMAGE_GENERATOR', 'Starting GPT Image 1 generation', {
     recipe_title: recipeDetails.title,
     ingredients_count: recipeDetails.ingredients?.length || 0,
-    model: 'dall-e-3',
+    model: 'gpt-image-1',
     timestamp: new Date().toISOString()
   });
 
@@ -262,7 +262,7 @@ Main ingredients visible: ${mainIngredients}.
 Style: Clean, modern, Instagram-worthy food photo with natural lighting.
 High resolution, vibrant colors, appetizing presentation.`;
 
-  console.log('IMAGE_GENERATOR', 'DALL-E 3 prompt created', {
+  console.log('IMAGE_GENERATOR', 'GPT Image 1 prompt created', {
     prompt_length: imagePrompt.length,
     main_ingredients: mainIngredients,
     timestamp: new Date().toISOString()
@@ -275,42 +275,41 @@ High resolution, vibrant colors, appetizing presentation.`;
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'dall-e-3',
+      model: 'gpt-image-1',
       prompt: imagePrompt,
       size: '1024x1024',
-      quality: 'standard',
       n: 1,
     }),
   });
 
   if (!imageResponse.ok) {
     const errorBody = await imageResponse.text();
-    console.error('IMAGE_GENERATOR', 'DALL-E 3 API error', {
+    console.error('IMAGE_GENERATOR', 'GPT Image 1 API error', {
       status: imageResponse.status,
       statusText: imageResponse.statusText,
       errorBody: errorBody,
       timestamp: new Date().toISOString()
     });
-    throw new Error(`DALL-E API error: ${imageResponse.status} - ${errorBody}`);
+    throw new Error(`GPT Image 1 API error: ${imageResponse.status} - ${errorBody}`);
   }
 
   const imageData = await imageResponse.json();
   const imageUrl = imageData.data[0]?.url;
 
   if (!imageUrl) {
-    throw new Error('No image URL returned from DALL-E 3');
+    throw new Error('No image URL returned from GPT Image 1');
   }
 
-  console.log('IMAGE_GENERATOR', 'DALL-E 3 generation successful', {
+  console.log('IMAGE_GENERATOR', 'GPT Image 1 generation successful', {
     image_url: imageUrl,
-    cost_usd: 0.040,
-    model: 'dall-e-3',
+    cost_usd: 0.015,
+    model: 'gpt-image-1',
     timestamp: new Date().toISOString()
   });
 
   return {
     url: imageUrl,
-    cost: 0.040 // DALL-E 3 standard pricing: $0.040 per image
+    cost: 0.015 // GPT Image 1 pricing: $0.015 per image (75% cheaper than DALL-E 3)
   };
 }
 
@@ -352,7 +351,7 @@ async function generateImageWithFallback(recipeDetails: any, imageSignature: str
   console.log('IMAGE_GENERATOR', 'Starting AI-first image generation strategy', {
     recipe_title: recipeDetails.title,
     image_signature: imageSignature,
-    strategy: 'dall_e_3_with_stock_fallback',
+    strategy: 'gpt_image_1_with_stock_fallback',
     timestamp: new Date().toISOString()
   });
 
@@ -373,36 +372,36 @@ async function generateImageWithFallback(recipeDetails: any, imageSignature: str
     };
   }
 
-  // Try DALL-E 3 generation first
+  // Try GPT Image 1 generation first
   try {
-    console.log('IMAGE_GENERATOR', 'Attempting DALL-E 3 generation', {
+    console.log('IMAGE_GENERATOR', 'Attempting GPT Image 1 generation', {
       recipe_title: recipeDetails.title,
       has_openai_key: true,
-      model: 'dall-e-3',
+      model: 'gpt-image-1',
       timestamp: new Date().toISOString()
     });
 
     const aiResult = await generateAIImage(recipeDetails, openaiApiKey);
-    
-    console.log('IMAGE_GENERATOR', 'DALL-E 3 generation successful', {
+
+    console.log('IMAGE_GENERATOR', 'GPT Image 1 generation successful', {
       recipe_title: recipeDetails.title,
       image_url: aiResult.url,
       cost_usd: aiResult.cost,
-      method: 'dall_e_3',
+      method: 'gpt_image_1',
       timestamp: new Date().toISOString()
     });
 
     return {
       url: aiResult.url,
       cost: aiResult.cost,
-      method: 'dall_e_3'
+      method: 'gpt_image_1'
     };
 
   } catch (aiError) {
-    console.warn('IMAGE_GENERATOR', 'DALL-E 3 generation failed, falling back to stock images', {
+    console.warn('IMAGE_GENERATOR', 'GPT Image 1 generation failed, falling back to stock images', {
       recipe_title: recipeDetails.title,
       ai_error: aiError.message,
-      fallback_reason: 'dall_e_3_api_error',
+      fallback_reason: 'gpt_image_1_api_error',
       timestamp: new Date().toISOString()
     });
 

@@ -137,13 +137,13 @@ serve(async (req) => {
       // Construct GPT-4o prompt
       const prompt = buildShoppingListPrompt(userProfile, mealPlan.plan_data, generation_mode)
       
-      logger.debug('Constructed GPT-4o prompt', { prompt_length: prompt.length });
+      logger.debug('Constructed GPT-5-mini prompt', { prompt_length: prompt.length });
 
-      console.log('Calling OpenAI GPT-4o API...')
-      
-      logger.info('Calling OpenAI GPT-4o API');
+      console.log('Calling OpenAI GPT-5-mini API...')
 
-      // Call OpenAI API
+      logger.info('Calling OpenAI GPT-5-mini API');
+
+      // Call OpenAI API with GPT-5-mini
       const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -151,7 +151,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o',
+          model: 'gpt-5-mini',
           messages: [
             {
               role: 'system',
@@ -163,7 +163,7 @@ serve(async (req) => {
             }
           ],
           temperature: 0.7,
-          max_tokens: 3000,
+          max_completion_tokens: 15000,
         }),
       })
 
@@ -176,9 +176,9 @@ serve(async (req) => {
       }
 
       const openAIResult = await openAIResponse.json()
-      logger.debug('OpenAI API response received', {
+      logger.debug('GPT-5-mini API response received', {
         usage: openAIResult.usage,
-        model: openAIResult.model
+        model: 'gpt-5-mini'
       });
       const aiContent = openAIResult.choices[0]?.message?.content
 
