@@ -4,6 +4,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,6 +46,7 @@ Deno.serve(async (req: Request) => {
     // Parser le FormData
     const formData = await req.formData();
     const audioFile = formData.get("audio");
+    const userId = formData.get("user_id") as string | null;
 
     if (!audioFile || !(audioFile instanceof File)) {
       console.error("❌ No audio file provided");
@@ -54,6 +56,43 @@ Deno.serve(async (req: Request) => {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
+      );
+    }
+
+    if (!userId) {
+      console.error("❌ No user_id provided");
+      return new Response(
+        JSON.stringify({ error: "user_id is required" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Initialize Supabase client for token management
+    const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // TOKEN PRE-CHECK - Whisper pricing: $0.006 per minute (estimate 1 min per 1MB)
+    const estimatedMinutes = Math.ceil(audioFile.size / (1024 * 1024));
+    const estimatedTokens = Math.ceil(estimatedMinutes * 0.006 * 5); // 30 tokens per minute
+    const tokenCheck = await checkTokenBalance(supabase, userId, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('AUDIO_TRANSCRIBE', 'Insufficient tokens', {
+        userId,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
       );
     }
 
@@ -128,12 +167,38 @@ Deno.serve(async (req: Request) => {
 
     const whisperResult: WhisperResponse = await whisperResponse.json();
 
+    // TOKEN CONSUMPTION - Whisper: $0.006 per minute
+    const actualDuration = whisperResult.duration || estimatedMinutes * 60;
+    const actualMinutes = actualDuration / 60;
+    const actualCostUsd = actualMinutes * 0.006;
+
+    await consumeTokens(supabase, {
+      userId,
+      edgeFunctionName: 'audio-transcribe',
+      operationType: 'audio_transcription',
+      openaiModel: 'whisper-1',
+      openaiInputTokens: 0,
+      openaiOutputTokens: 0,
+      openaiCostUsd: actualCostUsd,
+      metadata: {
+        audioSize: audioFile.size,
+        duration: actualDuration,
+        textLength: whisperResult.text.length,
+        language: whisperResult.language
+      }
+    });
+
     console.log("✅ Transcription successful:", {
       textLength: whisperResult.text.length,
       language: whisperResult.language,
+      tokensConsumed: estimatedTokens,
+      costUsd: actualCostUsd.toFixed(6)
     });
 
-    return new Response(JSON.stringify(whisperResult), {
+    return new Response(JSON.stringify({
+      ...whisperResult,
+      tokens_consumed: estimatedTokens
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

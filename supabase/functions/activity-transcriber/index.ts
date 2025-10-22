@@ -6,6 +6,7 @@
   Modèle: gpt-5-nano (optimisé pour vitesse et coût)
 */ import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 Deno.serve(async (req)=>{
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -26,6 +27,30 @@ Deno.serve(async (req)=>{
     // Validation des données d'entrée
     if (!audioData || !userId) {
       throw new Error('Audio data and user ID are required');
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // TOKEN PRE-CHECK - Whisper + GPT-5-nano
+    const estimatedTokens = 40;
+    const tokenCheck = await checkTokenBalance(supabase, userId, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('ACTIVITY_TRANSCRIBER', 'Insufficient tokens', {
+        userId,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
     }
     // Étape 1: Transcription audio vers texte
     console.log('🎤 [ACTIVITY_TRANSCRIBER] Step 1: Audio transcription');
@@ -144,22 +169,44 @@ Texte à nettoyer:
     });
     const cleanText = cleaningData.choices?.[0]?.message?.content || originalTranscription;
     const processingTime = Date.now() - startTime;
-    // Estimation du coût pour gpt-5-mini (approximative)
-    const estimatedTokens = Math.ceil(originalTranscription.length / 4) + Math.ceil(cleanText.length / 4);
-    const costUsd = estimatedTokens / 1000000 * 0.30; // gpt-5-mini pricing estimation
+
+    // TOKEN CONSUMPTION - Whisper + GPT-5-nano
+    const whisperDuration = audioBuffer.length / (16000 * 2); // Estimate duration
+    const whisperCost = (whisperDuration / 60) * 0.006;
+    const gptInputTokens = cleaningData.usage?.prompt_tokens || 0;
+    const gptOutputTokens = cleaningData.usage?.completion_tokens || 0;
+    const gptCost = (gptInputTokens / 1000000 * 0.25) + (gptOutputTokens / 1000000 * 2.0);
+    const totalCost = whisperCost + gptCost;
+
+    await consumeTokens(supabase, {
+      userId,
+      edgeFunctionName: 'activity-transcriber',
+      operationType: 'activity_transcription',
+      openaiModel: 'whisper-1+gpt-5-nano',
+      openaiInputTokens: gptInputTokens,
+      openaiOutputTokens: gptOutputTokens,
+      openaiCostUsd: totalCost,
+      metadata: {
+        clientTraceId,
+        audioDataLength: audioData.length,
+        originalLength: originalTranscription.length,
+        cleanLength: cleanText.length
+      }
+    });
+
     console.log('✅ [ACTIVITY_TRANSCRIBER] Transcription completed', {
       userId,
       clientTraceId,
       originalLength: originalTranscription.length,
       cleanLength: cleanText.length,
       processingTime,
-      costUsd: costUsd.toFixed(6),
+      tokensConsumed: estimatedTokens,
+      costUsd: totalCost.toFixed(6),
       cleanTextPreview: cleanText.substring(0, 100) + (cleanText.length > 100 ? '...' : ''),
       timestamp: new Date().toISOString()
     });
     // Store cost tracking in database
     try {
-      const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
       await supabase.from('ai_analysis_jobs').insert({
         user_id: userId,
         analysis_type: 'activity_transcription',
