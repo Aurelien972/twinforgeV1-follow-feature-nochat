@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -129,7 +130,7 @@ Deno.serve(async (req) => {
       // Update recipes table with cached image URL for persistence
       await supabase
         .from('recipes')
-        .update({ 
+        .update({
           image_url: cachedResult.result_payload.image_url,
           updated_at: new Date().toISOString()
         })
@@ -147,9 +148,62 @@ Deno.serve(async (req) => {
       });
     }
 
+    // TOKEN PRE-CHECK - Fixed cost for image generation (75 tokens = $0.015 * 5)
+    const estimatedTokens = 75;
+    const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('IMAGE_GENERATOR', 'Insufficient tokens', {
+        user_id,
+        recipe_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
     // AI-FIRST IMAGE GENERATION - Use GPT Image 1 with stock fallback
     const imageResult = await generateImageWithFallback(recipe_details, image_signature);
     const processingTime = Date.now() - startTime;
+
+    // TOKEN CONSUMPTION - Only consume tokens if AI generation was used
+    if (imageResult.method === 'gpt_image_1' && imageResult.cost > 0) {
+      await consumeTokens(supabase, {
+        userId: user_id,
+        edgeFunctionName: 'image-generator',
+        operationType: 'recipe_image_generation',
+        openaiModel: 'gpt-image-1',
+        openaiInputTokens: 0,
+        openaiOutputTokens: 0,
+        openaiCostUsd: imageResult.cost,
+        metadata: {
+          recipe_id,
+          recipe_title: recipe_details.title,
+          image_url: imageResult.url,
+          generation_method: imageResult.method
+        }
+      });
+
+      console.log('IMAGE_GENERATOR', 'Tokens consumed', {
+        user_id,
+        recipe_id,
+        cost_usd: imageResult.cost,
+        tokens_charged: estimatedTokens,
+        generation_method: imageResult.method
+      });
+    } else {
+      console.log('IMAGE_GENERATOR', 'No tokens consumed - stock image fallback', {
+        user_id,
+        recipe_id,
+        generation_method: imageResult.method
+      });
+    }
 
     const response = {
       image_url: imageResult.url,
@@ -157,7 +211,8 @@ Deno.serve(async (req) => {
       cost_usd: imageResult.cost,
       cache_hit: false,
       generation_method: imageResult.method,
-      recipe_id: recipe_id
+      recipe_id: recipe_id,
+      tokens_consumed: imageResult.method === 'gpt_image_1' ? estimatedTokens : 0
     };
 
     // UPDATE RECIPES TABLE - Critical for persistence with AI-generated images

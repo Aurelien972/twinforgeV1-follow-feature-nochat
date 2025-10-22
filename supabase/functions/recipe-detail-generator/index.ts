@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
 
 const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -218,6 +219,13 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
     usage: data.usage
   });
 
+  // Store token usage for consumption
+  const tokenUsage = {
+    input: data.usage?.prompt_tokens || 0,
+    output: data.usage?.completion_tokens || 0,
+    costUsd: calculateCost(data.usage?.prompt_tokens || 0, data.usage?.completion_tokens || 0)
+  };
+
   const content = data.choices[0]?.message?.content
 
   if (!content) {
@@ -262,8 +270,8 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     recipe.imageSignature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    return recipe
+
+    return { recipe, tokenUsage }
   } catch (error) {
     console.error('Failed to parse GPT-5-mini response:', { content, error: error.message })
     throw new Error('Invalid JSON response from GPT-5-mini')
@@ -306,14 +314,44 @@ serve(async (req) => {
       })
     }
 
+    // Check token balance before OpenAI call (estimate ~15 tokens)
+    const estimatedTokens = 15
+    const tokenCheck = await checkTokenBalance(supabase, request.user_id, estimatedTokens)
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('RECIPE_DETAIL_GENERATOR', 'Insufficient tokens', {
+        user_id: request.user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      })
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      )
+    }
+
     // Generate detailed recipe with AI
     console.log('Generating detailed recipe with GPT-5-mini for:', request.meal_title)
-    const recipe = await generateDetailedRecipe(request)
+    const { recipe, tokenUsage } = await generateDetailedRecipe(request)
 
-    // Calculate cost (mock usage for now, would need actual token count)
-    const estimatedInputTokens = 800
-    const estimatedOutputTokens = 600
-    const cost = calculateCost(estimatedInputTokens, estimatedOutputTokens)
+    // Consume tokens after successful generation
+    await consumeTokens(supabase, {
+      userId: request.user_id,
+      edgeFunctionName: 'recipe-detail-generator',
+      operationType: 'recipe_detail_enrichment',
+      openaiModel: 'gpt-5-mini',
+      openaiInputTokens: tokenUsage.input,
+      openaiOutputTokens: tokenUsage.output,
+      openaiCostUsd: tokenUsage.costUsd,
+      metadata: {
+        meal_title: request.meal_title,
+        meal_type: request.meal_type,
+        ingredients_count: request.main_ingredients?.length || 0
+      }
+    })
 
     // Save to cache
     const { error: jobError } = await supabase
@@ -335,7 +373,8 @@ serve(async (req) => {
       recipe,
       cached: false,
       model_used: 'gpt-5-mini',
-      cost_usd: cost
+      cost_usd: tokenUsage.costUsd,
+      tokens_consumed: tokenUsage.input + tokenUsage.output
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

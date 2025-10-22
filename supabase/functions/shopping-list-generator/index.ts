@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
 
 // Simple logger for edge functions
 const logger = {
@@ -89,6 +90,25 @@ serve(async (req) => {
       return new Response(JSON.stringify(existingJob.result_payload), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
+    }
+
+    // Check token balance before OpenAI call (estimate ~15 tokens)
+    const estimatedTokens = 15
+    const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokens)
+
+    if (!tokenCheck.hasEnoughTokens) {
+      logger.info('Insufficient tokens', {
+        user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      })
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      )
     }
 
     // Create new AI analysis job
@@ -234,6 +254,13 @@ serve(async (req) => {
 
       const openAIResult = await openAIResponse.json()
 
+      // Calculate token usage and cost
+      const tokenUsage = {
+        input: openAIResult.usage?.prompt_tokens || 0,
+        output: openAIResult.usage?.completion_tokens || 0,
+        costUsd: ((openAIResult.usage?.prompt_tokens || 0) * 0.25 / 1000000) + ((openAIResult.usage?.completion_tokens || 0) * 2.00 / 1000000)
+      }
+
       console.log('SHOPPING_LIST_GENERATOR GPT-5-mini response received:', {
         hasChoices: !!openAIResult.choices,
         choicesLength: openAIResult.choices?.length,
@@ -263,13 +290,30 @@ serve(async (req) => {
 
       // Parse AI response
       const parsedResponse = parseAIResponse(aiContent, userProfile.country || 'France')
-      
+
       logger.info('AI response parsed successfully', {
         shopping_list_categories: parsedResponse.shopping_list?.length || 0,
         total_items: parsedResponse.shopping_list?.reduce((total, cat) => total + (cat.items?.length || 0), 0) || 0,
         suggestions_count: parsedResponse.suggestions?.length || 0,
         advice_count: parsedResponse.advice?.length || 0
       });
+
+      // Consume tokens after successful generation
+      await consumeTokens(supabase, {
+        userId: user_id,
+        edgeFunctionName: 'shopping-list-generator',
+        operationType: 'shopping_list_generation',
+        openaiModel: 'gpt-5-mini',
+        openaiInputTokens: tokenUsage.input,
+        openaiOutputTokens: tokenUsage.output,
+        openaiCostUsd: tokenUsage.costUsd,
+        metadata: {
+          meal_plan_id,
+          generation_mode,
+          items_count: parsedResponse.shopping_list?.reduce((total, cat) => total + (cat.items?.length || 0), 0) || 0,
+          categories_count: parsedResponse.shopping_list?.length || 0
+        }
+      })
 
       // Update job with successful result
       await supabase
