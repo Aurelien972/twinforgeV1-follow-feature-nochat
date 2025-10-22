@@ -110,38 +110,88 @@ serve(async (req) => {
 
     try {
       // Fetch user profile
-      const { data: userProfile } = await supabase
+      logger.debug('Fetching user profile', { user_id });
+      const { data: userProfile, error: profileError } = await supabase
         .from('user_profile')
         .select('*')
         .eq('user_id', user_id)
         .single()
 
+      if (profileError) {
+        logger.error('Error fetching user profile', {
+          error: profileError,
+          user_id
+        });
+        throw new Error(`Failed to fetch user profile: ${profileError.message}`)
+      }
+
       if (!userProfile) {
+        logger.error('User profile not found', { user_id });
         throw new Error('User profile not found')
       }
 
       // Fetch meal plan
-      const { data: mealPlan } = await supabase
+      logger.debug('Fetching meal plan', { meal_plan_id, user_id });
+      const { data: mealPlan, error: mealPlanError } = await supabase
         .from('meal_plans')
         .select('plan_data')
         .eq('id', meal_plan_id)
         .eq('user_id', user_id)
         .single()
 
+      if (mealPlanError) {
+        logger.error('Error fetching meal plan', {
+          error: mealPlanError,
+          meal_plan_id,
+          user_id
+        });
+        throw new Error(`Failed to fetch meal plan: ${mealPlanError.message}`)
+      }
+
       if (!mealPlan) {
+        logger.error('Meal plan not found', { meal_plan_id, user_id });
         throw new Error('Meal plan not found')
       }
 
-      console.log('Fetched user profile and meal plan successfully')
+      if (!mealPlan.plan_data) {
+        logger.error('Meal plan has no plan_data', { meal_plan_id });
+        throw new Error('Meal plan data is empty')
+      }
 
-      // Construct GPT-4o prompt
+      logger.debug('Fetched user profile and meal plan', {
+        hasProfile: !!userProfile,
+        hasMealPlan: !!mealPlan,
+        mealPlanDays: mealPlan.plan_data?.days?.length || 0,
+        country: userProfile.country,
+        generationMode: generation_mode
+      });
+
+      console.log('SHOPPING_LIST_GENERATOR Fetched user profile and meal plan successfully', {
+        userId: user_id,
+        mealPlanId: meal_plan_id,
+        mealPlanDaysCount: mealPlan.plan_data?.days?.length || 0
+      });
+
+      // Construct GPT-5-mini prompt
       const prompt = buildShoppingListPrompt(userProfile, mealPlan.plan_data, generation_mode)
-      
-      logger.debug('Constructed GPT-5-mini prompt', { prompt_length: prompt.length });
 
-      console.log('Calling OpenAI GPT-5-mini API...')
+      logger.debug('Constructed GPT-5-mini prompt', {
+        prompt_length: prompt.length,
+        meal_plan_days: mealPlan.plan_data?.days?.length || 0
+      });
 
-      logger.info('Calling OpenAI GPT-5-mini API');
+      logger.info('Calling OpenAI GPT-5-mini API', {
+        model: 'gpt-5-mini',
+        prompt_length: prompt.length,
+        has_system_message: true,
+        temperature: 0.7,
+        max_tokens: 15000
+      });
+
+      console.log('SHOPPING_LIST_GENERATOR Calling OpenAI GPT-5-mini API...', {
+        prompt_length: prompt.length,
+        model: 'gpt-5-mini'
+      });
 
       // Call OpenAI API with GPT-5-mini
       const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -167,26 +217,51 @@ serve(async (req) => {
         }),
       })
 
+      console.log('SHOPPING_LIST_GENERATOR OpenAI response status:', openAIResponse.status);
+
       if (!openAIResponse.ok) {
+        const errorBody = await openAIResponse.text();
         logger.error('OpenAI API call failed', {
           status: openAIResponse.status,
-          statusText: openAIResponse.statusText
+          statusText: openAIResponse.statusText,
+          errorBody: errorBody
         });
-        throw new Error(`OpenAI API error: ${openAIResponse.status}`)
+        console.error('SHOPPING_LIST_GENERATOR OpenAI API error details:', {
+          status: openAIResponse.status,
+          statusText: openAIResponse.statusText,
+          body: errorBody
+        });
+        throw new Error(`OpenAI API error: ${openAIResponse.status}\nDetails: ${errorBody}`)
       }
 
       const openAIResult = await openAIResponse.json()
-      logger.debug('GPT-5-mini API response received', {
+
+      console.log('SHOPPING_LIST_GENERATOR GPT-5-mini response received:', {
+        hasChoices: !!openAIResult.choices,
+        choicesLength: openAIResult.choices?.length,
         usage: openAIResult.usage,
         model: 'gpt-5-mini'
       });
+
+      logger.debug('GPT-5-mini API response received', {
+        usage: openAIResult.usage,
+        model: 'gpt-5-mini',
+        hasChoices: !!openAIResult.choices,
+        choicesCount: openAIResult.choices?.length
+      });
+
       const aiContent = openAIResult.choices[0]?.message?.content
 
       if (!aiContent) {
+        logger.error('No content received from OpenAI', {
+          openAIResult: JSON.stringify(openAIResult)
+        });
         throw new Error('No content received from OpenAI')
       }
 
-      console.log('OpenAI response received, parsing...')
+      console.log('SHOPPING_LIST_GENERATOR OpenAI response received, parsing...', {
+        contentLength: aiContent.length
+      })
 
       // Parse AI response
       const parsedResponse = parseAIResponse(aiContent, userProfile.country || 'France')
