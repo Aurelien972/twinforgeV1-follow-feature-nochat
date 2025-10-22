@@ -63,18 +63,16 @@ const PhotoGuideOverlay: React.FC<PhotoGuideOverlayProps> = ({ type, isFaceScan 
               style={{
                 filter: type === 'front'
                   ? `
-                    brightness(0.7) 
-                    contrast(1.1) 
-                    saturate(0.8)
+                    contrast(1.1)
+                    saturate(0.9)
                     drop-shadow(0 0 8px color-mix(in srgb, var(--color-plasma-cyan) 30%, transparent))
                   `
                   : `
-                    brightness(0.7) 
-                    contrast(1.1) 
-                    saturate(0.8)
+                    contrast(1.1)
+                    saturate(0.9)
                     drop-shadow(0 0 8px color-mix(in srgb, #A855F7 30%, transparent))
                   `,
-                opacity: 0.85
+                opacity: 1
               }}
             />
             
