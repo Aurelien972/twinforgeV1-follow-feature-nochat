@@ -2,17 +2,25 @@
 /**
  * Scan Processing Service
  * Handles the complete body scan processing pipeline
+ *
+ * REFACTORED: This file now delegates to modular services:
+ * - photoUploadService: Photo upload and storage management
+ * - edgeFunctionClient: Edge Function API calls
+ * - aiRefinementService: AI morphological refinement
+ * - scanInsightsGenerator: Insights generation
+ * - scanDataExtractor: Data extraction utilities
+ * - scanProcessingOrchestrator: Main pipeline orchestrator
+ *
+ * This file maintains backward compatibility while using the new architecture.
  */
 
-import { bodyScanRepo } from '../../../../../system/data/repositories/bodyScanRepo';
-import { supabase } from '../../../../../system/supabase/client';
-import { scanAnalytics } from '../../../../../lib/utils/analytics';
-import { useProgressStore } from '../../../../../system/store/progressStore';
 import logger from '../../../../../lib/utils/logger';
 import type { CapturedPhotoEnhanced } from '../../../../../domain/types';
-import { getSignedUrl, PRIVATE_BUCKETS } from '../../../../../lib/storage/signedUrlService';
 
-interface ScanProcessingConfig {
+// Import the new orchestrator
+import { processBodyScanPipeline as processBodyScanPipelineRefactored } from './scanProcessingOrchestrator';
+
+export interface ScanProcessingConfig {
   userId: string;
   clientScanId: string;
   capturedPhotos: CapturedPhotoEnhanced[];
@@ -21,10 +29,10 @@ interface ScanProcessingConfig {
     height_cm: number;
     weight_kg: number;
   };
-  resolvedGender: 'masculine' | 'feminine'; // MODIFIED: Type updated
+  resolvedGender: 'masculine' | 'feminine';
 }
 
-interface ScanProcessingResult {
+export interface ScanProcessingResult {
   estimate: any;
   semantic: any;
   match: any;
@@ -34,496 +42,49 @@ interface ScanProcessingResult {
 
 /**
  * Process complete body scan pipeline
+ *
+ * REFACTORED: This function now delegates to the modular orchestrator
+ * while maintaining the same API for backward compatibility.
  */
 export async function processBodyScanPipeline(
   config: ScanProcessingConfig
 ): Promise<ScanProcessingResult> {
-  const { userId, clientScanId, capturedPhotos, stableScanParams, resolvedGender } = config;
-  const { 
-    setProcessingStep, 
-    setServerScanId, 
-    setComplete, 
-    setOverallProgress, 
-    incrementProgress,
-    startDynamicProcessing,
-    stopDynamicProcessing
-  } = useProgressStore.getState();
-
-  logger.info('SCAN_PROCESSING_SERVICE', 'Starting complete pipeline processing', {
-    clientScanId,
-    userId,
-    photosCount: capturedPhotos.length,
-    userProfile: stableScanParams,
-    resolvedGender,
-    timestamp: new Date().toISOString()
+  logger.info('SCAN_PROCESSING_SERVICE', 'Delegating to refactored orchestrator', {
+    clientScanId: config.clientScanId,
+    userId: config.userId.substring(0, 8) + '...',
+    photosCount: config.capturedPhotos.length,
+    architecture: 'modular_v2'
   });
 
-  // STEP 0: Upload photos to Supabase Storage
-  setOverallProgress(52, 'Préparation des données', 'Téléchargement sécurisé de vos photos...');
-  
-  // Simulation de progression pendant l'upload
-  const uploadProgressInterval = setInterval(() => {
-    incrementProgress(1, 'Préparation des données', 'Téléchargement sécurisé de vos photos...');
-  }, 200);
-  
-  const uploadedPhotos = await uploadPhotosToStorage(userId, clientScanId, capturedPhotos);
-  clearInterval(uploadProgressInterval);
-
-  // START DYNAMIC PROCESSING: Begin detailed step-by-step progression
-  logger.info('SCAN_PROCESSING_SERVICE', 'Starting dynamic processing progression', {
-    clientScanId,
-    startPercentage: 52,
-    endPercentage: 92,
-    totalSteps: 17, // SCAN_STATUS_STEPS.length
-    philosophy: 'dynamic_scan_progression_start'
-  });
-  
-  // Start dynamic progression from 52% to 92%
-  startDynamicProcessing(52, 92);
-  
-  // STEP 1: scan-estimate (AI photo analysis)
-  const estimateResult = await callScanEstimate(
-    userId, 
-    uploadedPhotos, 
-    stableScanParams, 
-    resolvedGender, 
-    clientScanId
-  );
-
-  // STEP 2: scan-semantic (semantic classification)  
-  const semanticResult = await callScanSemantic(
-    userId, 
-    uploadedPhotos, 
-    estimateResult, 
-    resolvedGender, 
-    clientScanId
-  );
-
-  // STEP 3: scan-match (archetype matching)  
-  const matchResult = await callScanMatch(
-    userId, 
-    estimateResult, 
-    semanticResult, 
-    resolvedGender, 
-    clientScanId
-  );
-
-  // STEP 3.5: AI Morphological Refinement  
-  const enhancedMatchResult = await performAIRefinement(
-    matchResult,
-    uploadedPhotos,
-    estimateResult,
-    semanticResult,
-    stableScanParams,
-    resolvedGender,
-    clientScanId,
-    userId // CRITICAL FIX: Pass userId to performAIRefinement
-  );
-
-  // STOP DYNAMIC PROCESSING: Before final commit
-  logger.info('SCAN_PROCESSING_SERVICE', 'Stopping dynamic processing before commit', {
-    clientScanId,
-    philosophy: 'dynamic_scan_progression_stop_before_commit'
-  });
-  
-  stopDynamicProcessing();
-  
-  // STEP 4: scan-commit (data persistence)
-  setOverallProgress(92, 'Sauvegarde des Données', 'Persistance de votre avatar personnalisé...');
-
-  const { commitResult, skinTone } = await callScanCommit(
-    userId,
-    estimateResult,
-    enhancedMatchResult,
-    semanticResult,
-    capturedPhotos,
-    resolvedGender,
-    clientScanId
-  );
-
-  // Store server scan ID
-  if (commitResult.scan_id) {
-    setServerScanId(commitResult.scan_id);
-  }
-
-  // STEP 5: Complete processing - DO NOT mark as complete yet
-  // The celebration screen should only show after navigation to review page
-  setProcessingStep('model_loading');
-  setOverallProgress(95, 'Finalisation', 'Préparation de votre avatar 3D...');
-
-  // Small delay to show completion visually
-  await new Promise(resolve => setTimeout(resolve, 800));
-
-  setProcessingStep('model_loaded');
-  setOverallProgress(98, 'Prêt', 'Tout est prêt !');
-
-  // Validate skin tone before building complete results
-  logger.info('SCAN_PROCESSING_SERVICE', '🎨 CRITICAL: Validating skin tone before buildCompleteResults', {
-    clientScanId,
-    hasSkinTone: !!skinTone,
-    skinToneSchema: skinTone?.schema,
-    skinToneRGB: skinTone?.rgb ? `rgb(${skinTone.rgb.r}, ${skinTone.rgb.g}, ${skinTone.rgb.b})` : 'unknown',
-    skinToneHex: skinTone?.hex || 'unknown',
-    skinToneSource: skinTone?.source,
-    skinToneConfidence: skinTone?.confidence,
-    philosophy: 'pre_build_complete_results_validation'
-  });
-
-  // Build complete scan results
-  // CRITICAL: Pass the already-extracted skinTone from Step 4 to avoid re-extraction with fallback
-  const completeResults = buildCompleteResults(
-    estimateResult,
-    semanticResult,
-    enhancedMatchResult,
-    commitResult,
-    uploadedPhotos,
-    stableScanParams,
-    resolvedGender,
-    clientScanId,
-    userId, // CRITICAL FIX: Pass actual userId to buildCompleteResults
-    skinTone // CRITICAL FIX: Pass pre-extracted V2 skin tone to ensure consistency
-  );
-
-  logger.info('SCAN_PROCESSING_SERVICE', 'Complete pipeline processing finished successfully', {
-    clientScanId,
-    serverScanId: commitResult.scan_id,
-    hasAllResults: !!(completeResults.estimate && completeResults.semantic && completeResults.match && completeResults.commit),
-    finalConfidence: completeResults.estimate?.extracted_data?.processing_confidence || 0,
-    aiRefined: !!enhancedMatchResult.ai_refinement?.ai_refine,
-    aiConfidence: enhancedMatchResult.ai_refinement?.ai_confidence,
-    insightsCount: completeResults.insights?.items?.length || 0,
-    timestamp: new Date().toISOString(),
-    philosophy: 'pipeline_complete_ready_for_navigation'
-  });
-
-  // Mark as complete only after all data is ready
-  setComplete();
-  setOverallProgress(100, 'Terminé', 'Traitement complet !');
-
-  logger.info('SCAN_PROCESSING_SERVICE', 'Processing state marked as complete, ready for celebration', {
-    clientScanId,
-    serverScanId: commitResult.scan_id,
-    philosophy: 'ready_for_celebration_after_complete_processing'
-  });
-
-  return {
-    estimate: estimateResult,
-    semantic: semanticResult,
-    match: enhancedMatchResult,
-    commit: commitResult,
-    completeResults
-  };
+  // Delegate to the new modular orchestrator
+  return await processBodyScanPipelineRefactored(config);
 }
 
-/**
- * Upload photos to Supabase Storage
- */
-async function uploadPhotosToStorage(
-  userId: string,
-  clientScanId: string,
-  capturedPhotos: CapturedPhotoEnhanced[]
-): Promise<Array<{ view: string; url: string; report?: any }>> {
-  logger.info('SCAN_PROCESSING_SERVICE', 'Step 0: Starting photo upload', { 
-    clientScanId,
-    photosCount: capturedPhotos.length 
-  });
+// DEPRECATED: Moved to photoUploadService.ts
+// Kept for reference only
 
-  const uploadedPhotos = await Promise.all(
-    capturedPhotos.map(async (photo, index) => {
-      try {
-        const response = await fetch(photo.url);
-        const blob = await response.blob();
-        const file = new File([blob], `scan-${clientScanId}-${photo.type}.jpg`, { type: 'image/jpeg' });
-        
-        const filePath = `scans/${userId}/${clientScanId}/${photo.type}.jpg`;
-        const { data, error } = await supabase.storage
-          .from('body-scans')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-        
-        if (error) {
-          throw new Error(`Upload failed for ${photo.type}: ${error.message}`);
-        }
+// DEPRECATED: Moved to edgeFunctionClient.ts
+// Kept for reference only
 
-        // Get signed URL for private storage (1 hour expiry)
-        const signedUrl = await getSignedUrl(PRIVATE_BUCKETS.BODY_SCANS, filePath);
+// DEPRECATED: Moved to edgeFunctionClient.ts
+// Kept for reference only
 
-        if (!signedUrl) {
-          throw new Error(`Failed to get signed URL for ${photo.type}`);
-        }
+// DEPRECATED: Moved to edgeFunctionClient.ts
+// Kept for reference only
 
-        return {
-          view: photo.type,
-          url: signedUrl,
-          report: photo.captureReport
-        };
-      } catch (error) {
-        logger.error('SCAN_PROCESSING_SERVICE', `Failed to upload ${photo.type} photo`, { 
-          clientScanId,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-        throw error;
-      }
-    })
-  );
+// DEPRECATED: Moved to aiRefinementService.ts
+// Kept for reference only
 
-  logger.info('SCAN_PROCESSING_SERVICE', 'Step 0: Photo upload completed', { 
-    clientScanId,
-    uploadedCount: uploadedPhotos.length,
-    uploadedUrls: uploadedPhotos.map(p => ({ view: p.view, urlLength: p.url.length }))
-  });
-
-  return uploadedPhotos;
-}
-
-/**
- * Call scan-estimate Edge Function
- */
-async function callScanEstimate(
-  userId: string,
-  uploadedPhotos: Array<{ view: string; url: string; report?: any }>,
-  stableScanParams: { sex: 'male' | 'female'; height_cm: number; weight_kg: number },
-  resolvedGender: 'masculine' | 'feminine', // MODIFIED: Type updated
-  clientScanId: string
-) {
-  logger.info('SCAN_PROCESSING_SERVICE', 'Step 1: Starting scan-estimate', { 
-    clientScanId,
-    requestData: {
-      userId,
-      photosCount: uploadedPhotos.length,
-      userMetrics: stableScanParams
-    }
-  });
-
-  const estimateRequest = {
-    user_id: userId,
-    photos: uploadedPhotos,
-    user_declared_height_cm: stableScanParams.height_cm,
-    user_declared_weight_kg: stableScanParams.weight_kg,
-    user_declared_gender: resolvedGender, // MODIFIED: Directly use resolvedGender
-    clientScanId,
-    resolvedGender
-  };
-
-  const estimateResult = await bodyScanRepo.estimate(estimateRequest);
-
-  logger.info('SCAN_PROCESSING_SERVICE', 'Step 1: scan-estimate completed', {
-    clientScanId,
-    hasExtractedData: !!estimateResult.extracted_data,
-    confidence: estimateResult.extracted_data?.processing_confidence,
-    hasSkinTone: !!estimateResult.extracted_data?.skin_tone,
-    measurementsKeys: estimateResult.extracted_data?.raw_measurements ? 
-      Object.keys(estimateResult.extracted_data.raw_measurements) : []
-  });
-
-  return estimateResult;
-}
-
-/**
- * Call scan-semantic Edge Function
- */
-async function callScanSemantic(
-  userId: string,
-  uploadedPhotos: Array<{ view: string; url: string; report?: any }>,
-  estimateResult: any,
-  resolvedGender: 'masculine' | 'feminine', // MODIFIED: Type updated
-  clientScanId: string
-) {
-  logger.info('SCAN_PROCESSING_SERVICE', 'Step 2: Starting scan-semantic', { 
-    clientScanId,
-    requestData: {
-      userId,
-      hasExtractedData: !!estimateResult.extracted_data,
-      estimatedBMI: estimateResult.extracted_data?.estimated_bmi
-    }
-  });
-
-  const semanticRequest = {
-    user_id: userId,
-    photos: uploadedPhotos,
-    extracted_data: estimateResult.extracted_data,
-    user_declared_gender: resolvedGender, // MODIFIED: Directly use resolvedGender
-    clientScanId,
-    resolvedGender
-  };
-
-  const semanticResult = await bodyScanRepo.semantic(semanticRequest);
-
-  logger.info('SCAN_PROCESSING_SERVICE', 'Step 2: scan-semantic completed', {
-    clientScanId,
-    hasSemanticProfile: !!semanticResult.semantic_profile,
-    semanticConfidence: semanticResult.semantic_confidence,
-    adjustmentsMade: semanticResult.adjustments_made?.length || 0,
-    semanticClasses: semanticResult.semantic_profile ? {
-      obesity: semanticResult.semantic_profile.obesity,
-      muscularity: semanticResult.semantic_profile.muscularity,
-      level: semanticResult.semantic_profile.level,
-      morphotype: semanticResult.semantic_profile.morphotype
-    } : null
-  });
-
-  return semanticResult;
-}
-
-/**
- * Call scan-match Edge Function
- */
-async function callScanMatch(
-  userId: string,
-  estimateResult: any,
-  semanticResult: any,
-  resolvedGender: 'masculine' | 'feminine', // MODIFIED: Type updated
-  clientScanId: string
-) {
-  logger.info('SCAN_PROCESSING_SERVICE', 'Step 3: Starting scan-match', { 
-    clientScanId,
-    userBMICalculated: estimateResult.extracted_data?.estimated_bmi,
-    semanticClassificationForMatching: {
-      obesity: semanticResult.semantic_profile?.obesity,
-      muscularity: semanticResult.semantic_profile?.muscularity,
-      level: semanticResult.semantic_profile?.level,
-      morphotype: semanticResult.semantic_profile?.morphotype
-    }
-  });
-
-  const matchRequest = {
-    user_id: userId,
-    extracted_data: estimateResult.extracted_data,
-    semantic_profile: semanticResult.semantic_profile,
-    user_semantic_indices: {
-      morph_index: semanticResult.semantic_profile.morph_index || 0,
-      muscle_index: semanticResult.semantic_profile.muscle_index || 0
-    },
-    matching_config: {
-      gender: resolvedGender, // MODIFIED: Directly use resolvedGender
-      limit: 5
-    },
-    clientScanId,
-    resolvedGender
-  };
-
-  const matchResult = await bodyScanRepo.match(matchRequest);
-
-  logger.info('SCAN_PROCESSING_SERVICE', 'Step 3: scan-match completed', {
-    clientScanId,
-    selectedArchetypesCount: matchResult.selected_archetypes?.length || 0,
-    strategyUsed: matchResult.strategy_used,
-    semanticCoherenceScore: matchResult.semantic_coherence_score
-  });
-
-  return matchResult;
-}
-
-/**
- * Perform AI morphological refinement
- */
-async function performAIRefinement(
-  matchResult: any,
-  uploadedPhotos: Array<{ view: string; url: string; report?: any }>,
-  estimateResult: any,
-  semanticResult: any,
-  stableScanParams: { sex: 'male' | 'female'; height_cm: number; weight_kg: number },
-  resolvedGender: 'masculine' | 'feminine', // MODIFIED: Type updated
-  clientScanId: string,
-  userId: string // CRITICAL FIX: Add userId parameter
-) {
-  logger.info('AI_REFINEMENT', 'Starting AI morphological refinement', {
-    scanId: clientScanId,
-    resolvedGender,
-    mappingVersion: 'v1.0',
-    blendShapeParamsCount: Object.keys(matchResult.selected_archetypes?.[0]?.morph_values || {}).length,
-    philosophy: 'ai_driven_photo_realistic_refinement'
-  });
-
-  // Extract photos for AI refinement
-  const photosForAI = uploadedPhotos.map(photo => ({
-    view: photo.view,
-    url: photo.url,
-    report: photo.report
-  }));
-
-  // Prepare blend data for AI refinement
-  const blendShapeParams = matchResult.selected_archetypes?.[0]?.morph_values || {};
-  const blendLimbMasses = matchResult.selected_archetypes?.[0]?.limb_masses || {};
-
-  // Prepare user measurements for AI guidance
-  const userMeasurements = {
-    height_cm: stableScanParams.height_cm,
-    weight_kg: stableScanParams.weight_kg,
-    estimated_bmi: estimateResult.extracted_data?.estimated_bmi || (stableScanParams.weight_kg / Math.pow(stableScanParams.height_cm / 100, 2)),
-    raw_measurements: {
-      waist_cm: estimateResult.extracted_data?.raw_measurements?.waist_cm || 80,
-      chest_cm: estimateResult.extracted_data?.raw_measurements?.chest_cm || 95,
-      hips_cm: estimateResult.extracted_data?.raw_measurements?.hips_cm || 100
-    }
-  };
-
-  let aiRefinementResult = null;
-  try {
-    aiRefinementResult = await bodyScanRepo.refine({
-      scan_id: clientScanId,
-      user_id: userId, // CRITICAL FIX: Use passed userId parameter
-      resolvedGender: resolvedGender, // MODIFIED: Directly use resolvedGender
-      photos: photosForAI,
-      blend_shape_params: blendShapeParams,
-      blend_limb_masses: blendLimbMasses,
-      k5_envelope: matchResult.k5_envelope,
-      vision_classification: semanticResult.semantic_profile,
-      mapping_version: 'v1.0',
-      user_measurements: userMeasurements
-    });
-
-    logger.info('AI_REFINEMENT', 'AI refinement completed successfully', {
-      scanId: clientScanId,
-      resolvedGender,
-      aiRefine: aiRefinementResult.ai_refine,
-      finalShapeParamsCount: Object.keys(aiRefinementResult.final_shape_params || {}).length,
-      finalLimbMassesCount: Object.keys(aiRefinementResult.final_limb_masses || {}).length,
-      clampedKeysCount: aiRefinementResult.clamped_keys?.length || 0,
-      outOfRangeCount: aiRefinementResult.out_of_range_count || 0,
-      activeKeysCount: aiRefinementResult.active_keys_count || 0,
-      aiConfidence: aiRefinementResult.ai_confidence,
-      topDeltas: aiRefinementResult.refinement_deltas?.top_10_shape_deltas?.slice(0, 3) || [],
-      philosophy: 'ai_refinement_success'
-    });
-
-    // Enhance match result with AI refinement
-    matchResult.ai_refinement = aiRefinementResult;
-    matchResult.final_shape_params = aiRefinementResult.final_shape_params;
-    matchResult.final_limb_masses = aiRefinementResult.final_limb_masses;
-
-  } catch (aiError) {
-    logger.warn('AI_REFINEMENT', 'AI refinement failed, using blend fallback', {
-      scanId: clientScanId,
-      resolvedGender,
-      error: aiError instanceof Error ? aiError.message : 'Unknown error',
-      philosophy: 'ai_refinement_fallback'
-    });
-
-    // Continue with blend data if AI refinement fails
-    matchResult.ai_refinement = {
-      ai_refine: false,
-      error: aiError instanceof Error ? aiError.message : 'Unknown error',
-      fallback_used: true
-    };
-  }
-
-  return matchResult;
-}
-
-/**
- * Call scan-commit Edge Function
- * @returns Object containing commitResult and extracted skinTone
- */
+// DEPRECATED: Moved to edgeFunctionClient.ts
+// Kept for reference only
+/*
 async function callScanCommit(
   userId: string,
   estimateResult: any,
   matchResult: any,
   semanticResult: any,
   capturedPhotos: CapturedPhotoEnhanced[],
-  resolvedGender: 'masculine' | 'feminine', // MODIFIED: Type updated
+  resolvedGender: 'masculine' | 'feminine',
   clientScanId: string
 ): Promise<{ commitResult: any; skinTone: any }> {
   logger.info('SCAN_PROCESSING_SERVICE', 'Step 4: Starting scan-commit', {
@@ -767,126 +328,13 @@ async function callScanCommit(
   // Return both commitResult and skinTone for use in buildCompleteResults
   return { commitResult, skinTone };
 }
+*/
 
-/**
- * Build complete scan results object
- * @param preExtractedSkinTone - CRITICAL: Use the V2 skin tone already extracted in Step 4 to avoid fallback
- */
-function buildCompleteResults(
-  estimateResult: any,
-  semanticResult: any,
-  matchResult: any,
-  commitResult: any,
-  uploadedPhotos: any[],
-  stableScanParams: { sex: 'male' | 'female'; height_cm: number; weight_kg: number },
-  resolvedGender: 'masculine' | 'feminine', // MODIFIED: Type updated
-  clientScanId: string,
-  userId: string,
-  preExtractedSkinTone?: any // CRITICAL FIX: Accept pre-extracted V2 skin tone to ensure consistency
-) {
-  logger.info('BUILD_COMPLETE_RESULTS', 'Building complete results with pre-extracted skin tone', {
-    clientScanId,
-    hasPreExtractedSkinTone: !!preExtractedSkinTone,
-    skinToneSchema: preExtractedSkinTone?.schema,
-    philosophy: 'use_pre_extracted_skin_tone_v2'
-  });
+// DEPRECATED: Moved to scanProcessingOrchestrator.ts
+// Kept for reference only
 
-  // Determine which skin tone to use
-  const finalSkinTone = preExtractedSkinTone || extractSkinToneFromScanData(uploadedPhotos, estimateResult, clientScanId);
-  const usedPreExtracted = !!preExtractedSkinTone;
-
-  logger.info('BUILD_COMPLETE_RESULTS', '🎨 CRITICAL: Final skin tone decision for complete results', {
-    clientScanId,
-    usedPreExtracted,
-    finalSkinToneSchema: finalSkinTone?.schema,
-    finalSkinToneRGB: finalSkinTone?.rgb ? `rgb(${finalSkinTone.rgb.r}, ${finalSkinTone.rgb.g}, ${finalSkinTone.rgb.b})` :
-                      (finalSkinTone?.r ? `rgb(${finalSkinTone.r}, ${finalSkinTone.g}, ${finalSkinTone.b})` : 'unknown'),
-    finalSkinToneHex: finalSkinTone?.hex || 'unknown',
-    finalSkinToneSource: finalSkinTone?.source,
-    finalSkinToneConfidence: finalSkinTone?.confidence,
-    philosophy: usedPreExtracted ? 'using_pre_extracted_v2_no_fallback' : 'emergency_extraction_called'
-  });
-
-  return {
-    resolvedGender,
-    estimate: estimateResult,
-    semantic: semanticResult,
-    match: matchResult,
-    commit: commitResult,
-    userId: userId, // CRITICAL FIX: Use actual userId, not sex
-    serverScanId: commitResult.scan_id,
-    userProfile: {
-      ...stableScanParams,
-      sex: resolvedGender
-    },
-    insights: generateInsights(estimateResult, semanticResult, matchResult),
-    clientScanId,
-    // CRITICAL FIX: Use pre-extracted V2 skin tone if available, preventing fallback
-    skin_tone: finalSkinTone,
-    limb_masses: extractLimbMassesFromScanData(matchResult, estimateResult, clientScanId),
-  };
-}
-
-/**
- * Generate insights from scan results
- */
-function generateInsights(estimateResult: any, semanticResult: any, matchResult: any) {
-  const insights = [];
-
-  // Add confidence insight
-  const confidence = estimateResult?.extracted_data?.processing_confidence || 0;
-  if (confidence > 0.8) {
-    insights.push({
-      id: 'high-confidence',
-      type: 'achievement',
-      title: 'Analyse de Haute Qualité',
-      description: `Votre scan a été analysé avec ${Math.round(confidence * 100)}% de confiance.`,
-      category: 'morphology',
-      priority: 'high',
-      confidence: confidence,
-      source: 'ai_analysis',
-      color: '#22C55E'
-    });
-  }
-
-  // Add archetype insight
-  if (matchResult?.selected_archetypes?.length > 0) {
-    const primaryArchetype = matchResult.selected_archetypes[0];
-    insights.push({
-      id: 'archetype-match',
-      type: 'observation',
-      title: 'Profil Morphologique',
-      description: `Votre morphologie correspond au profil "${primaryArchetype.name}".`,
-      category: 'morphology',
-      priority: 'medium',
-      confidence: 0.8,
-      source: 'archetype',
-      color: '#8B5CF6'
-    });
-  }
-
-  // Add semantic insights
-  if (semanticResult?.semantic_profile) {
-    const semantic = semanticResult.semantic_profile;
-    insights.push({
-      id: 'semantic-classification',
-      type: 'observation',
-      title: 'Classification Morphologique',
-      description: `Profil: ${semantic.obesity} • ${semantic.muscularity} • ${semantic.morphotype}`,
-      category: 'morphology',
-      priority: 'medium',
-      confidence: semanticResult.semantic_confidence || 0.6,
-      source: 'semantic',
-      color: '#06B6D4'
-    });
-  }
-
-  return {
-    items: insights,
-    source: 'generated',
-    confidence: confidence || 0.8
-  };
-}
+// DEPRECATED: Moved to scanInsightsGenerator.ts
+// Kept for reference only
 
 /**
  * DEPRECATED: This function has been replaced by the V2 version in dataExtractors.ts
@@ -948,9 +396,9 @@ function extractSkinToneFromScanData(
   return fallbackSkinTone;
 }
 
-/**
- * Extract limb masses from scan data with detailed logging and fallback strategy
- */
+// DEPRECATED: Moved to scanDataExtractor.ts
+// Kept for reference only
+/*
 function extractLimbMassesFromScanData(
   matchResult: any,
   estimateResult: any,
@@ -999,10 +447,11 @@ function extractLimbMassesFromScanData(
   // Fallback: Generate intelligent limb masses
   return generateIntelligentLimbMassesFallback(estimateResult, clientScanId);
 }
+*/
 
-/**
- * Generate intelligent limb masses fallback
- */
+// DEPRECATED: Helper function - moved to scanDataExtractor.ts
+// Kept for reference only
+/*
 function generateIntelligentLimbMassesFallback(
   estimateResult: any,
   clientScanId: string
@@ -1043,3 +492,4 @@ function generateIntelligentLimbMassesFallback(
 
   return intelligentLimbMasses;
 }
+*/
