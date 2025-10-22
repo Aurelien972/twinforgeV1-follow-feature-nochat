@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlassCard from '@/ui/cards/GlassCard';
 import SpatialIcon from '@/ui/icons/SpatialIcon';
@@ -56,24 +57,56 @@ const EarlyStopWarningModal: React.FC<EarlyStopWarningModalProps> = ({
   const thresholdColor = getThresholdColor(elapsedHours);
   const thresholdLabel = getThresholdLabel(elapsedHours);
 
+  // Lock body scroll when modal is open
+  React.useEffect(() => {
+    if (isOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+      };
+    }
+  }, [isOpen]);
+
+  // Handle ESC key
+  React.useEffect(() => {
+    if (isOpen) {
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onCancel();
+        }
+      };
+
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <div
         className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
         style={{
           background: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: isPerformanceMode ? 'none' : 'blur(12px)'
+          backdropFilter: isPerformanceMode ? 'none' : 'blur(20px)',
+          WebkitBackdropFilter: isPerformanceMode ? 'none' : 'blur(20px)'
         }}
         onClick={onCancel}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="early-stop-warning-title"
       >
         <MotionDiv
           {...(!isPerformanceMode && {
             initial: { opacity: 0, scale: 0.9, y: 20 },
             animate: { opacity: 1, scale: 1, y: 0 },
             exit: { opacity: 0, scale: 0.9, y: 20 },
-            transition: { duration: 0.3 }
+            transition: { type: 'spring', stiffness: 300, damping: 30 }
           })}
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
@@ -110,7 +143,7 @@ const EarlyStopWarningModal: React.FC<EarlyStopWarningModalProps> = ({
                   <SpatialIcon Icon={ICONS.AlertTriangle} size={32} className="text-amber-300" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                  <h2 id="early-stop-warning-title" className="text-2xl md:text-3xl font-bold text-white mb-2">
                     Terminer votre jeûne maintenant ?
                   </h2>
                   <p className="text-white/80 text-base">
@@ -352,7 +385,8 @@ const EarlyStopWarningModal: React.FC<EarlyStopWarningModalProps> = ({
           </GlassCard>
         </MotionDiv>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
