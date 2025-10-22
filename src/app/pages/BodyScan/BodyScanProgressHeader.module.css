@@ -13,14 +13,10 @@
   margin-top: var(--body-forge-mt, 0.75rem);
   margin-bottom: 1rem;
   position: relative;
-  contain: none !important;
-  overflow: visible !important;
 }
 
-/* Capture step - NEVER sticky on any viewport - FORCE IT */
-.wrap[data-step="capture"],
-.wrap[data-step="capture"] *,
-div[data-step="capture"] {
+/* Capture step - NEVER sticky on any viewport */
+.wrap[data-step="capture"] {
   position: static !important;
   top: auto !important;
   left: auto !important;
@@ -28,7 +24,6 @@ div[data-step="capture"] {
   bottom: auto !important;
   transform: none !important;
   z-index: auto !important;
-  will-change: auto !important;
 }
 
 .wrap[data-step="capture"] .card {
