@@ -7,7 +7,7 @@ import {
   getTotalEquipmentCount,
   ALL_EQUIPMENT_MAP
 } from "./equipment-reference.ts";
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -951,7 +951,8 @@ Deno.serve(async (req: Request) => {
     console.log(`\n✅ ===== DETECTION COMPLETED IN ${processingTimeMs}ms =====`);
     console.log(`📊 Result: ${detections.length} unique equipment types detected\n`);
 
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId: location.user_id,
       edgeFunctionName: 'detect-equipment',
       operationType: 'equipment-detection-vision',

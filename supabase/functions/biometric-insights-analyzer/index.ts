@@ -9,7 +9,7 @@
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { corsHeaders } from '../_shared/cors.ts';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 // Configuration du cache par période d'analyse
 const CACHE_VALIDITY_HOURS = {
@@ -407,7 +407,8 @@ RÉPONSE REQUISE (JSON uniquement):
     const costUsd = (inputTokens / 1000000) * 0.25 + (outputTokens / 1000000) * 2.0;
 
     // TOKEN CONSUMPTION - Use actual OpenAI usage data
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId,
       edgeFunctionName: 'biometric-insights-analyzer',
       operationType: 'biometric_analysis',

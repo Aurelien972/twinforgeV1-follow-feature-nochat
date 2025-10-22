@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
 import { createHash } from 'node:crypto';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 /**
  * GPT-5 Mini pricing for cost calculation and logging
@@ -512,7 +512,8 @@ Deno.serve(async (req: Request) => {
     const estimatedCostUSD = calculateCostFromTokens(tokensUsed);
 
     // TOKEN CONSUMPTION
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId,
       edgeFunctionName: 'fasting-insights-generator',
       operationType: 'fasting_insights',

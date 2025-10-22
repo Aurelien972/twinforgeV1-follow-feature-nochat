@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -257,7 +257,8 @@ Assure-toi que le JSON est parfaitement formaté et valide.`;
     const outputTokens = openaiData.usage?.completion_tokens || 0;
     const costUsd = (inputTokens / 1000000 * 0.25) + (outputTokens / 1000000 * 2.0);
 
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId: user_id,
       edgeFunctionName: 'inventory-complementer',
       operationType: 'inventory_complement',

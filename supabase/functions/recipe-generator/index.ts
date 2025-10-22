@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -372,7 +372,7 @@ Réponds UNIQUEMENT avec un JSON valide contenant un tableau de recettes au form
     });
 
     // Stream recipes from OpenAI with token consumption
-    return streamRecipesFromOpenAI(recipePrompt, user_id, cacheKey, supabase, startTime, inventory_final, user_preferences, filters, consumeTokens);
+    return streamRecipesFromOpenAI(recipePrompt, user_id, cacheKey, supabase, startTime, inventory_final, user_preferences, filters, consumeTokensAtomic);
 
   } catch (error: any) {
     console.error('RECIPE_GENERATOR', 'Error in recipe generation', {
@@ -395,7 +395,7 @@ Réponds UNIQUEMENT avec un JSON valide contenant un tableau de recettes au form
 });
 
 // Stream recipes from OpenAI API with SSE
-async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey: string, supabase: any, startTime: number, inventory: any[], preferences: any, filters: any, consumeTokensFn: typeof consumeTokens) {
+async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey: string, supabase: any, startTime: number, inventory: any[], preferences: any, filters: any, consumeTokensFn: typeof consumeTokensAtomic) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiApiKey) {
     throw new Error('OpenAI API key not configured');
@@ -587,7 +587,8 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
         });
 
         // Consume tokens after successful generation
-        await consumeTokensFn(supabase, {
+        const requestId = crypto.randomUUID();
+        const tokenResult = await consumeTokensFn(supabase, {
           userId: userId,
           edgeFunctionName: 'recipe-generator',
           operationType: 'recipe_generation',
@@ -601,7 +602,15 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
             has_preferences: !!preferences,
             has_filters: !!filters
           }
-        });
+        }, requestId);
+
+        if (!tokenResult.success) {
+          console.error('❌ [RECIPE_GENERATOR] Token consumption failed', {
+            userId,
+            error: tokenResult.error,
+            requestId
+          });
+        }
 
         console.log('RECIPE_GENERATOR', 'Streaming completed', {
           user_id: userId,

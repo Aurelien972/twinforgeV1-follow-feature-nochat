@@ -10,7 +10,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -184,7 +184,7 @@ Deno.serve(async (req: Request) => {
       const charCount = text.length;
       const costUsd = (charCount / 1000000) * 15;
 
-      await consumeTokens(supabase, {
+      await consumeTokensAtomic(supabase, {
         userId: user_id,
         edgeFunctionName: 'generate-voice-preview',
         operationType: 'voice_preview_generation',

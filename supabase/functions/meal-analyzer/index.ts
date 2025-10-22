@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 interface ScannedProductData {
   barcode: string;
@@ -1144,7 +1144,8 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+    const tokenResult = await consumeTokensAtomic(supabase, {
       userId: requestBody.user_id,
       edgeFunctionName: 'meal-analyzer',
       operationType: 'meal-analysis-vision',
@@ -1159,7 +1160,15 @@ Deno.serve(async (req: Request) => {
         confidence: response.confidence,
         fallbackUsed,
       }
-    });
+    }, requestId);
+
+    if (!tokenResult.success) {
+      console.error('❌ [MEAL_ANALYZER] Token consumption failed', {
+        userId: requestBody.user_id,
+        error: tokenResult.error,
+        requestId
+      });
+    }
 
     return new Response(
       JSON.stringify(response),

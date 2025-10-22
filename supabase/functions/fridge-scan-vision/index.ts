@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -666,7 +666,8 @@ Exemple de format attendu:
       timestamp: new Date().toISOString()
     });
 
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId: user_id,
       edgeFunctionName: 'fridge-scan-vision',
       operationType: 'fridge-inventory-vision',

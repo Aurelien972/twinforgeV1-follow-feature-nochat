@@ -5,7 +5,7 @@ import { analyzePhotosForSemantics } from './semanticAnalyzer.ts';
 import { validateSemanticWithDB, getDefaultSemanticProfile } from './dbSemanticValidator.ts';
 import { createFallbackSemanticAnalysis } from './semanticFallback.ts';
 import { refetchMorphologyMapping } from '../_shared/utils/mappingRefetcher.ts';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 /**
  * Scan Semantic Edge Function - DB-First Architecture
@@ -257,7 +257,8 @@ Deno.serve(async (req) => {
       const outputTokens = usage.completion_tokens || 0;
       const costUsd = (inputTokens * 0.25 / 1000000) + (outputTokens * 2.00 / 1000000);
 
-      await consumeTokens(supabase, {
+      const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
         userId: user_id,
         edgeFunctionName: 'scan-semantic',
         operationType: 'semantic-morphology-analysis',

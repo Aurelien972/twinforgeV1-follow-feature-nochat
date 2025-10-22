@@ -4,7 +4,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -172,7 +172,8 @@ Deno.serve(async (req: Request) => {
     const actualMinutes = actualDuration / 60;
     const actualCostUsd = actualMinutes * 0.006;
 
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId,
       edgeFunctionName: 'audio-transcribe',
       operationType: 'audio_transcription',

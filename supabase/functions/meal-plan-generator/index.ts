@@ -1,4 +1,4 @@
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -417,7 +417,8 @@ Deno.serve(async (req) => {
     );
 
     // Consume tokens after successful generation
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId: requestData.user_id,
       edgeFunctionName: 'meal-plan-generator',
       operationType: 'meal_plan_generation',

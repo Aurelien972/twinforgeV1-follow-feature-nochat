@@ -5,7 +5,7 @@ import { createFallbackEstimation } from './estimationFallback.ts';
 import { enhanceMeasurements } from './measurementEnhancer.ts';
 import { validateWithDatabase } from './databaseValidator.ts';
 import { calculateGPT5TokenCost, logAICostTracking, type TokenUsage } from '../_shared/utils/costCalculator.ts';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 /**
  * Scan Estimate Edge Function - DB-First Architecture
  * Handles photo analysis and measurement extraction with DB validation
@@ -451,7 +451,8 @@ import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } fr
     const outputTokens = tokenUsage?.output_tokens || 200;
     const costUsd = tokenUsage?.cost_estimate_usd || calculateGPT5TokenCost(modelUsed, inputTokens, outputTokens);
 
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId: user_id,
       edgeFunctionName: 'scan-estimate',
       operationType: 'body-scan-analysis-vision',

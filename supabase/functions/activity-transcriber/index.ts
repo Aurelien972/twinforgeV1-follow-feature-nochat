@@ -6,7 +6,7 @@
   Modèle: gpt-5-nano (optimisé pour vitesse et coût)
 */ import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 Deno.serve(async (req)=>{
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -178,7 +178,8 @@ Texte à nettoyer:
     const gptCost = (gptInputTokens / 1000000 * 0.25) + (gptOutputTokens / 1000000 * 2.0);
     const totalCost = whisperCost + gptCost;
 
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId,
       edgeFunctionName: 'activity-transcriber',
       operationType: 'activity_transcription',

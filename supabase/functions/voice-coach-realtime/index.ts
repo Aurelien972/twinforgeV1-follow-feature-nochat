@@ -33,7 +33,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -459,7 +459,7 @@ Deno.serve(async (req: Request) => {
             const initialTokens = 100; // ~5 minutes of typical usage
             const modelUsed = body.model || DEFAULT_MODEL;
 
-            const consumptionResult = await consumeTokens(supabase, {
+            const consumptionResult = await consumeTokensAtomic(supabase, {
               userId: userId,
               edgeFunctionName: 'voice-coach-realtime',
               operationType: 'voice-realtime-session-init',
@@ -622,7 +622,7 @@ Deno.serve(async (req: Request) => {
           const additionalCostUsd = Math.max(0, actualCostUsd - 0.02);
 
           if (additionalCostUsd > 0) {
-            await consumeTokens(supabase, {
+            await consumeTokensAtomic(supabase, {
               userId: user_id,
               edgeFunctionName: 'voice-coach-realtime',
               operationType: 'voice-realtime-session-usage',

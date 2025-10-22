@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
 
 const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -338,7 +338,8 @@ serve(async (req) => {
     const { recipe, tokenUsage } = await generateDetailedRecipe(request)
 
     // Consume tokens after successful generation
-    await consumeTokens(supabase, {
+    const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
       userId: request.user_id,
       edgeFunctionName: 'recipe-detail-generator',
       operationType: 'recipe_detail_enrichment',

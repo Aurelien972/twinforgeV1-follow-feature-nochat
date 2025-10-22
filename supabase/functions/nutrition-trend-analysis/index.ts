@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 interface TrendAnalysisRequest {
   user_id: string;
@@ -999,7 +999,8 @@ Deno.serve(async (req: Request) => {
     if (!fallbackUsed && tokenUsage.total > 0) {
       const costUsd = (tokenUsage.prompt_tokens / 1000000 * 0.25) + (tokenUsage.completion_tokens / 1000000 * 2.0);
 
-      await consumeTokens(supabase, {
+      const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
         userId: requestBody.user_id,
         edgeFunctionName: 'nutrition-trend-analysis',
         operationType: 'nutrition_trend_analysis',

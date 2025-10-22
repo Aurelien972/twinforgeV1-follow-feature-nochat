@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -174,7 +174,8 @@ Deno.serve(async (req) => {
 
     // TOKEN CONSUMPTION - Only consume tokens if AI generation was used
     if (imageResult.method === 'gpt_image_1' && imageResult.cost > 0) {
-      await consumeTokens(supabase, {
+      const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
         userId: user_id,
         edgeFunctionName: 'image-generator',
         operationType: 'recipe_image_generation',

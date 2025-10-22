@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
 
 // Simple logger for edge functions
 const logger = {
@@ -299,7 +299,8 @@ serve(async (req) => {
       });
 
       // Consume tokens after successful generation
-      await consumeTokens(supabase, {
+      const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
         userId: user_id,
         edgeFunctionName: 'shopping-list-generator',
         operationType: 'shopping_list_generation',

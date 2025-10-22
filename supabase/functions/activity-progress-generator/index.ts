@@ -9,7 +9,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 // Configuration du cache par période d'analyse
 const CACHE_VALIDITY_HOURS = {
@@ -647,7 +647,8 @@ RÉPONSE REQUISE (JSON uniquement):
       costUsd = inputTokens / 1000000 * 0.25 + outputTokens / 1000000 * 2.0;
 
       // TOKEN CONSUMPTION
-      await consumeTokens(supabase, {
+      const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
         userId,
         edgeFunctionName: 'activity-progress-generator',
         operationType: 'activity_progress_insights',

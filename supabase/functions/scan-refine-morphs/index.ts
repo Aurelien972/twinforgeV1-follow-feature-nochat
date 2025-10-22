@@ -6,7 +6,7 @@ import { buildAIRefinementPrompt } from './promptBuilder.ts';
 import { callOpenAIForRefinement } from './openaiClient.ts';
 import { validateAndClampAIResults } from './aiResultValidator.ts';
 import { calculateRefinementDeltas, countActiveKeys } from './aiResultValidator.ts';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 // AJOUTEZ UN LOG POUR VÉRIFIER L'ACCÈS À LA VARIABLE D'ENVIRONNEMENT
 const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -222,7 +222,8 @@ Deno.serve(async (req)=>{
       const outputTokens = usage.completion_tokens || 0;
       const costUsd = (inputTokens * 0.25 / 1000000) + (outputTokens * 2.00 / 1000000);
 
-      await consumeTokens(supabase, {
+      const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
         userId: user_id,
         edgeFunctionName: 'scan-refine-morphs',
         operationType: 'morph-refinement-ai',

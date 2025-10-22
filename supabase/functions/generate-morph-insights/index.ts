@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { createHash } from 'node:crypto';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 interface ScanData {
   final_shape_params: Record<string, number>;
@@ -597,7 +597,8 @@ Deno.serve(async (req: Request) => {
         const tokensUsed = insights.metadata.tokens_used;
         const costUsd = (tokensUsed.prompt_tokens / 1000000 * 0.25) + (tokensUsed.completion_tokens / 1000000 * 2.0);
 
-        await consumeTokens(supabase, {
+        const requestId = crypto.randomUUID();
+await consumeTokensAtomic(supabase, {
           userId: user_profile.user_id,
           edgeFunctionName: 'generate-morph-insights',
           operationType: 'morph_insights',
