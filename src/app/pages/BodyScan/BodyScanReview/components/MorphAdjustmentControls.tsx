@@ -8,6 +8,7 @@ import { useFeedback } from '../../../../../hooks/useFeedback';
 import type { MorphPolicy } from '../../../../../lib/morph/constraints';
 import { useDebounce } from '../../../../../lib/utils/hooks';
 import logger from '../../../../../lib/utils/logger';
+import './measurements.css';
 
 const KEY_MORPHS = {
   bodyShape: [
@@ -304,36 +305,6 @@ const MorphAdjustmentControls: React.FC<MorphAdjustmentControlsProps> = React.me
                           boxShadow: `inset 0 1px 3px rgba(0,0,0,0.3), 0 0 ${isAdjusted ? '12px' : '0px'} ${morph.color}40`,
                         }}
                       />
-                      <style jsx>{`
-                        input[type="range"]::-webkit-slider-thumb {
-                          appearance: none;
-                          width: 22px;
-                          height: 22px;
-                          border-radius: 50%;
-                          background: linear-gradient(135deg, white, #f0f0f0);
-                          cursor: pointer;
-                          box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 3px ${morph.color}60;
-                          transition: all 0.2s ease;
-                        }
-                        input[type="range"]::-webkit-slider-thumb:hover {
-                          transform: scale(1.1);
-                          box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 4px ${morph.color}80;
-                        }
-                        input[type="range"]::-moz-range-thumb {
-                          width: 22px;
-                          height: 22px;
-                          border-radius: 50%;
-                          background: linear-gradient(135deg, white, #f0f0f0);
-                          cursor: pointer;
-                          border: none;
-                          box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 3px ${morph.color}60;
-                          transition: all 0.2s ease;
-                        }
-                        input[type="range"]::-moz-range-thumb:hover {
-                          transform: scale(1.1);
-                          box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 4px ${morph.color}80;
-                        }
-                      `}</style>
 
                       {/* Range indicators */}
                       <div className="flex justify-between mt-2 text-xs text-white/40 font-medium">
