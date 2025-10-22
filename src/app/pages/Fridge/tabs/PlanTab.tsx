@@ -4,7 +4,7 @@ import { usePlanTabLogic } from './PlanTab/hooks/usePlanTabLogic';
 import PlanHeaderSection from './PlanTab/components/PlanHeaderSection';
 import PlanContentSection from './PlanTab/components/PlanContentSection';
 import PlanFooterSection from './PlanTab/components/PlanFooterSection';
-import RecipeDetailModal from '../../../components/RecipeDetailModal';
+import RecipeDetailModal from './RecipesTab/components/RecipeDetailModal';
 
 /**
  * Plan Tab - Onglet Plan de Repas
@@ -125,14 +125,15 @@ const PlanTab: React.FC = () => {
       />
 
       {/* Modal de Détail de Recette */}
-      <RecipeDetailModal
-        isOpen={showRecipeDetailModal}
-        onClose={() => {
-          setShowRecipeDetailModal(false);
-          setSelectedRecipeForDetail(null);
-        }}
-        recipe={selectedRecipeForDetail}
-      />
+      {showRecipeDetailModal && selectedRecipeForDetail && (
+        <RecipeDetailModal
+          recipe={selectedRecipeForDetail}
+          onClose={() => {
+            setShowRecipeDetailModal(false);
+            setSelectedRecipeForDetail(null);
+          }}
+        />
+      )}
     </motion.div>
   );
 };

@@ -10,7 +10,7 @@ import { useFridgeScanPipeline } from '../../../../system/store/fridgeScan';
 import { useUserStore } from '../../../../system/store/userStore';
 import { useMealPlanStore } from '../../../../system/store/mealPlanStore';
 import type { Recipe } from '../../../../domain/recipe';
-import RecipeDetailModal from '../../../components/RecipeDetailModal';
+import RecipeDetailModal from './RecipesTab/components/RecipeDetailModal';
 import RecipeCard from './RecipesTab/components/RecipeCard';
 import RecipeGenerationHeader from './RecipesTab/components/RecipeGenerationHeader';
 import RecipeFilterSystem from './RecipesTab/components/RecipeFilterSystem';
@@ -368,11 +368,12 @@ const RecipesTab: React.FC = () => {
       )}
 
       {/* Recipe Detail Modal */}
-      {selectedRecipeForDetail && (
+      {showRecipeDetailModal && selectedRecipeForDetail && (
         <RecipeDetailModal
-          isOpen={showRecipeDetailModal}
-          onClose={handleCloseModal}
           recipe={selectedRecipeForDetail}
+          onClose={handleCloseModal}
+          onToggleSave={handleToggleSaveStatus}
+          isSaved={persistedRecipes.some(r => r.id === selectedRecipeForDetail.id)}
         />
       )}
     </motion.div>
