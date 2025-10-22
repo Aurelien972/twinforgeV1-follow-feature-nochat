@@ -300,38 +300,7 @@ export const usePlanTabLogic = () => {
         ...meal.detailedRecipe,
         id: meal.detailedRecipe.id || meal.recipeId || crypto.randomUUID(),
         title: meal.detailedRecipe.title || meal.mealName || meal.title || 'Recette sans nom',
-        description: meal.detailedRecipe.description || meal.descriptionSummary || meal.description || '',
-        imageUrl: meal.imageUrl || meal.detailedRecipe.imageUrl,
-        // Ensure instructions are in the correct format (array)
-        instructions: meal.detailedRecipe.instructions || [],
-        // Ensure ingredients are in the correct format
-        ingredients: meal.detailedRecipe.ingredients || [],
-        // Map nutritional info correctly (handle both kcal and calories)
-        nutritionalInfo: meal.detailedRecipe.nutritionalInfo ? {
-          calories: meal.detailedRecipe.nutritionalInfo.kcal || meal.detailedRecipe.nutritionalInfo.calories || 0,
-          kcal: meal.detailedRecipe.nutritionalInfo.kcal || meal.detailedRecipe.nutritionalInfo.calories || 0,
-          protein: meal.detailedRecipe.nutritionalInfo.protein || 0,
-          carbs: meal.detailedRecipe.nutritionalInfo.carbs || 0,
-          fat: meal.detailedRecipe.nutritionalInfo.fat || 0,
-          fiber: meal.detailedRecipe.nutritionalInfo.fiber || 0
-        } : {
-          calories: meal.calories_est || meal.estimatedCalories || 0,
-          kcal: meal.calories_est || meal.estimatedCalories || 0,
-          protein: 0,
-          carbs: 0,
-          fat: 0,
-          fiber: 0
-        },
-        // Add optional fields
-        prepTimeMin: meal.detailedRecipe.prepTimeMin || meal.estimatedPrepTime || meal.prep_time_min || 0,
-        cookTimeMin: meal.detailedRecipe.cookTimeMin || meal.estimatedCookTime || meal.cook_time_min || 0,
-        servings: meal.detailedRecipe.servings || meal.servings || 2,
-        dietaryTags: meal.detailedRecipe.dietaryTags || meal.dietaryTags || [],
-        difficulty: meal.detailedRecipe.difficulty || 'moyen',
-        tips: meal.detailedRecipe.tips || [],
-        variations: meal.detailedRecipe.variations || [],
-        // Add createdAt for display in modal
-        createdAt: meal.updatedAt || new Date().toISOString()
+        imageUrl: meal.imageUrl || meal.detailedRecipe.imageUrl
       };
     } else {
       // Build recipe from basic meal data
@@ -346,20 +315,17 @@ export const usePlanTabLogic = () => {
           return ing;
         }),
         instructions: meal.instructions || [],
-        prepTimeMin: meal.estimatedPrepTime || meal.prep_time_min || 0,
-        cookTimeMin: meal.estimatedCookTime || meal.cook_time_min || 0,
+        prepTimeMin: meal.prep_time_min || 0,
+        cookTimeMin: meal.cook_time_min || 0,
         servings: meal.servings || 2,
         nutritionalInfo: {
-          calories: meal.calories_est || meal.estimatedCalories || 0,
-          kcal: meal.calories_est || meal.estimatedCalories || 0,
+          calories: meal.calories_est || 0,
           protein: 0,
           carbs: 0,
           fat: 0,
           fiber: 0
         },
-        dietaryTags: meal.dietaryTags || [],
-        imageUrl: meal.imageUrl,
-        createdAt: meal.updatedAt || new Date().toISOString()
+        imageUrl: meal.imageUrl
       };
     }
 
