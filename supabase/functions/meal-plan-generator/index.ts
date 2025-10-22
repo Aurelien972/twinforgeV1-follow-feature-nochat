@@ -236,9 +236,7 @@ RÉPONDS UNIQUEMENT AVEC LE JSON COMPLET. NE FOURNIS AUCUN TEXTE EXPLICATIF AVAN
             content: truncatedPrompt
           }
         ],
-        max_completion_tokens: 15000,
-        reasoning_effort: 'low',
-        verbosity: 'low'
+        max_completion_tokens: 15000
       }),
     });
 

@@ -359,7 +359,6 @@ RÉPONSE REQUISE (JSON uniquement):
             content: biometricPrompt,
           },
         ],
-        reasoning_effort: 'medium',
         max_completion_tokens: 3000,
         response_format: {
           type: 'json_object',

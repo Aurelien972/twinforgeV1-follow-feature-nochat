@@ -298,9 +298,7 @@ async function callGPT5Mini(scanData: ScanData, userProfile: UserProfile): Promi
     messages: messages,
     response_format: { type: "json_object" },
     temperature: 1,
-    max_completion_tokens: 4000,
-    verbosity: 'medium', // Balanced detail for user-friendly insights
-    reasoning_effort: 'low' // Fast insights generation, less critical analysis
+    max_completion_tokens: 4000
   };
 
   console.log('🤖 Calling GPT-5 mini API with optimized parameters...');

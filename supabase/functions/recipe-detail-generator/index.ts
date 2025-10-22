@@ -158,33 +158,50 @@ FORMAT DE RÉPONSE (JSON strict):
 
 IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
 
+  const requestBody = {
+    model: 'gpt-5-mini',
+    messages: [
+      {
+        role: 'system',
+        content: 'Tu es un chef cuisinier expert. Tu réponds toujours avec du JSON valide uniquement.'
+      },
+      {
+        role: 'user',
+        content: prompt
+      }
+    ],
+    temperature: 0.8,
+    max_completion_tokens: 2000
+  };
+
+  console.log('📤 Sending request to OpenAI:', {
+    model: requestBody.model,
+    max_completion_tokens: requestBody.max_completion_tokens,
+    temperature: requestBody.temperature,
+    messages_count: requestBody.messages.length
+  });
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiApiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: 'gpt-5-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'Tu es un chef cuisinier expert. Tu réponds toujours avec du JSON valide uniquement.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.8,
-      max_completion_tokens: 2000,
-      reasoning_effort: 'low',
-      verbosity: 'low'
-    }),
+    body: JSON.stringify(requestBody),
   })
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error (gpt-5-mini): ${response.status}`)
+    const errorBody = await response.text();
+    console.error('❌ OpenAI API error details:', {
+      status: response.status,
+      statusText: response.statusText,
+      errorBody,
+      requestBody: {
+        model: requestBody.model,
+        max_completion_tokens: requestBody.max_completion_tokens
+      }
+    });
+    throw new Error(`OpenAI API error (gpt-5-mini): ${response.status} - ${errorBody}`)
   }
 
   const data = await response.json()

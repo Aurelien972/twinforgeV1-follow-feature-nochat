@@ -168,10 +168,8 @@ export async function analyzePhotosWithVision(frontPhotoUrl, profilePhotoUrl, us
                 content: content
               }
             ],
-            max_completion_tokens: 8000, // OPTIMIZED: Reduced from 12000 to 8000 for faster responses
+            max_completion_tokens: 8000 // OPTIMIZED: Reduced from 12000 to 8000 for faster responses
             // Note: GPT-5-mini supports default temperature (1) - parameter omitted to use default
-            verbosity: 'low', // OPTIMIZED: Reduced from 'medium' to 'low' for faster structured output
-            reasoning_effort: 'low' // OPTIMIZED: Changed from 'medium' to 'low' for 2x speed improvement (still excellent for vision tasks)
           })
         },
         90000 // OPTIMIZED: 90 second timeout (reduced from 120s for faster responses)
@@ -288,9 +286,8 @@ export async function analyzePhotosWithVision(frontPhotoUrl, profilePhotoUrl, us
       prompt_tokens: result.usage?.prompt_tokens,
       total_tokens: result.usage?.total_tokens,
       finish_reason: finishReason,
-      reasoning_effort: 'medium',
       reasoning_token_percentage: completionTokens > 0 ? Math.round((reasoningTokens / completionTokens) * 100) : 0,
-      diagnostic: 'Reasoning tokens consumed all available completion tokens. This is rare with medium effort. Check prompt complexity.'
+      diagnostic: 'Reasoning tokens consumed all available completion tokens. Check prompt complexity.'
     });
     throw new Error('OpenAI Vision exceeded token limit - reasoning consumed all available tokens');
   }
@@ -303,7 +300,6 @@ export async function analyzePhotosWithVision(frontPhotoUrl, profilePhotoUrl, us
       reasoning_tokens: reasoningTokens,
       completion_tokens: completionTokens,
       reasoning_percentage: Math.round((reasoningTokens / completionTokens) * 100),
-      reasoning_effort: 'low', // OPTIMIZED
       diagnostic: 'Consider prompt optimization if this occurs frequently',
       traceId
     });
@@ -341,7 +337,6 @@ export async function analyzePhotosWithVision(frontPhotoUrl, profilePhotoUrl, us
       completion_tokens: result.usage?.completion_tokens || 0,
       prompt_tokens: result.usage?.prompt_tokens || 0,
       total_tokens: result.usage?.total_tokens || 0,
-      reasoning_effort: 'low', // OPTIMIZED
       reasoning_token_percentage: result.usage?.completion_tokens > 0 ? Math.round(((result.usage?.completion_tokens_details?.reasoning_tokens || 0) / result.usage.completion_tokens) * 100) : 0,
       traceId
     });

@@ -57,10 +57,8 @@
             ]
           }
         ],
-        max_completion_tokens: 8000, // OPTIMIZED: Reduced from 12000 to 8000 for faster responses
+        max_completion_tokens: 8000 // OPTIMIZED: Reduced from 12000 to 8000 for faster responses
         // Note: GPT-5-mini supports default temperature (1) - parameter omitted to use default
-        verbosity: 'low', // OPTIMIZED: Reduced from 'medium' to 'low' for faster structured output
-        reasoning_effort: 'low' // OPTIMIZED: Changed from 'medium' to 'low' for 2x speed improvement
       })
     });
     if (!response.ok) {
@@ -85,8 +83,7 @@
         prompt_tokens: result.usage?.prompt_tokens,
         total_tokens: result.usage?.total_tokens,
         finish_reason: finishReason,
-        reasoning_effort: 'low', // OPTIMIZED
-        diagnostic: 'Reasoning tokens consumed all available completion tokens. This is rare with low effort. Check prompt complexity.'
+        diagnostic: 'Reasoning tokens consumed all available completion tokens. Check prompt complexity.'
       });
       throw new Error('OpenAI semantic analysis exceeded token limit - reasoning consumed all available tokens');
     }
@@ -128,7 +125,6 @@
       },
       reasoning_tokens: result.usage?.completion_tokens_details?.reasoning_tokens || 0,
       completion_tokens: result.usage?.completion_tokens || 0,
-      reasoning_effort: 'low', // OPTIMIZED
       reasoning_token_percentage: result.usage?.completion_tokens > 0 ? Math.round(((result.usage?.completion_tokens_details?.reasoning_tokens || 0) / result.usage.completion_tokens) * 100) : 0
     });
     return parsed;

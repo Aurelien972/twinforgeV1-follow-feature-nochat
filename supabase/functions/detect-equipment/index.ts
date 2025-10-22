@@ -535,10 +535,6 @@ ${userPrompt}`;
         response_format: { type: "json_object" }
       };
 
-      if (DETECTION_MODEL.includes("gpt-5")) {
-        (requestBody as any).reasoning_effort = "medium";
-      }
-
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -739,7 +735,6 @@ async function saveDetectionsToDatabase(
         model_used: DETECTION_MODEL,
         model_config: {
           max_completion_tokens: 16000,
-          reasoning_effort: "medium",
           response_format: "json_object",
           catalog_version: "v2",
           catalog_size: getTotalEquipmentCount()

@@ -239,9 +239,7 @@ Exemple de format attendu:
       body: JSON.stringify({
         model: 'gpt-5-mini',
         messages: visionMessages,
-        max_completion_tokens: 15000,
-        reasoning_effort: 'low',
-        verbosity: 'low'
+        max_completion_tokens: 15000
       })
     });
 

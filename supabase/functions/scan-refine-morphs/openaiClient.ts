@@ -50,10 +50,8 @@
             content: content
           }
         ],
-        max_completion_tokens: 10000, // OPTIMIZED: Reduced from 12000 to 10000 (kept higher for complex refinement)
+        max_completion_tokens: 10000 // OPTIMIZED: Reduced from 12000 to 10000 (kept higher for complex refinement)
         // Note: GPT-5-mini supports default temperature (1) - parameter omitted to use default
-        verbosity: 'low', // Structured JSON output doesn't need verbose explanations
-        reasoning_effort: 'medium' // KEPT MEDIUM: Critical refinement task requires quality reasoning
       })
     });
     if (!response.ok) {
@@ -80,9 +78,8 @@
         prompt_tokens: result.usage?.prompt_tokens,
         total_tokens: result.usage?.total_tokens,
         finish_reason: finishReason,
-        reasoning_effort: 'medium', // KEPT MEDIUM for quality
         reasoning_token_percentage: completionTokens > 0 ? Math.round((reasoningTokens / completionTokens) * 100) : 0,
-        diagnostic: 'Reasoning tokens consumed all available completion tokens. This is rare with medium effort. Check prompt complexity.',
+        diagnostic: 'Reasoning tokens consumed all available completion tokens. Check prompt complexity.',
         traceId
       });
       throw new Error('OpenAI morphological refinement exceeded token limit - reasoning consumed all available tokens');
@@ -96,7 +93,6 @@
         reasoning_tokens: reasoningTokens,
         completion_tokens: completionTokens,
         reasoning_percentage: Math.round((reasoningTokens / completionTokens) * 100),
-        reasoning_effort: 'medium', // KEPT MEDIUM for quality
         diagnostic: 'Consider prompt optimization if this occurs frequently',
         traceId
       });
@@ -116,7 +112,6 @@
       reasoning_tokens: result.usage?.completion_tokens_details?.reasoning_tokens || 0,
       completion_tokens: result.usage?.completion_tokens || 0,
       prompt_tokens: result.usage?.prompt_tokens || 0,
-      reasoning_effort: 'medium',
       finish_reason: result.choices[0]?.finish_reason
     });
     // Parse and validate JSON response
