@@ -114,7 +114,9 @@ const ScanCTA: React.FC = () => {
     queryKey: ['body-scans', 'latest', profile?.userId],
     queryFn: () => fetchLatestBodyScan(profile?.userId!),
     enabled: !!profile?.userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute - reduced from 5 minutes for faster updates
+    gcTime: 5 * 60 * 1000, // 5 minutes garbage collection time
+    refetchOnWindowFocus: true, // Refetch when user returns to the tab
     retry: 1,
   });
 

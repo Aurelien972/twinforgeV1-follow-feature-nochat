@@ -5,6 +5,7 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useBodyScanPerformance } from '../../../hooks/useBodyScanPerformance';
 import Avatar3DViewer from '../../../components/3d/Avatar3DViewer';
 import GlassCard from '../../../ui/cards/GlassCard';
@@ -25,6 +26,7 @@ import logger from '../../../lib/utils/logger';
 const BodyScanReview: React.FC = () => {
   const performanceConfig = useBodyScanPerformance();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { updateProfile } = useUserStore();
   const { success } = useFeedback();
   
@@ -173,9 +175,10 @@ const BodyScanReview: React.FC = () => {
       resolvedGender,
       showToast,
       success,
-      navigate
+      navigate,
+      queryClient
     );
-  }, [profile, updateProfile, completeMorphData, scanResults, stableMorphBounds, stableSelectedArchetypes, stableLimbMasses, stableSkinTone, resolvedGender, showToast, success, navigate]);
+  }, [profile, updateProfile, completeMorphData, scanResults, stableMorphBounds, stableSelectedArchetypes, stableLimbMasses, stableSkinTone, resolvedGender, showToast, success, navigate, queryClient]);
 
   const handleNewScan = useCallback(() => {
     navigate('/body-scan');

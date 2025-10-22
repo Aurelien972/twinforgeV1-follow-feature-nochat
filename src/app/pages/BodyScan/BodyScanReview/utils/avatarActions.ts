@@ -6,6 +6,7 @@
 import { supabase } from '../../../../../system/supabase/client';
 import { useUserStore } from '../../../../../system/store/userStore';
 import logger from '../../../../../lib/utils/logger';
+import { useQueryClient } from '@tanstack/react-query';
 
 /**
  * Round number to 3 decimal places to eliminate micro-deltas
@@ -167,7 +168,8 @@ export async function saveCurrentAvatar(
   resolvedGender: 'male' | 'female',
   showToast: (toast: any) => void,
   success: () => void,
-  navigate: (path: string) => void
+  navigate: (path: string) => void,
+  queryClient?: any
 ) {
   // AUDIT: Log all input parameters for skin tone debugging
   logger.info('AVATAR_SAVE_AUDIT', 'Starting avatar save with complete input audit', {
@@ -579,7 +581,42 @@ export async function saveCurrentAvatar(
       feedbackWorked: true,
       philosophy: 'complete_success_with_feedback'
     });
-    
+
+    // STEP 8: Invalidate React Query caches to refresh Scanner and History tabs
+    if (queryClient) {
+      try {
+        // Invalidate body scan queries to refresh Scanner tab
+        await queryClient.invalidateQueries({
+          queryKey: ['body-scans', 'latest', profile.userId],
+          exact: false
+        });
+
+        // Invalidate body scan history to refresh History tab
+        await queryClient.invalidateQueries({
+          queryKey: ['body-scan-history', profile.userId],
+          exact: false
+        });
+
+        logger.info('AVATAR_SAVE_CACHE', 'Successfully invalidated React Query caches', {
+          userId: profile.userId,
+          invalidatedQueries: ['body-scans/latest', 'body-scan-history'],
+          philosophy: 'cache_invalidation_success'
+        });
+      } catch (cacheError) {
+        logger.error('AVATAR_SAVE_CACHE', 'Cache invalidation failed but save succeeded', {
+          error: cacheError instanceof Error ? cacheError.message : 'Unknown error',
+          userId: profile.userId,
+          philosophy: 'cache_invalidation_failure_non_critical'
+        });
+        // Don't throw - save succeeded, only cache invalidation failed
+      }
+    } else {
+      logger.warn('AVATAR_SAVE_CACHE', 'queryClient not provided, skipping cache invalidation', {
+        userId: profile.userId,
+        philosophy: 'cache_invalidation_skipped'
+      });
+    }
+
     // CRITICAL: Success feedback MUST work
     try {
       showToast({
@@ -588,16 +625,16 @@ export async function saveCurrentAvatar(
         message: 'Votre avatar a été sauvegardé avec succès',
         duration: 3000,
       });
-      
+
       // Call success callback
       success();
-      
+
       logger.info('AVATAR_SAVE_V2', 'Success feedback delivered successfully', {
         userId: profile.userId,
         legacyFieldsPurged: true,
         philosophy: 'v2_canonical_persistence_success_confirmed_before_feedback'
       });
-      
+
       // Auto-redirect to avatar page after successful save
       if (navigate) {
         setTimeout(() => {

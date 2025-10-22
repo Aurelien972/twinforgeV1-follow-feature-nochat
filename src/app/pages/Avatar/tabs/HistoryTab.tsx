@@ -78,8 +78,9 @@ const HistoryTab: React.FC = () => {
     queryKey: ['body-scan-history', userId, displayLimit],
     queryFn: () => bodyScanRepo.getHistory(userId!, displayLimit),
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000, // 1 minute - reduced from 5 minutes for faster updates
     gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: true, // Refetch when user returns to the tab
   });
 
   const handleViewScan = (scanId: string) => {
