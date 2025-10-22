@@ -48,8 +48,9 @@
   height: 60px;
   border-radius: 999px;
   position: relative;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background:
     radial-gradient(60% 60% at 30% 30%, rgba(255,255,255,.20), transparent 60%),
     linear-gradient(140deg,
@@ -77,6 +78,8 @@
 .iconGlyph {
   color: #fff;
   filter: drop-shadow(0 2px 10px rgba(59, 130, 246, 0.5)) drop-shadow(0 0 4px rgba(0,0,0,.35));
+  position: relative;
+  z-index: 1;
 }
 
 /* Col 2 */

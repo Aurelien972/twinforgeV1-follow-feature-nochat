@@ -104,52 +104,6 @@ const ActivityInsightCards: React.FC<ActivityInsightCardsProps> = ({
         </div>
       </div>
 
-      {/* Résumé Rapide */}
-      <GlassCard
-        className="p-6"
-        style={{
-          background: `
-            radial-gradient(circle at 30% 20%, color-mix(in srgb, #10B981 8%, transparent) 0%, transparent 60%),
-            var(--glass-opacity)
-          `,
-          borderColor: 'color-mix(in srgb, #10B981 20%, transparent)'
-        }}
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-400 mb-1">
-              {summary.total_activities}
-            </div>
-            <div className="text-green-300 text-sm font-medium">Activités</div>
-            <div className="text-white/50 text-xs mt-1">Total</div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-400 mb-1">
-              {summary.total_calories}
-            </div>
-            <div className="text-blue-300 text-sm font-medium">Calories</div>
-            <div className="text-white/50 text-xs mt-1">Brûlées</div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-cyan-400 mb-1">
-              {summary.total_duration}
-            </div>
-            <div className="text-cyan-300 text-sm font-medium">Minutes</div>
-            <div className="text-white/50 text-xs mt-1">Actives</div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-400 mb-1">
-              {summary.consistency_score}
-            </div>
-            <div className="text-purple-300 text-sm font-medium">Régularité</div>
-            <div className="text-white/50 text-xs mt-1">Score</div>
-          </div>
-        </div>
-      </GlassCard>
-
       {/* Cartes d'insights - Patterns et Conseils */}
       <div className="space-y-4">
         {insights.map((insight, index) => (

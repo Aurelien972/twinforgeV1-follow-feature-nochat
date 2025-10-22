@@ -57,11 +57,13 @@ const ActivityPipelineProgressHeader: React.FC<ActivityPipelineProgressHeaderPro
           {/* Col 1 — Icône (centrée verticalement) */}
           <div className={s.icon}>
             <div className={s.iconHalo} />
-            <SpatialIcon
-              Icon={ICONS[currentIcon]}
-              size={26}
-              className={s.iconGlyph}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <SpatialIcon
+                Icon={ICONS[currentIcon]}
+                size={26}
+                className={s.iconGlyph}
+              />
+            </div>
           </div>
 
           {/* Col 2 — Titre / Barre / Étape */}
