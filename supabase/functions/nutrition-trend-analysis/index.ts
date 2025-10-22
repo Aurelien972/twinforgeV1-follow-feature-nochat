@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 interface TrendAnalysisRequest {
   user_id: string;
@@ -917,9 +918,9 @@ Deno.serve(async (req: Request) => {
 
     if (!requestBody.meals || !Array.isArray(requestBody.meals) || requestBody.meals.length < 3) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Insufficient meals data for trend analysis (minimum 3 meals required)' 
+        JSON.stringify({
+          success: false,
+          error: 'Insufficient meals data for trend analysis (minimum 3 meals required)'
         }),
         {
           status: 400,
@@ -942,6 +943,25 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // TOKEN PRE-CHECK
+    const estimatedTokens = 45;
+    const tokenCheck = await checkTokenBalance(supabase, requestBody.user_id, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('NUTRITION_TREND_ANALYSIS', 'Insufficient tokens', {
+        userId: requestBody.user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
 
     // Check cache first
     const cachedAnalysis = await checkTrendAnalysisCache(
@@ -968,12 +988,38 @@ Deno.serve(async (req: Request) => {
     }
 
     // Generate new AI trend analysis
-    const { result: analysisResult, tokenUsage, aiModel, fallbackUsed, fallbackReason } = 
+    const { result: analysisResult, tokenUsage, aiModel, fallbackUsed, fallbackReason } =
       await callOpenAIWithRetry(
         requestBody.meals,
         requestBody.user_profile,
         requestBody.analysis_period
       );
+
+    // TOKEN CONSUMPTION - Only if not fallback
+    if (!fallbackUsed && tokenUsage.total > 0) {
+      const costUsd = (tokenUsage.prompt_tokens / 1000000 * 0.25) + (tokenUsage.completion_tokens / 1000000 * 2.0);
+
+      await consumeTokens(supabase, {
+        userId: requestBody.user_id,
+        edgeFunctionName: 'nutrition-trend-analysis',
+        operationType: 'nutrition_trend_analysis',
+        openaiModel: 'gpt-5-mini',
+        openaiInputTokens: tokenUsage.prompt_tokens,
+        openaiOutputTokens: tokenUsage.completion_tokens,
+        openaiCostUsd: costUsd,
+        metadata: {
+          analysisPeriod: requestBody.analysis_period,
+          mealsCount: requestBody.meals.length,
+          trendsCount: analysisResult.trends?.length || 0
+        }
+      });
+
+      console.log('💰 [NUTRITION_TREND] Tokens consumed', {
+        userId: requestBody.user_id,
+        tokensUsed: tokenUsage.total,
+        costUsd: costUsd.toFixed(6)
+      });
+    }
 
     // Prepare response
     const response: TrendAnalysisResponse = {
@@ -991,6 +1037,7 @@ Deno.serve(async (req: Request) => {
       model_used: 'gpt-5-mini',
       tokens_used: tokenUsage.total > 0 ? tokenUsage : undefined,
       cached: false,
+      tokens_consumed: estimatedTokens
     };
 
     // Save to cache for future requests (only if not fallback)

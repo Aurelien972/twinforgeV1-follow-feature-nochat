@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
 import { createHash } from 'node:crypto';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 /**
  * GPT-5 Mini pricing for cost calculation and logging
@@ -573,6 +574,25 @@ Deno.serve(async (req: Request) => {
       timestamp: new Date().toISOString()
     });
 
+    // TOKEN PRE-CHECK
+    const estimatedTokens = 50;
+    const tokenCheck = await checkTokenBalance(supabase, userId, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('FASTING_PROGRESSION_ANALYZER', 'Insufficient tokens', {
+        userId,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
     // Fetch fasting sessions for the period
     const startDate = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000).toISOString();
     const endDate = new Date().toISOString();
@@ -765,6 +785,31 @@ Deno.serve(async (req: Request) => {
 
     const { analysis, tokensUsed } = await generateProgressionAnalysis(profile, fastingSessions, metrics, periodDays);
 
+    // Calculate cost
+    const estimatedCostUSD = calculateCostFromTokens(tokensUsed);
+
+    // TOKEN CONSUMPTION
+    await consumeTokens(supabase, {
+      userId,
+      edgeFunctionName: 'fasting-progression-analyzer',
+      operationType: 'fasting_progression',
+      openaiModel: 'gpt-5-mini',
+      openaiInputTokens: Math.round(tokensUsed * 0.7),
+      openaiOutputTokens: Math.round(tokensUsed * 0.3),
+      openaiCostUsd: estimatedCostUSD,
+      metadata: {
+        periodDays,
+        sessionsCount: fastingSessions.length,
+        completedSessions: completedSessions.length
+      }
+    });
+
+    console.log('💰 [FASTING_PROGRESSION] Tokens consumed', {
+      userId,
+      tokensUsed,
+      costUsd: estimatedCostUSD.toFixed(6)
+    });
+
     console.log('FASTING_PROGRESSION_ANALYZER', 'AI analysis completed', {
       userId,
       periodDays,
@@ -778,13 +823,14 @@ Deno.serve(async (req: Request) => {
     const progressionResponse: FastingProgressionResponse = {
       metrics,
       aiAnalysis: analysis,
-      dataQuality: completedSessions.length >= 15 ? 'excellent' : 
+      dataQuality: completedSessions.length >= 15 ? 'excellent' :
                   completedSessions.length >= 8 ? 'good' : 'limited',
       analysisDate: new Date().toISOString(),
       periodDays,
       aiModel: 'gpt-5-mini',
       tokensUsed,
-      cached: false
+      cached: false,
+      tokens_consumed: estimatedTokens
     };
 
     // Store in cache

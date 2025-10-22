@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 interface DailySummaryRequest {
   user_id: string;
@@ -763,9 +764,9 @@ Deno.serve(async (req: Request) => {
 
     if (!requestBody.meals || !Array.isArray(requestBody.meals)) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Missing or invalid meals data' 
+        JSON.stringify({
+          success: false,
+          error: 'Missing or invalid meals data'
         }),
         {
           status: 400,
@@ -788,6 +789,25 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // TOKEN PRE-CHECK
+    const estimatedTokens = 35;
+    const tokenCheck = await checkTokenBalance(supabase, requestBody.user_id, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('DAILY_NUTRITION_SUMMARY', 'Insufficient tokens', {
+        userId: requestBody.user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
 
     // Check cache first
     const cachedSummary = await checkDailySummaryCache(
@@ -814,12 +834,38 @@ Deno.serve(async (req: Request) => {
     }
 
     // Generate new AI summary
-    const { result: summaryResult, tokenUsage, aiModel, fallbackUsed, fallbackReason } = 
+    const { result: summaryResult, tokenUsage, aiModel, fallbackUsed, fallbackReason } =
       await callOpenAIWithRetry(
         requestBody.meals,
         requestBody.user_profile,
         requestBody.analysis_date
       );
+
+    // TOKEN CONSUMPTION - Only if not fallback
+    if (!fallbackUsed && tokenUsage.total > 0) {
+      const costUsd = (tokenUsage.prompt_tokens / 1000000 * 0.25) + (tokenUsage.completion_tokens / 1000000 * 2.0);
+
+      await consumeTokens(supabase, {
+        userId: requestBody.user_id,
+        edgeFunctionName: 'daily-nutrition-summary',
+        operationType: 'daily_nutrition_summary',
+        openaiModel: 'gpt-5-mini',
+        openaiInputTokens: tokenUsage.prompt_tokens,
+        openaiOutputTokens: tokenUsage.completion_tokens,
+        openaiCostUsd: costUsd,
+        metadata: {
+          analysisDate: requestBody.analysis_date,
+          mealsCount: requestBody.meals.length,
+          overallScore: summaryResult.overall_score || 70
+        }
+      });
+
+      console.log('💰 [DAILY_NUTRITION] Tokens consumed', {
+        userId: requestBody.user_id,
+        tokensUsed: tokenUsage.total,
+        costUsd: costUsd.toFixed(6)
+      });
+    }
 
     // Prepare response
     const response: DailySummaryResponse = {
@@ -834,6 +880,7 @@ Deno.serve(async (req: Request) => {
       model_used: 'gpt-5-mini',
       tokens_used: tokenUsage.total > 0 ? tokenUsage : undefined,
       cached: false,
+      tokens_consumed: estimatedTokens
     };
 
     // Save to cache for future requests (only if not fallback)

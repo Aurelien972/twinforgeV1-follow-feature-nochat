@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { createHash } from 'node:crypto';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 interface ScanData {
   final_shape_params: Record<string, number>;
@@ -519,8 +520,8 @@ Deno.serve(async (req: Request) => {
     if (!user_profile.user_id || !scan_data.scan_id) {
       console.log('❌ Validation failed: Missing user_id or scan_id');
       return new Response(
-        JSON.stringify({ 
-          error: 'Missing user_id in user_profile or scan_id in scan_data' 
+        JSON.stringify({
+          error: 'Missing user_id in user_profile or scan_id in scan_data'
         }),
         {
           status: 400,
@@ -531,6 +532,25 @@ Deno.serve(async (req: Request) => {
 
     // Initialize Supabase client
     const supabase = createSupabaseClient();
+
+    // TOKEN PRE-CHECK
+    const estimatedTokens = 55;
+    const tokenCheck = await checkTokenBalance(supabase, user_profile.user_id, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('GENERATE_MORPH_INSIGHTS', 'Insufficient tokens', {
+        userId: user_profile.user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
 
     // Calculate input hash for caching
     const inputHash = calculateInputHash(scan_data, user_profile);
@@ -571,7 +591,33 @@ Deno.serve(async (req: Request) => {
       // Try GPT-5 mini first
       insights = await callGPT5Mini(scan_data, user_profile);
       console.log('✅ GPT-5 mini insights generated successfully');
-      
+
+      // TOKEN CONSUMPTION - Only if not fallback
+      if (!insights.fallback_used && insights.metadata.tokens_used) {
+        const tokensUsed = insights.metadata.tokens_used;
+        const costUsd = (tokensUsed.prompt_tokens / 1000000 * 0.25) + (tokensUsed.completion_tokens / 1000000 * 2.0);
+
+        await consumeTokens(supabase, {
+          userId: user_profile.user_id,
+          edgeFunctionName: 'generate-morph-insights',
+          operationType: 'morph_insights',
+          openaiModel: 'gpt-5-mini',
+          openaiInputTokens: tokensUsed.prompt_tokens,
+          openaiOutputTokens: tokensUsed.completion_tokens,
+          openaiCostUsd: costUsd,
+          metadata: {
+            scanId: scan_data.scan_id,
+            insightsCount: insights.insights?.length || 0
+          }
+        });
+
+        console.log('💰 [MORPH_INSIGHTS] Tokens consumed', {
+          userId: user_profile.user_id,
+          tokensUsed: tokensUsed.total_tokens,
+          costUsd: costUsd.toFixed(6)
+        });
+      }
+
       // Store in cache
       await storeCachedInsights(
         supabase,
@@ -613,7 +659,10 @@ Deno.serve(async (req: Request) => {
 
     console.log('📤 Sending response with insights');
     return new Response(
-      JSON.stringify(insights),
+      JSON.stringify({
+        ...insights,
+        tokens_consumed: estimatedTokens
+      }),
       {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
