@@ -178,8 +178,12 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
       ],
       temperature: 0.8,
       max_completion_tokens: 2000,
-      reasoning_effort: 'low',
-      verbosity: 'low'
+      reasoning: {
+        effort: 'minimal'
+      },
+      text: {
+        verbosity: 'low'
+      }
     }),
   })
 
@@ -263,7 +267,7 @@ serve(async (req) => {
     }
 
     // Generate detailed recipe with AI
-    console.log('Generating detailed recipe with GPT-5-mini for:', request.meal_title)
+    console.log('Generating detailed recipe with GPT-5-mini (minimal reasoning, low verbosity) for:', request.meal_title)
     const recipe = await generateDetailedRecipe(request)
 
     // Calculate cost (mock usage for now, would need actual token count)

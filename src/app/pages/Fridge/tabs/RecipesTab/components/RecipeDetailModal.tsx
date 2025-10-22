@@ -242,31 +242,39 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                   Instructions
                 </h4>
                 <div className="space-y-4">
-                  {recipe.instructions.map((instruction, index) => (
-                    <div key={instruction?.step || index} className="flex gap-4">
-                      <div
-                        className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
-                        style={{
-                          background: `color-mix(in srgb, ${recipeColor} 20%, transparent)`,
-                          border: `2px solid color-mix(in srgb, ${recipeColor} 40%, transparent)`
-                        }}
-                      >
-                        <span className="text-emerald-400 font-bold text-sm">
-                          {instruction?.step || index + 1}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white/80 text-sm leading-relaxed">
-                          {instruction?.instruction}
-                        </p>
-                        {instruction?.timeMin && (
-                          <p className="text-white/50 text-xs mt-1">
-                            ⏱️ {instruction.timeMin} min
+                  {recipe.instructions.map((instruction, index) => {
+                    // Handle both formats: string (DetailedRecipe) or object (Recipe)
+                    const isString = typeof instruction === 'string';
+                    const stepNumber = isString ? index + 1 : (instruction?.step || index + 1);
+                    const instructionText = isString ? instruction : instruction?.instruction;
+                    const timeMin = isString ? null : instruction?.timeMin;
+
+                    return (
+                      <div key={isString ? index : (instruction?.step || index)} className="flex gap-4">
+                        <div
+                          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                          style={{
+                            background: `color-mix(in srgb, ${recipeColor} 20%, transparent)`,
+                            border: `2px solid color-mix(in srgb, ${recipeColor} 40%, transparent)`
+                          }}
+                        >
+                          <span className="text-emerald-400 font-bold text-sm">
+                            {stepNumber}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-white/80 text-sm leading-relaxed">
+                            {instructionText}
                           </p>
-                        )}
+                          {timeMin && (
+                            <p className="text-white/50 text-xs mt-1">
+                              ⏱️ {timeMin} min
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -284,25 +292,25 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                 <div className="grid grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white mb-1">
-                      {recipe.nutritionalInfo.calories}
+                      {recipe.nutritionalInfo.calories || recipe.nutritionalInfo.kcal || 0}
                     </div>
                     <div className="text-white/70 text-xs">Calories (kcal)</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white mb-1">
-                      {recipe.nutritionalInfo.protein}
+                      {recipe.nutritionalInfo.protein || 0}
                     </div>
                     <div className="text-white/70 text-xs">Protéines (g)</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white mb-1">
-                      {recipe.nutritionalInfo.carbs}
+                      {recipe.nutritionalInfo.carbs || 0}
                     </div>
                     <div className="text-white/70 text-xs">Glucides (g)</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white mb-1">
-                      {recipe.nutritionalInfo.fat}
+                      {recipe.nutritionalInfo.fat || 0}
                     </div>
                     <div className="text-white/70 text-xs">Lipides (g)</div>
                   </div>
