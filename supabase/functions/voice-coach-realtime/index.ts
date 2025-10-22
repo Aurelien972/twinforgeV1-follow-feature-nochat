@@ -85,6 +85,48 @@ function validateApiKey(apiKey: string | undefined): { valid: boolean; error?: s
   return { valid: true };
 }
 
+// Helper function to calculate realtime API cost
+function calculateRealtimeCost(
+  model: string,
+  inputTokens: number = 0,
+  outputTokens: number = 0,
+  audioTokens: number = 0
+): number {
+  // Pricing from tokenMiddleware.ts
+  const pricing: Record<string, { input: number; output: number; audio: number }> = {
+    'gpt-4o-realtime-preview': {
+      input: 5.00,    // per 1M tokens
+      output: 20.00,  // per 1M tokens
+      audio: 100.00   // per 1M tokens
+    },
+    'gpt-realtime-mini': {
+      input: 5.00,
+      output: 20.00,
+      audio: 100.00
+    },
+    'gpt-realtime-mini-2025-10-06': {
+      input: 5.00,
+      output: 20.00,
+      audio: 100.00
+    }
+  };
+
+  const modelPricing = pricing[model] || pricing['gpt-4o-realtime-preview'];
+
+  let totalCost = 0;
+  if (inputTokens > 0) {
+    totalCost += (inputTokens / 1_000_000) * modelPricing.input;
+  }
+  if (outputTokens > 0) {
+    totalCost += (outputTokens / 1_000_000) * modelPricing.output;
+  }
+  if (audioTokens > 0) {
+    totalCost += (audioTokens / 1_000_000) * modelPricing.audio;
+  }
+
+  return totalCost;
+}
+
 /**
  * Crée une session Realtime via l'interface unifiée d'OpenAI
  * Le client envoie son SDP offer, on retourne le SDP answer d'OpenAI
@@ -402,12 +444,77 @@ Deno.serve(async (req: Request) => {
           sdpAnswerLength: sdpAnswer.length
         });
 
+        // CRITICAL FIX: Consume tokens for realtime session initiation
+        // WebRTC sessions are long-lived, so we consume an initial amount
+        // The client should call a session-end endpoint with actual usage
+        if (userId) {
+          try {
+            const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+            const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+            const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+            const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+            // Initial token consumption - minimum session cost
+            // This will be adjusted when the session ends and we get actual usage
+            const initialTokens = 100; // ~5 minutes of typical usage
+            const modelUsed = body.model || DEFAULT_MODEL;
+
+            const consumptionResult = await consumeTokens(supabase, {
+              userId: userId,
+              edgeFunctionName: 'voice-coach-realtime',
+              operationType: 'voice-realtime-session-init',
+              openaiModel: modelUsed,
+              openaiInputTokens: 0,
+              openaiOutputTokens: 0,
+              openaiCostUsd: 0.02, // Estimated initial cost for session setup
+              metadata: {
+                requestId,
+                sessionInitiated: true,
+                model: modelUsed,
+                voice: body.voice || 'alloy',
+                estimatedDuration: '5-10 minutes'
+              }
+            });
+
+            log('info', 'Initial tokens consumed for realtime session', {
+              userId,
+              consumed: consumptionResult.consumed,
+              remaining: consumptionResult.remainingBalance,
+              model: modelUsed,
+              sessionId: requestId
+            });
+
+            // Store session metadata in database for tracking actual usage
+            await supabase.from('ai_analysis_jobs').insert({
+              user_id: userId,
+              analysis_type: 'voice_realtime_session',
+              status: 'in_progress',
+              input_hash: requestId,
+              request_payload: {
+                model: modelUsed,
+                voice: body.voice || 'alloy',
+                instructions: body.instructions,
+                sessionStartTime: new Date().toISOString()
+              },
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          } catch (tokenError) {
+            log('error', 'Failed to consume tokens for realtime session', {
+              userId,
+              error: tokenError instanceof Error ? tokenError.message : String(tokenError)
+            });
+          }
+        }
+
         // Retourner le SDP answer
         return new Response(sdpAnswer, {
           status: 200,
           headers: {
             ...corsHeaders,
             'Content-Type': 'application/sdp',
+            'X-Session-Id': requestId,
           },
         });
       } else if (contentType.includes('application/sdp') || contentType.includes('text/plain')) {
@@ -469,6 +576,126 @@ Deno.serve(async (req: Request) => {
     }
 
     // ==========================================
+    // POST /session-end - Track actual token usage
+    // ==========================================
+    if (req.method === 'POST' && url.pathname.includes('/session-end')) {
+      log('info', 'Session end tracking requested', { requestId });
+
+      try {
+        const body = await req.json();
+        const { session_id, user_id, duration_seconds, input_tokens, output_tokens, audio_tokens } = body;
+
+        if (!session_id || !user_id) {
+          return new Response(
+            JSON.stringify({
+              error: 'Missing required fields',
+              details: 'session_id and user_id are required'
+            }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }
+          );
+        }
+
+        const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+        // Get session metadata
+        const { data: sessionData } = await supabase
+          .from('ai_analysis_jobs')
+          .select('request_payload')
+          .eq('input_hash', session_id)
+          .eq('analysis_type', 'voice_realtime_session')
+          .single();
+
+        const model = sessionData?.request_payload?.model || 'gpt-4o-realtime-preview';
+
+        // Calculate actual cost and consume additional tokens if needed
+        // The initial 100 tokens covered the session setup, now we charge for actual usage
+        if (input_tokens || output_tokens || audio_tokens) {
+          const actualCostUsd = calculateRealtimeCost(model, input_tokens, output_tokens, audio_tokens);
+
+          // We already charged 0.02 USD initially, so charge the difference
+          const additionalCostUsd = Math.max(0, actualCostUsd - 0.02);
+
+          if (additionalCostUsd > 0) {
+            await consumeTokens(supabase, {
+              userId: user_id,
+              edgeFunctionName: 'voice-coach-realtime',
+              operationType: 'voice-realtime-session-usage',
+              openaiModel: model,
+              openaiInputTokens: input_tokens || 0,
+              openaiOutputTokens: output_tokens || 0,
+              openaiCostUsd: additionalCostUsd,
+              metadata: {
+                sessionId: session_id,
+                durationSeconds: duration_seconds,
+                audioTokens: audio_tokens,
+                sessionEnded: true
+              }
+            });
+
+            log('info', 'Additional tokens consumed for realtime session usage', {
+              userId: user_id,
+              sessionId: session_id,
+              actualCostUsd,
+              additionalCostUsd,
+              inputTokens: input_tokens,
+              outputTokens: output_tokens,
+              audioTokens: audio_tokens
+            });
+          }
+        }
+
+        // Update session status in database
+        await supabase
+          .from('ai_analysis_jobs')
+          .update({
+            status: 'completed',
+            result_payload: {
+              durationSeconds: duration_seconds,
+              inputTokens: input_tokens,
+              outputTokens: output_tokens,
+              audioTokens: audio_tokens,
+              sessionEndTime: new Date().toISOString()
+            },
+            updated_at: new Date().toISOString()
+          })
+          .eq('input_hash', session_id)
+          .eq('analysis_type', 'voice_realtime_session');
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: 'Session usage tracked successfully'
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+
+      } catch (error) {
+        log('error', 'Failed to track session end', {
+          error: error instanceof Error ? error.message : String(error)
+        });
+        return new Response(
+          JSON.stringify({
+            error: 'Failed to track session usage',
+            details: error instanceof Error ? error.message : 'Unknown error'
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    }
+
+    // ==========================================
     // Route non reconnue
     // ==========================================
     log('warn', 'Unknown endpoint', {
@@ -480,7 +707,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         error: 'Not Found',
-        details: 'Available endpoints: GET /health, POST /session',
+        details: 'Available endpoints: GET /health, POST /session, POST /session-end',
         mode: 'webrtc-unified'
       }),
       {

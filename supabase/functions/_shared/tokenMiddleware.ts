@@ -71,6 +71,12 @@ const OPENAI_PRICING = {
   "whisper-1": {
     perMinute: 0.006,
   },
+  "tts-1": {
+    perMillionChars: 15.00, // $15 per 1M characters
+  },
+  "tts-1-hd": {
+    perMillionChars: 30.00, // $30 per 1M characters
+  },
   "gpt-4o-realtime-preview": {
     inputCostPer1M: 5.00,
     outputCostPer1M: 20.00,

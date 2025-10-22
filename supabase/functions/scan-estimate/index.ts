@@ -445,24 +445,37 @@ import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } fr
     });
     console.log(`✅ [scan-estimate] [${traceId}] Final response keys: ${Object.keys(response).join(', ')}`);
 
-    if (tokenUsage) {
-      await consumeTokens(supabase, {
-        userId: user_id,
-        edgeFunctionName: 'scan-estimate',
-        operationType: 'body-scan-analysis-vision',
-        openaiModel: tokenUsage.model_used,
-        openaiInputTokens: tokenUsage.input_tokens,
-        openaiOutputTokens: tokenUsage.output_tokens,
-        openaiCostUsd: tokenUsage.cost_estimate_usd,
-        metadata: {
-          traceId,
-          frontPhotoProvided: !!frontPhoto,
-          profilePhotoProvided: !!profilePhoto,
-          estimatedHeight: response.estimated_metrics?.height_cm,
-          estimatedWeight: response.estimated_metrics?.weight_kg,
-        }
-      });
-    }
+    // MAJOR FIX: Always consume tokens, use estimated values if actual usage not available
+    const modelUsed = tokenUsage?.model_used || 'gpt-5-mini';
+    const inputTokens = tokenUsage?.input_tokens || estimatedTokensForBodyScan;
+    const outputTokens = tokenUsage?.output_tokens || 200;
+    const costUsd = tokenUsage?.cost_estimate_usd || calculateGPT5TokenCost(modelUsed, inputTokens, outputTokens);
+
+    await consumeTokens(supabase, {
+      userId: user_id,
+      edgeFunctionName: 'scan-estimate',
+      operationType: 'body-scan-analysis-vision',
+      openaiModel: modelUsed,
+      openaiInputTokens: inputTokens,
+      openaiOutputTokens: outputTokens,
+      openaiCostUsd: costUsd,
+      metadata: {
+        traceId,
+        frontPhotoProvided: !!frontPhoto,
+        profilePhotoProvided: !!profilePhoto,
+        estimatedHeight: response.estimated_metrics?.height_cm,
+        estimatedWeight: response.estimated_metrics?.weight_kg,
+        usedEstimatedTokens: !tokenUsage,
+      }
+    });
+
+    console.log(`💰 [scan-estimate] [${traceId}] Tokens consumed`, {
+      model: modelUsed,
+      inputTokens,
+      outputTokens,
+      costUsd,
+      usedActualUsage: !!tokenUsage
+    });
 
     return jsonResponse(response);
   } catch (error) {

@@ -183,23 +183,26 @@ const corsHeaders = {
 
 /**
  * Calculate token usage and cost estimation for GPT-5 models
+ * MAJOR FIX: Use centralized pricing from tokenMiddleware to ensure consistency
  */
 function calculateGPT5TokenCost(inputTokens: number, outputTokens: number, model: string): TokenUsage {
-  // GPT-5 pricing (per million tokens)
-  const pricing = {
+  // PRICING SYNCHRONIZED WITH tokenMiddleware.ts - DO NOT MODIFY INDEPENDENTLY
+  const OPENAI_PRICING = {
+    // GPT-5 models (latest - 2025)
     'gpt-5': { input: 1.25, output: 10.00 },
     'gpt-5-mini': { input: 0.25, output: 2.00 },
     'gpt-5-nano': { input: 0.05, output: 0.40 },
-    // Fallback to GPT-4o pricing if model not found
+    // GPT-4 models (legacy)
     'gpt-4o': { input: 2.50, output: 10.00 },
+    'gpt-4o-mini': { input: 0.15, output: 0.60 },
   };
-  
-  const modelPricing = pricing[model as keyof typeof pricing] || pricing['gpt-5-mini'];
-  
+
+  const modelPricing = OPENAI_PRICING[model as keyof typeof OPENAI_PRICING] || OPENAI_PRICING['gpt-5-mini'];
+
   const inputCost = (inputTokens / 1000000) * modelPricing.input;
   const outputCost = (outputTokens / 1000000) * modelPricing.output;
   const totalCost = inputCost + outputCost;
-  
+
   return {
     input: inputTokens,
     output: outputTokens,

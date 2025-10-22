@@ -159,6 +159,8 @@ Deno.serve(async (req: Request) => {
       log('info', 'Starting SSE stream', requestId);
 
       let chunkCount = 0;
+      let accumulatedInputTokens = 0;
+      let accumulatedOutputTokens = 0;
       const reader = openAIResponse.body?.getReader();
       const encoder = new TextEncoder();
       const decoder = new TextDecoder();
@@ -177,6 +179,31 @@ Deno.serve(async (req: Request) => {
               if (done) {
                 log('info', 'Stream completed', requestId, { chunkCount });
                 controller.close();
+
+                // CRITICAL FIX: Consume tokens after stream completion
+                try {
+                  const consumptionResult = await consumeTokens(supabase, {
+                    userId: user.id,
+                    edgeFunctionName: 'chat-ai',
+                    operationType: 'chat-completion',
+                    openaiModel: 'gpt-5-mini',
+                    openaiInputTokens: accumulatedInputTokens || estimatedInputTokens,
+                    openaiOutputTokens: accumulatedOutputTokens || estimatedOutputTokens,
+                    metadata: { mode, requestId, streaming: true }
+                  });
+
+                  log('info', 'Tokens consumed after stream', requestId, {
+                    consumed: consumptionResult.consumed,
+                    remaining: consumptionResult.remainingBalance,
+                    inputTokens: accumulatedInputTokens || estimatedInputTokens,
+                    outputTokens: accumulatedOutputTokens || estimatedOutputTokens
+                  });
+                } catch (tokenError) {
+                  log('error', 'Failed to consume tokens after stream', requestId, {
+                    error: tokenError instanceof Error ? tokenError.message : String(tokenError)
+                  });
+                }
+
                 break;
               }
 
@@ -189,6 +216,29 @@ Deno.serve(async (req: Request) => {
                   chunkLength: chunk.length,
                   preview: chunk.substring(0, 100)
                 });
+              }
+
+              // Parse SSE chunks to extract usage data if available
+              try {
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    const data = line.slice(6);
+                    if (data === '[DONE]') continue;
+
+                    try {
+                      const parsed = JSON.parse(data);
+                      if (parsed.usage) {
+                        accumulatedInputTokens = parsed.usage.prompt_tokens || 0;
+                        accumulatedOutputTokens = parsed.usage.completion_tokens || 0;
+                      }
+                    } catch {
+                      // Not valid JSON, continue
+                    }
+                  }
+                }
+              } catch {
+                // Parsing error, continue streaming
               }
 
               controller.enqueue(encoder.encode(chunk));
