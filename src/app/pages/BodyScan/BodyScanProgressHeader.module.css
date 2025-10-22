@@ -15,8 +15,10 @@
   position: relative;
 }
 
-/* Capture step - NEVER sticky on any viewport */
-.wrap[data-step="capture"] {
+/* Capture step - NEVER sticky on any viewport - FORCE IT */
+.wrap[data-step="capture"],
+.wrap[data-step="capture"] *,
+div[data-step="capture"] {
   position: static !important;
   top: auto !important;
   left: auto !important;
@@ -24,6 +26,7 @@
   bottom: auto !important;
   transform: none !important;
   z-index: auto !important;
+  will-change: auto !important;
 }
 
 .wrap[data-step="capture"] .card {
