@@ -137,13 +137,68 @@ export const generateDetailedRecipeForMeal = async (
       hasRecipe: !!responseData.recipe
     });
 
-    const detailedRecipe: DetailedRecipe = responseData.recipe;
+    let detailedRecipe: DetailedRecipe = responseData.recipe;
+
+    // Transform instructions from string[] to RecipeInstruction[] format expected by modal
+    if (detailedRecipe.instructions && Array.isArray(detailedRecipe.instructions)) {
+      console.log('🔄 Transforming instructions', {
+        instructionsCount: detailedRecipe.instructions.length,
+        firstInstructionType: typeof detailedRecipe.instructions[0],
+        firstInstructionSample: detailedRecipe.instructions[0]
+      });
+
+      const transformedInstructions = detailedRecipe.instructions.map((instruction: string | any, index: number) => {
+        // If already in RecipeInstruction format, keep it
+        if (typeof instruction === 'object' && instruction.instruction) {
+          return instruction;
+        }
+        // Otherwise transform string to RecipeInstruction
+        return {
+          step: index + 1,
+          instruction: typeof instruction === 'string' ? instruction : '',
+          timeMin: undefined
+        };
+      }) as any;
+      detailedRecipe = {
+        ...detailedRecipe,
+        instructions: transformedInstructions
+      };
+
+      console.log('✅ Instructions transformed', {
+        transformedCount: transformedInstructions.length,
+        firstTransformed: transformedInstructions[0]
+      });
+    }
+
+    // Transform nutritionalInfo to match Recipe interface (calories instead of kcal)
+    if (detailedRecipe.nutritionalInfo) {
+      const nutritionalInfo = detailedRecipe.nutritionalInfo as any;
+      const transformedNutritionalInfo = {
+        calories: nutritionalInfo.kcal || nutritionalInfo.calories || 0,
+        protein: nutritionalInfo.protein || 0,
+        carbs: nutritionalInfo.carbs || 0,
+        fat: nutritionalInfo.fat || 0,
+        fiber: nutritionalInfo.fiber || 0
+      };
+
+      console.log('🍽️ Nutritional info transformed', {
+        original: nutritionalInfo,
+        transformed: transformedNutritionalInfo
+      });
+
+      detailedRecipe = {
+        ...detailedRecipe,
+        nutritionalInfo: transformedNutritionalInfo as any
+      };
+    }
 
     console.log('MEAL_PLAN_STORE Detailed recipe generated successfully', {
       dayIndex,
       mealType,
       cached: responseData.cached,
-      modelUsed: responseData.model_used
+      modelUsed: responseData.model_used,
+      instructionsCount: detailedRecipe.instructions?.length || 0,
+      hasNutritionalInfo: !!detailedRecipe.nutritionalInfo
     });
 
     // Update meal with detailed recipe

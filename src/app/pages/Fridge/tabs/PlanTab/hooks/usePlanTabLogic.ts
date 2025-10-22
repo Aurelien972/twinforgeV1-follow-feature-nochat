@@ -296,11 +296,35 @@ export const usePlanTabLogic = () => {
 
     // Check if meal has detailedRecipe
     if (meal.detailedRecipe) {
+      const detailed = meal.detailedRecipe;
+
+      // Transform instructions to ensure proper format
+      const transformedInstructions = (detailed.instructions || []).map((instruction: any, index: number) => {
+        if (typeof instruction === 'string') {
+          return {
+            step: index + 1,
+            instruction: instruction
+          };
+        }
+        return instruction;
+      });
+
       recipeToDisplay = {
-        ...meal.detailedRecipe,
-        id: meal.detailedRecipe.id || meal.recipeId || crypto.randomUUID(),
-        title: meal.detailedRecipe.title || meal.mealName || meal.title || 'Recette sans nom',
-        imageUrl: meal.imageUrl || meal.detailedRecipe.imageUrl
+        ...detailed,
+        id: detailed.id || meal.recipeId || crypto.randomUUID(),
+        title: detailed.title || meal.mealName || meal.title || 'Recette sans nom',
+        imageUrl: meal.imageUrl || detailed.imageUrl,
+        instructions: transformedInstructions,
+        nutritionalInfo: {
+          calories: detailed.nutritionalInfo?.calories || detailed.nutritionalInfo?.kcal || 0,
+          protein: detailed.nutritionalInfo?.protein || 0,
+          carbs: detailed.nutritionalInfo?.carbs || 0,
+          fat: detailed.nutritionalInfo?.fat || 0,
+          fiber: detailed.nutritionalInfo?.fiber || 0
+        },
+        prepTimeMin: detailed.prepTimeMin || meal.estimatedPrepTime || 0,
+        cookTimeMin: detailed.cookTimeMin || meal.estimatedCookTime || 0,
+        servings: detailed.servings || 2
       };
     } else {
       // Build recipe from basic meal data
@@ -314,12 +338,12 @@ export const usePlanTabLogic = () => {
           }
           return ing;
         }),
-        instructions: meal.instructions || [],
-        prepTimeMin: meal.prep_time_min || 0,
-        cookTimeMin: meal.cook_time_min || 0,
+        instructions: [],
+        prepTimeMin: meal.estimatedPrepTime || meal.prep_time_min || 0,
+        cookTimeMin: meal.estimatedCookTime || meal.cook_time_min || 0,
         servings: meal.servings || 2,
         nutritionalInfo: {
-          calories: meal.calories_est || 0,
+          calories: meal.estimatedCalories || meal.calories_est || 0,
           protein: 0,
           carbs: 0,
           fat: 0,

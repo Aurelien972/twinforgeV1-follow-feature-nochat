@@ -29,6 +29,19 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
 }) => {
   const { click } = useFeedback();
 
+  // Debug: Log recipe data structure
+  React.useEffect(() => {
+    console.log('📋 RecipeDetailModal opened with recipe:', {
+      id: recipe.id,
+      title: recipe.title,
+      hasImage: !!recipe.imageUrl,
+      instructionsCount: recipe.instructions?.length || 0,
+      firstInstruction: recipe.instructions?.[0],
+      nutritionalInfo: recipe.nutritionalInfo,
+      ingredientsCount: recipe.ingredients?.length || 0
+    });
+  }, [recipe]);
+
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       click();
@@ -117,51 +130,66 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
               WebkitBackdropFilter: 'blur(32px) saturate(180%)'
             }}
           >
-            {/* Header avec image */}
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-start gap-4 flex-1">
-                {recipe.imageUrl && (
-                  <div
-                    className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0"
-                    style={{
-                      border: `3px solid color-mix(in srgb, ${recipeColor} 60%, transparent)`,
-                      boxShadow: `0 0 30px color-mix(in srgb, ${recipeColor} 50%, transparent)`
-                    }}
-                  >
-                    <img
-                      src={recipe.imageUrl}
-                      alt={recipe.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+            {/* Close Button - Positioned absolutely */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 z-10 p-2 rounded-full transition-all duration-200"
+              style={{
+                background: 'rgba(0, 0, 0, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(8px)'
+              }}
+              aria-label="Fermer le détail"
+            >
+              <SpatialIcon Icon={ICONS.X} size={18} className="text-white" />
+            </button>
 
-                <div className="flex-1">
-                  <h2
-                    id="recipe-detail-title"
-                    className="text-2xl font-bold text-white mb-2"
-                  >
-                    {recipe.title}
-                  </h2>
-                  {recipe.description && (
-                    <p className="text-white/70 text-sm leading-relaxed">
-                      {recipe.description}
-                    </p>
-                  )}
+            {/* Image de la recette en pleine largeur */}
+            {recipe.imageUrl ? (
+              <div
+                className="w-full h-64 rounded-2xl overflow-hidden mb-6"
+                style={{
+                  border: `3px solid color-mix(in srgb, ${recipeColor} 60%, transparent)`,
+                  boxShadow: `0 0 40px color-mix(in srgb, ${recipeColor} 50%, transparent)`
+                }}
+              >
+                <img
+                  src={recipe.imageUrl}
+                  alt={recipe.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div
+                className="w-full h-64 rounded-2xl mb-6 flex items-center justify-center"
+                style={{
+                  border: `2px dashed color-mix(in srgb, ${recipeColor} 40%, transparent)`,
+                  background: `linear-gradient(135deg,
+                    color-mix(in srgb, ${recipeColor} 8%, transparent),
+                    color-mix(in srgb, ${recipeColor} 4%, transparent)
+                  )`
+                }}
+              >
+                <div className="text-center">
+                  <SpatialIcon Icon={ICONS.Image} size={48} className="text-white/40 mx-auto mb-3" />
+                  <p className="text-white/60 text-sm">Image en cours de génération...</p>
                 </div>
               </div>
+            )}
 
-              <button
-                onClick={onClose}
-                className="p-2 rounded-full transition-all duration-200 flex-shrink-0"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)'
-                }}
-                aria-label="Fermer le détail"
+            {/* Header - Titre et description */}
+            <div className="mb-6">
+              <h2
+                id="recipe-detail-title"
+                className="text-3xl font-bold text-white mb-3"
               >
-                <SpatialIcon Icon={ICONS.X} size={18} className="text-white/80" />
-              </button>
+                {recipe.title}
+              </h2>
+              {recipe.description && (
+                <p className="text-white/70 text-base leading-relaxed">
+                  {recipe.description}
+                </p>
+              )}
             </div>
 
             {/* Métriques Principales */}
@@ -242,31 +270,42 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                   Instructions
                 </h4>
                 <div className="space-y-4">
-                  {recipe.instructions.map((instruction, index) => (
-                    <div key={instruction?.step || index} className="flex gap-4">
-                      <div
-                        className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
-                        style={{
-                          background: `color-mix(in srgb, ${recipeColor} 20%, transparent)`,
-                          border: `2px solid color-mix(in srgb, ${recipeColor} 40%, transparent)`
-                        }}
-                      >
-                        <span className="text-emerald-400 font-bold text-sm">
-                          {instruction?.step || index + 1}
-                        </span>
+                  {recipe.instructions.map((instruction, index) => {
+                    // Handle both string[] and RecipeInstruction[] formats
+                    const stepNumber = typeof instruction === 'object' ? instruction?.step : index + 1;
+                    const instructionText = typeof instruction === 'string'
+                      ? instruction
+                      : instruction?.instruction || '';
+                    const timeMin = typeof instruction === 'object' ? instruction?.timeMin : undefined;
+
+                    return (
+                      <div key={stepNumber || index} className="flex gap-4">
+                        <div
+                          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                          style={{
+                            background: `color-mix(in srgb, ${recipeColor} 20%, transparent)`,
+                            border: `2px solid color-mix(in srgb, ${recipeColor} 40%, transparent)`
+                          }}
+                        >
+                          <span className="text-emerald-400 font-bold text-sm">
+                            {stepNumber}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          {instructionText && (
+                            <p className="text-white/80 text-sm leading-relaxed">
+                              {instructionText}
+                            </p>
+                          )}
+                          {timeMin && (
+                            <p className="text-white/50 text-xs mt-1">
+                              ⏱️ {timeMin} min
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-white/80 text-sm leading-relaxed">
-                          {instruction?.instruction}
-                        </p>
-                        {instruction?.timeMin && (
-                          <p className="text-white/50 text-xs mt-1">
-                            ⏱️ {instruction.timeMin} min
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -284,25 +323,25 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                 <div className="grid grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white mb-1">
-                      {recipe.nutritionalInfo.calories}
+                      {recipe.nutritionalInfo.calories || (recipe.nutritionalInfo as any).kcal || 0}
                     </div>
                     <div className="text-white/70 text-xs">Calories (kcal)</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white mb-1">
-                      {recipe.nutritionalInfo.protein}
+                      {Math.round(recipe.nutritionalInfo.protein || 0)}
                     </div>
                     <div className="text-white/70 text-xs">Protéines (g)</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white mb-1">
-                      {recipe.nutritionalInfo.carbs}
+                      {Math.round(recipe.nutritionalInfo.carbs || 0)}
                     </div>
                     <div className="text-white/70 text-xs">Glucides (g)</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white mb-1">
-                      {recipe.nutritionalInfo.fat}
+                      {Math.round(recipe.nutritionalInfo.fat || 0)}
                     </div>
                     <div className="text-white/70 text-xs">Lipides (g)</div>
                   </div>
