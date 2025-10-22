@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 interface ScannedProductData {
   barcode: string;
@@ -846,6 +847,43 @@ Deno.serve(async (req: Request) => {
       timestamp: new Date().toISOString()
     });
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const estimatedTokensForVision = 100;
+    const tokenCheck = await checkTokenBalance(supabase, requestBody.user_id, estimatedTokensForVision);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('MEAL_ANALYZER', 'Insufficient tokens for analysis', {
+        analysisId,
+        userId: requestBody.user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokensForVision,
+        timestamp: new Date().toISOString()
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokensForVision,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
+    console.log('💰 [MEAL_ANALYZER] Token check passed', {
+      analysisId,
+      userId: requestBody.user_id,
+      currentBalance: tokenCheck.currentBalance,
+      estimatedCost: estimatedTokensForVision,
+      timestamp: new Date().toISOString()
+    });
+
     // Get image data for analysis
     let imageDataForAnalysis = requestBody.image_data;
     
@@ -1102,6 +1140,23 @@ Deno.serve(async (req: Request) => {
         timestamp: new Date().toISOString()
       });
     }
+
+    await consumeTokens(supabase, {
+      userId: requestBody.user_id,
+      edgeFunctionName: 'meal-analyzer',
+      operationType: 'meal-analysis-vision',
+      openaiModel: aiModel,
+      openaiInputTokens: tokenUsage.input,
+      openaiOutputTokens: tokenUsage.output,
+      openaiCostUsd: tokenUsage.cost_estimate_usd,
+      metadata: {
+        analysisId,
+        detectedFoodsCount: response.detected_foods.length,
+        totalCalories: response.total_calories,
+        confidence: response.confidence,
+        fallbackUsed,
+      }
+    });
 
     return new Response(
       JSON.stringify(response),

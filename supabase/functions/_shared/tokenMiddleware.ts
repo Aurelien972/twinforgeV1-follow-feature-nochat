@@ -112,9 +112,47 @@ function calculateOpenAICost(
   return totalCost;
 }
 
+const PROFIT_MARGIN_MULTIPLIER = 5.0;
+
 function convertUsdToTokens(usdAmount: number): number {
   const TOKEN_USD_RATE = 0.001;
-  return Math.ceil(usdAmount / TOKEN_USD_RATE);
+  const costWithMargin = usdAmount * PROFIT_MARGIN_MULTIPLIER;
+  return Math.ceil(costWithMargin / TOKEN_USD_RATE);
+}
+
+export interface TokenConsumptionLog {
+  edgeFunctionName: string;
+  userId: string;
+  operationType: string;
+  openaiModel?: string;
+  openaiCostUsd: number;
+  tokensCharged: number;
+  marginMultiplier: number;
+  marginPercentage: number;
+  profitUsd: number;
+  timestamp: string;
+}
+
+export function logTokenConsumption(log: TokenConsumptionLog): void {
+  const logEntry = {
+    timestamp: log.timestamp,
+    level: 'info',
+    service: log.edgeFunctionName,
+    event: 'TOKEN_CONSUMPTION',
+    data: {
+      userId: log.userId,
+      operationType: log.operationType,
+      openaiModel: log.openaiModel || 'N/A',
+      openaiCostUsd: log.openaiCostUsd.toFixed(6),
+      tokensCharged: log.tokensCharged,
+      marginMultiplier: log.marginMultiplier,
+      marginPercentage: `${log.marginPercentage.toFixed(1)}%`,
+      profitUsd: log.profitUsd.toFixed(6),
+      revenueUsd: (log.tokensCharged * 0.001).toFixed(6),
+    }
+  };
+
+  console.log(`💰 [TOKEN_CONSUMPTION] ${JSON.stringify(logEntry)}`);
 }
 
 export async function checkTokenBalance(
@@ -259,6 +297,40 @@ export async function consumeTokens(
         consumed: 0,
         error: error.message,
       };
+    }
+
+    const marginPercentage = ((PROFIT_MARGIN_MULTIPLIER - 1) / PROFIT_MARGIN_MULTIPLIER) * 100;
+    const profitUsd = actualCostUsd * (PROFIT_MARGIN_MULTIPLIER - 1);
+    const revenueUsd = tokensToConsume * 0.001;
+
+    logTokenConsumption({
+      edgeFunctionName: request.edgeFunctionName,
+      userId: request.userId,
+      operationType: request.operationType,
+      openaiModel: request.openaiModel,
+      openaiCostUsd: actualCostUsd,
+      tokensCharged: tokensToConsume,
+      marginMultiplier: PROFIT_MARGIN_MULTIPLIER,
+      marginPercentage,
+      profitUsd,
+      timestamp: new Date().toISOString(),
+    });
+
+    try {
+      await supabase.from('ai_cost_analytics').insert({
+        user_id: request.userId,
+        edge_function_name: request.edgeFunctionName,
+        operation_type: request.operationType,
+        openai_model: request.openaiModel || null,
+        openai_cost_usd: actualCostUsd,
+        tokens_charged: tokensToConsume,
+        margin_multiplier: PROFIT_MARGIN_MULTIPLIER,
+        margin_percentage: marginPercentage,
+        profit_usd: profitUsd,
+        revenue_usd: revenueUsd,
+      });
+    } catch (analyticsError) {
+      console.error('Failed to log to ai_cost_analytics:', analyticsError);
     }
 
     return {

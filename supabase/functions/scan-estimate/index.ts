@@ -5,6 +5,7 @@ import { createFallbackEstimation } from './estimationFallback.ts';
 import { enhanceMeasurements } from './measurementEnhancer.ts';
 import { validateWithDatabase } from './databaseValidator.ts';
 import { calculateGPT5TokenCost, logAICostTracking, type TokenUsage } from '../_shared/utils/costCalculator.ts';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 /**
  * Scan Estimate Edge Function - DB-First Architecture
  * Handles photo analysis and measurement extraction with DB validation
@@ -76,6 +77,34 @@ import { calculateGPT5TokenCost, logAICostTracking, type TokenUsage } from '../_
     console.log('✅ [scan-estimate] Service client initialized', {
       clientType: 'service_role',
       philosophy: 'rls_bypass_controlled_access'
+    });
+
+    const estimatedTokensForBodyScan = 150;
+    const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokensForBodyScan);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('SCAN_ESTIMATE', 'Insufficient tokens for body scan analysis', {
+        traceId,
+        userId: user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokensForBodyScan,
+        timestamp: new Date().toISOString()
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokensForBodyScan,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
+    console.log('💰 [SCAN_ESTIMATE] Token check passed', {
+      traceId,
+      userId: user_id,
+      currentBalance: tokenCheck.currentBalance,
+      estimatedCost: estimatedTokensForBodyScan,
+      timestamp: new Date().toISOString()
     });
     // Log 4: Photo Extraction & Availability Check
     const frontPhoto = photos.find((p)=>p.view === 'front');
@@ -415,6 +444,26 @@ import { calculateGPT5TokenCost, logAICostTracking, type TokenUsage } from '../_
       }
     });
     console.log(`✅ [scan-estimate] [${traceId}] Final response keys: ${Object.keys(response).join(', ')}`);
+
+    if (tokenUsage) {
+      await consumeTokens(supabase, {
+        userId: user_id,
+        edgeFunctionName: 'scan-estimate',
+        operationType: 'body-scan-analysis-vision',
+        openaiModel: tokenUsage.model_used,
+        openaiInputTokens: tokenUsage.input_tokens,
+        openaiOutputTokens: tokenUsage.output_tokens,
+        openaiCostUsd: tokenUsage.cost_estimate_usd,
+        metadata: {
+          traceId,
+          frontPhotoProvided: !!frontPhoto,
+          profilePhotoProvided: !!profilePhoto,
+          estimatedHeight: response.estimated_metrics?.height_cm,
+          estimatedWeight: response.estimated_metrics?.weight_kg,
+        }
+      });
+    }
+
     return jsonResponse(response);
   } catch (error) {
     // Log 11: Error Handling
