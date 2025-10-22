@@ -231,7 +231,7 @@ const ImmersivePhotoAnalysis: React.FC<ImmersivePhotoAnalysisProps> = ({
             </div>
 
             <figure
-              className="relative aspect-[3/4] rounded-xl overflow-hidden bg-black/20"
+              className="relative aspect-[3/4] rounded-xl overflow-hidden "
               role="group"
               aria-label="Analyse de la photo de face"
             >
@@ -339,7 +339,7 @@ const ImmersivePhotoAnalysis: React.FC<ImmersivePhotoAnalysisProps> = ({
             </div>
 
             <figure
-              className="relative aspect-[3/4] rounded-xl overflow-hidden bg-black/20"
+              className="relative aspect-[3/4] rounded-xl overflow-hidden "
               role="group"
               aria-label="Analyse de la photo de profil"
             >

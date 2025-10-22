@@ -300,7 +300,17 @@ const BodyScanCapture: React.FC = () => {
   const shouldShowHeader = isActive && steps.length > 0 && currentStep !== 'results';
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      style={{
+        position: 'static',
+        overflow: 'visible',
+        contain: 'none',
+        isolation: 'auto',
+        transform: 'none',
+        willChange: 'auto'
+      }}
+    >
       {/* Body Scan Progress Header - Masqué pendant la célébration */}
       {shouldShowHeader && (
         <BodyScanProgressHeader
