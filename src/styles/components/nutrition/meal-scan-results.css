@@ -582,3 +582,43 @@
 .detected-foods-card-container {
   contain: layout style paint;
 }
+
+/* =========================================
+   PERFORMANCE MODE SPECIFIC STYLES
+   ========================================= */
+
+/* Simplifier les styles pour mode performance */
+.performance-mode .macronutrients-card-container,
+.performance-mode .detected-foods-card-container {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.performance-mode .nutrition-stat-card {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Désactiver les animations complexes en mode performance */
+.performance-mode .nutrition-stat-icon.celebrating,
+.performance-mode .btn-save-meal-cta.breathing,
+.performance-mode .celebration-active {
+  animation: none !important;
+}
+
+.performance-mode .btn-save-meal-cta::before {
+  animation: none !important;
+}
+
+/* Simplifier les box-shadow en mode performance */
+.performance-mode .nutrition-stat-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.performance-mode .food-item-card {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.performance-mode .btn-save-meal-cta {
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2) !important;
+}

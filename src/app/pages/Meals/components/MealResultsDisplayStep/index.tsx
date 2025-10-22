@@ -84,6 +84,7 @@ const MealResultsDisplayStep: React.FC<MealResultsDisplayStepProps> = ({
           analysisModel={analysisResults.analysis_metadata?.analysis_model_used || 'advanced'}
           celebrationActive={celebrationActive}
           analysisMetadata={analysisResults.analysis_metadata}
+          isPerformanceMode={isPerformanceMode}
         />
       </div>
       
@@ -99,7 +100,7 @@ const MealResultsDisplayStep: React.FC<MealResultsDisplayStepProps> = ({
       </div>
       
       <div>
-        <PhotoDisplayCard capturedPhoto={capturedPhoto} />
+        <PhotoDisplayCard capturedPhoto={capturedPhoto} isPerformanceMode={isPerformanceMode} />
       </div>
       
       <div>

@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
+import { usePerformanceMode } from '../../../../../system/context/PerformanceModeContext';
 
 interface CapturedMealPhoto {
   file: File;
@@ -17,6 +18,7 @@ interface CapturedMealPhoto {
 
 interface PhotoDisplayCardProps {
   capturedPhoto: CapturedMealPhoto;
+  isPerformanceMode?: boolean;
 }
 
 /**
@@ -24,7 +26,10 @@ interface PhotoDisplayCardProps {
  */
 const PhotoDisplayCard: React.FC<PhotoDisplayCardProps> = ({
   capturedPhoto,
+  isPerformanceMode: propPerformanceMode,
 }) => {
+  const { isPerformanceMode: contextPerformanceMode } = usePerformanceMode();
+  const isPerformanceMode = propPerformanceMode ?? contextPerformanceMode;
   const reduceMotion = useReducedMotion();
 
   return (
@@ -78,35 +83,38 @@ const PhotoDisplayCard: React.FC<PhotoDisplayCardProps> = ({
             border: '2px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)'
           }}
         />
-        
-        {/* Halo de Forge Spatiale autour de la photo */}
-        <div
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          style={{
-            background: `
-              radial-gradient(circle at center, color-mix(in srgb, var(--nutrition-primary) 8%, transparent) 0%, transparent 70%),
-              radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--color-plasma-cyan) 6%, transparent) 0%, transparent 50%)
-            `,
-            border: '1px solid color-mix(in srgb, var(--nutrition-primary) 20%, transparent)',
-            backdropFilter: 'blur(4px) saturate(120%)'
-          }}
-        />
-        
-        {/* Effet de lumière forge spatiale */}
-        <div
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          style={{
-            background: `
-              linear-gradient(135deg, 
-                color-mix(in srgb, var(--color-plasma-cyan) 4%, transparent) 0%, 
-                transparent 30%, 
-                color-mix(in srgb, var(--nutrition-primary) 3%, transparent) 70%, 
-                transparent 100%
-              )
-            `,
-            mixBlendMode: 'overlay'
-          }}
-        />
+
+        {/* Halo de Forge Spatiale autour de la photo - Désactivé en mode performance */}
+        {!isPerformanceMode && (
+          <>
+            <div
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                background: `
+                  radial-gradient(circle at center, color-mix(in srgb, var(--nutrition-primary) 4%, transparent) 0%, transparent 70%),
+                  radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--color-plasma-cyan) 3%, transparent) 0%, transparent 50%)
+                `,
+                border: '1px solid color-mix(in srgb, var(--nutrition-primary) 15%, transparent)'
+              }}
+            />
+
+            {/* Effet de lumière forge spatiale */}
+            <div
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                background: `
+                  linear-gradient(135deg,
+                    color-mix(in srgb, var(--color-plasma-cyan) 2%, transparent) 0%,
+                    transparent 30%,
+                    color-mix(in srgb, var(--nutrition-primary) 2%, transparent) 70%,
+                    transparent 100%
+                  )
+                `,
+                mixBlendMode: 'overlay'
+              }}
+            />
+          </>
+        )}
       </div>
     </GlassCard>
   );

@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import GlassCard from '../../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../../ui/icons/registry';
+import { usePerformanceMode } from '../../../../../system/context/PerformanceModeContext';
 
 interface CalorieHighlightCardProps {
   mealName: string;
@@ -16,6 +17,7 @@ interface CalorieHighlightCardProps {
     tokens_used?: any;
     fallback_used?: boolean;
   };
+  isPerformanceMode?: boolean;
 }
 
 /**
@@ -29,7 +31,10 @@ const CalorieHighlightCard: React.FC<CalorieHighlightCardProps> = ({
   analysisModel,
   celebrationActive,
   analysisMetadata,
+  isPerformanceMode: propPerformanceMode,
 }) => {
+  const { isPerformanceMode: contextPerformanceMode } = usePerformanceMode();
+  const isPerformanceMode = propPerformanceMode ?? contextPerformanceMode;
   const reduceMotion = useReducedMotion();
   const [displayCalories, setDisplayCalories] = useState(0);
 
@@ -61,13 +66,13 @@ const CalorieHighlightCard: React.FC<CalorieHighlightCardProps> = ({
   return (
     <div className="meal-results-enter">
       <motion.div
-        animate={celebrationActive ? {
+        animate={!isPerformanceMode && celebrationActive ? {
           boxShadow: [
             '0 12px 40px rgba(0, 0, 0, 0.25), 0 0 40px color-mix(in srgb, #FF4500 20%, transparent)',
             '0 12px 40px rgba(0, 0, 0, 0.25), 0 0 60px color-mix(in srgb, #FF4500 35%, transparent)',
             '0 12px 40px rgba(0, 0, 0, 0.25), 0 0 40px color-mix(in srgb, #FF4500 20%, transparent)'
           ]
-        } : !reduceMotion ? {
+        } : !isPerformanceMode && !reduceMotion ? {
           boxShadow: [
             '0 12px 40px rgba(0, 0, 0, 0.25), 0 0 30px color-mix(in srgb, #FF4500 15%, transparent)',
             '0 12px 40px rgba(0, 0, 0, 0.25), 0 0 45px color-mix(in srgb, #FF4500 25%, transparent)',
@@ -76,13 +81,20 @@ const CalorieHighlightCard: React.FC<CalorieHighlightCardProps> = ({
         } : {}}
         transition={{
           duration: celebrationActive ? 1.5 : 3,
-          repeat: Infinity,
+          repeat: isPerformanceMode ? 0 : Infinity,
           ease: "easeInOut"
         }}
       >
         <GlassCard
           className="p-6 md:p-8 text-center relative w-full perf-critical"
-          style={{
+          style={isPerformanceMode ? {
+            background: 'linear-gradient(135deg, rgba(255, 69, 0, 0.15), rgba(255, 140, 0, 0.1))',
+            borderColor: 'rgba(255, 69, 0, 0.3)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '24px',
+            border: '2px solid rgba(255, 69, 0, 0.4)'
+          } : {
             background: `
               radial-gradient(circle at 50% 50%, color-mix(in srgb, #FF4500 6%, transparent) 0%, transparent 70%),
               radial-gradient(circle at 80% 20%, color-mix(in srgb, #FF8C00 4%, transparent) 0%, transparent 60%),
@@ -100,24 +112,30 @@ const CalorieHighlightCard: React.FC<CalorieHighlightCardProps> = ({
           }}
         >
         {/* Halo de Forge Énergétique - Réduit */}
-        <div
-          className="absolute inset-0 rounded-inherit pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at center, color-mix(in srgb, #FF4500 2%, transparent) 0%, transparent 70%)`,
-            filter: 'blur(16px)',
-            transform: 'scale(1.1)',
-            zIndex: -1,
-            animation: celebrationActive && !reduceMotion ? 'calorie-forge-glow 3s ease-in-out infinite' : 
-                      !reduceMotion ? 'calorie-forge-glow-idle 4s ease-in-out infinite' : 'none'
-          }}
-        />
+        {!isPerformanceMode && (
+          <div
+            className="absolute inset-0 rounded-inherit pointer-events-none"
+            style={{
+              background: `radial-gradient(circle at center, color-mix(in srgb, #FF4500 2%, transparent) 0%, transparent 70%)`,
+              filter: 'blur(16px)',
+              transform: 'scale(1.1)',
+              zIndex: -1,
+              animation: celebrationActive && !reduceMotion ? 'calorie-forge-glow 3s ease-in-out infinite' :
+                        !reduceMotion ? 'calorie-forge-glow-idle 4s ease-in-out infinite' : 'none'
+            }}
+          />
+        )}
 
         <div className="relative z-10 space-y-6">
           {/* Icône de Flamme Énergétique - Améliorée */}
           <div className="flex justify-center mb-4">
             <motion.div
               className="w-24 h-24 rounded-full flex items-center justify-center relative"
-              style={{
+              style={isPerformanceMode ? {
+                background: 'linear-gradient(135deg, rgba(255, 69, 0, 0.5), rgba(255, 140, 0, 0.4))',
+                border: '2px solid rgba(255, 69, 0, 0.7)',
+                boxShadow: '0 4px 20px rgba(255, 69, 0, 0.4)'
+              } : {
                 background: `
                   radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25) 0%, transparent 60%),
                   linear-gradient(135deg, color-mix(in srgb, #FF4500 50%, transparent), color-mix(in srgb, #FF8C00 40%, transparent))
@@ -129,31 +147,31 @@ const CalorieHighlightCard: React.FC<CalorieHighlightCardProps> = ({
                   inset 0 2px 0 rgba(255, 255, 255, 0.35)
                 `
               }}
-              animate={celebrationActive ? {
+              animate={!isPerformanceMode && celebrationActive ? {
                 scale: [1, 1.12, 1],
                 boxShadow: [
                   `0 0 50px color-mix(in srgb, #FF4500 60%, transparent), 0 0 80px color-mix(in srgb, #FF4500 40%, transparent), inset 0 2px 0 rgba(255, 255, 255, 0.35)`,
                   `0 0 70px color-mix(in srgb, #FF4500 80%, transparent), 0 0 120px color-mix(in srgb, #FF4500 60%, transparent), inset 0 3px 0 rgba(255, 255, 255, 0.45)`,
                   `0 0 50px color-mix(in srgb, #FF4500 60%, transparent), 0 0 80px color-mix(in srgb, #FF4500 40%, transparent), inset 0 2px 0 rgba(255, 255, 255, 0.35)`
                 ]
-              } : !reduceMotion ? {
+              } : !isPerformanceMode && !reduceMotion ? {
                 scale: [1, 1.03, 1],
                 rotate: [0, 2, -2, 0]
               } : {}}
               transition={{
                 duration: celebrationActive ? 1.5 : 2.5,
-                repeat: Infinity,
+                repeat: isPerformanceMode ? 0 : Infinity,
                 ease: "easeInOut"
               }}
             >
               <motion.div
-                animate={!reduceMotion ? {
+                animate={!isPerformanceMode && !reduceMotion ? {
                   scale: [1, 1.1, 0.95, 1],
                   opacity: [1, 0.9, 1, 1]
                 } : {}}
                 transition={{
                   duration: 1.8,
-                  repeat: Infinity,
+                  repeat: isPerformanceMode ? 0 : Infinity,
                   ease: "easeInOut",
                   times: [0, 0.3, 0.6, 1]
                 }}
@@ -181,12 +199,17 @@ const CalorieHighlightCard: React.FC<CalorieHighlightCardProps> = ({
               </p>
             </div>
             
-            <div 
+            <div
               className="text-5xl md:text-6xl font-black leading-none"
-              style={{
+              style={isPerformanceMode ? {
+                background: 'linear-gradient(135deg, #FF4500, #FF8C00)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              } : {
                 background: `
-                  linear-gradient(135deg, 
-                    #FF4500, 
+                  linear-gradient(135deg,
+                    #FF4500,
                     #FF8C00,
                     #FFD700
                   )
@@ -194,7 +217,7 @@ const CalorieHighlightCard: React.FC<CalorieHighlightCardProps> = ({
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                textShadow: celebrationActive ? 
+                textShadow: celebrationActive ?
                   '0 0 40px color-mix(in srgb, #FF4500 60%, transparent)' :
                   '0 0 20px color-mix(in srgb, #FF4500 40%, transparent)',
                 filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))'
