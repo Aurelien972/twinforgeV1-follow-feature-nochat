@@ -8,20 +8,34 @@ import { playSoundLegacy } from '../../hooks/useFeedback';
 const SCAN_STATUS_STEPS: { title: string; subtitle: string }[] = [
   { title: "Initialisation du scan", subtitle: "Configuration des algorithmes d'analyse corporelle" },
   { title: "Sécurisation des photos", subtitle: "Protection et optimisation des images" },
+  { title: "Compression intelligente", subtitle: "Optimisation des données sans perte" },
   { title: "Nettoyage intelligent", subtitle: "Amélioration automatique de la qualité" },
+  { title: "Prétraitement visuel", subtitle: "Normalisation des conditions d'éclairage" },
   { title: "Détection silhouette", subtitle: "Identification de 24 points anatomiques" },
+  { title: "Cartographie corporelle", subtitle: "Analyse topographique 3D" },
   { title: "Estimation des mesures", subtitle: "Calcul précis des dimensions corporelles" },
   { title: "Analyse de la peau", subtitle: "Extraction des propriétés chromatiques" },
+  { title: "Classification visuelle", subtitle: "Identification des caractéristiques uniques" },
   { title: "Profil morphologique", subtitle: "Classification selon 300+ archétypes" },
+  { title: "Analyse sémantique", subtitle: "Interprétation des proportions corporelles" },
   { title: "Sélection d'archétypes", subtitle: "Recherche des correspondances optimales" },
+  { title: "Filtrage de précision", subtitle: "Affinement des candidats morphologiques" },
   { title: "Affinage IA", subtitle: "Personnalisation par intelligence artificielle" },
+  { title: "Optimisation paramétrique", subtitle: "Ajustement des valeurs morphologiques" },
   { title: "Contrôles de cohérence", subtitle: "Validation des paramètres calculés" },
+  { title: "Vérification anatomique", subtitle: "Respect des proportions physiologiques" },
   { title: "Préparation du modèle 3D", subtitle: "Initialisation du mesh corporel" },
+  { title: "Chargement des ressources", subtitle: "Import des textures et géométries" },
   { title: "Application des morphs", subtitle: "Déformation géométrique personnalisée" },
+  { title: "Interpolation des formes", subtitle: "Transition fluide entre archétypes" },
   { title: "Répartition des masses", subtitle: "Calcul des proportions anatomiques" },
+  { title: "Ajustement des volumes", subtitle: "Calibration des masses musculaires" },
   { title: "Peau & matériaux", subtitle: "Application des propriétés visuelles" },
+  { title: "Configuration PBR", subtitle: "Paramétrage du rendu physique" },
   { title: "Mise en scène", subtitle: "Optimisation de la présentation 3D" },
+  { title: "Éclairage dynamique", subtitle: "Configuration de l'environnement lumineux" },
   { title: "Validation finale", subtitle: "Contrôle qualité automatisé" },
+  { title: "Tests de cohérence", subtitle: "Vérification de l'intégrité du modèle" },
   { title: "Avatar prêt", subtitle: "Rendu 3D disponible pour interaction" },
 ];
 
@@ -513,13 +527,13 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
     // Start interval for dynamic progression
     const intervalId = window.setInterval(() => {
       const currentState = get();
-      
+
       const nextStepIndex = currentState.dynamicProgressStepIndex + 1;
-      
+
       // Check if we've reached the end
       if (nextStepIndex >= detailedSteps.length) {
         get().stopDynamicProcessing();
-        
+
         // Set final state
         set({
           overallProgress: endPercentage,
@@ -536,11 +550,11 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         });
         return;
       }
-      
+
       // Update to next step
       const nextStep = detailedSteps[nextStepIndex];
       const nextProgress = Math.min(endPercentage, startPercentage + (progressPerStep * (nextStepIndex + 1)));
-      
+
       set({
         overallProgress: nextProgress,
         phaseProgress: nextProgress,
@@ -557,7 +571,7 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         stepTitle: nextStep.title,
         progress: nextProgress,
       });
-    }, 3000); // Update every 3 seconds
+    }, 2000); // Update every 2 seconds for smoother progression
 
     set({ dynamicProgressIntervalId: intervalId });
 

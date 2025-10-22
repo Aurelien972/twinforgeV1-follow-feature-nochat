@@ -193,7 +193,7 @@ const BodyScanCelebrationStep: React.FC = () => {
       <div className="celebration-main-content relative text-center py-8 md:py-12 z-10">
         {/* Central Celebration Icon with Multi-Layer Effects */}
         <ConditionalMotion
-          className="relative w-32 h-32 mx-auto mb-8"
+          className="relative w-48 h-48 mx-auto mb-8"
           initial={performanceConfig.enableInitialAnimations ? { scale: 0, rotate: -180 } : false}
           animate={performanceConfig.enableInitialAnimations ? { scale: 1, rotate: 0 } : { scale: 1 }}
           transition={performanceConfig.enableFramerMotion ? {
@@ -208,7 +208,7 @@ const BodyScanCelebrationStep: React.FC = () => {
             className="celebration-icon-outer-glow absolute inset-0 rounded-full"
             style={{
               background: `radial-gradient(circle, ${celebration.color}40, transparent 70%)`,
-              filter: `blur(8px)`,
+              filter: `blur(12px)`,
               '--celebration-color': celebration.color
             }}
           />
@@ -218,12 +218,12 @@ const BodyScanCelebrationStep: React.FC = () => {
             className="celebration-icon-inner-container absolute inset-8 rounded-full flex items-center justify-center"
             style={{
               background: `linear-gradient(135deg, ${celebration.color}30, ${celebration.color}60)`,
-              border: `2px solid ${celebration.color}`,
-              boxShadow: `0 0 60px ${celebration.color}90, inset 0 4px 0 rgba(255,255,255,0.3)`,
+              border: `3px solid ${celebration.color}`,
+              boxShadow: `0 0 80px ${celebration.color}90, inset 0 6px 0 rgba(255,255,255,0.35)`,
               '--celebration-color': celebration.color
             }}
           >
-            <SpatialIcon Icon={celebration.icon} size={48} color={celebration.color} />
+            <SpatialIcon Icon={celebration.icon} size={72} color={celebration.color} />
           </div>
 
           {/* Pulse Rings - disabled in performance mode, reduced in balanced */}
@@ -249,7 +249,7 @@ const BodyScanCelebrationStep: React.FC = () => {
         >
           <ConditionalMotion
             as="h3"
-            className="celebration-title-glow text-4xl md:text-5xl font-bold text-white mb-4"
+            className="celebration-title-glow text-5xl md:text-6xl font-bold text-white mb-4"
             style={{ color: celebration.color }}
           >
             {celebration.title}
@@ -257,7 +257,7 @@ const BodyScanCelebrationStep: React.FC = () => {
 
           <ConditionalMotion
             as="p"
-            className="text-xl text-white/90 mb-6 leading-relaxed max-w-2xl mx-auto"
+            className="text-xl md:text-2xl text-white/90 mb-6 leading-relaxed max-w-2xl mx-auto"
             initial={performanceConfig.enableStaggerAnimations ? { opacity: 0, y: 20 } : false}
             animate={performanceConfig.enableStaggerAnimations ? { opacity: 1, y: 0 } : { opacity: 1 }}
             transition={performanceConfig.enableFramerMotion ? { delay: 0.8, duration: 0.6 } : undefined}
@@ -307,7 +307,7 @@ const BodyScanCelebrationStep: React.FC = () => {
           ))}
           
           <div className="relative flex items-center justify-center gap-4">
-            <SpatialIcon Icon={ICONS.Eye} size={28} color="#0B0F1A" />
+            <SpatialIcon Icon={ICONS.Eye} size={32} color="#10B981" />
             <span>Mon Avatar 3D</span>
           </div>
         </ConditionalMotion>

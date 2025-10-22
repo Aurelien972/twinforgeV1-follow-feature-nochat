@@ -88,19 +88,39 @@ export function createScene(options: SceneCreationOptions): SceneInstance {
   const scene = new THREE.Scene();
   scene.background = null; // MODIFIÉ : Définir le fond de la scène à null pour qu'il soit transparent
 
-  // MOBILE OPTIMIZATION: Remove GridHelper on mobile (expensive to render)
-  if (!faceOnly && !deviceCapabilities.isMobile) {
-    const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
-    gridHelper.position.y = -0.1;
-    scene.add(gridHelper);
+  // MOBILE OPTIMIZATION: Replace expensive rotating GridHelper with lightweight shadow
+  if (!faceOnly) {
+    if (deviceCapabilities.isMobile) {
+      // Mobile: Use lightweight circular shadow plane (non-rotating)
+      const shadowGeometry = new THREE.CircleGeometry(0.5, 32);
+      const shadowMaterial = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.15,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+      const shadowMesh = new THREE.Mesh(shadowGeometry, shadowMaterial);
+      shadowMesh.rotation.x = -Math.PI / 2; // Rotate to be horizontal
+      shadowMesh.position.y = 0.01; // Slightly above ground
+      shadowMesh.name = 'avatar-shadow'; // Name for easy identification
+      scene.add(shadowMesh);
 
-    logger.info('SCENE_MANAGER', 'Grid helper added (desktop only)', {
-      philosophy: 'desktop_debug_grid'
-    });
-  } else if (deviceCapabilities.isMobile) {
-    logger.info('SCENE_MANAGER', 'Grid helper skipped on mobile for performance', {
-      philosophy: 'mobile_optimization_no_grid'
-    });
+      logger.info('SCENE_MANAGER', 'Lightweight shadow added for mobile (non-rotating)', {
+        philosophy: 'mobile_optimization_static_shadow',
+        shadowRadius: 0.5,
+        gpuFriendly: true
+      });
+    } else {
+      // Desktop: Keep grid helper for reference
+      const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
+      gridHelper.position.y = -0.1;
+      scene.add(gridHelper);
+
+      logger.info('SCENE_MANAGER', 'Grid helper added (desktop only)', {
+        philosophy: 'desktop_debug_grid'
+      });
+    }
   }
 
   // Create camera with optimized FOV
