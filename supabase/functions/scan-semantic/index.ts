@@ -4,7 +4,8 @@ import { validateSemanticRequest } from './requestValidator.ts';
 import { analyzePhotosForSemantics } from './semanticAnalyzer.ts';
 import { validateSemanticWithDB, getDefaultSemanticProfile } from './dbSemanticValidator.ts';
 import { createFallbackSemanticAnalysis } from './semanticFallback.ts';
-import { refetchMorphologyMapping } from '../_shared/utils/mappingRefetcher.ts'; // MODIFIED: Corrected import path
+import { refetchMorphologyMapping } from '../_shared/utils/mappingRefetcher.ts';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 /**
  * Scan Semantic Edge Function - DB-First Architecture
@@ -73,6 +74,32 @@ Deno.serve(async (req) => {
     console.log('✅ [scan-semantic] Service client initialized', {
       clientType: 'service_role',
       philosophy: 'rls_bypass_controlled_access'
+    });
+
+    const estimatedTokensForSemantic = 100;
+    const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokensForSemantic);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('SCAN_SEMANTIC', 'Insufficient tokens for semantic analysis', {
+        userId: user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokensForSemantic,
+        timestamp: new Date().toISOString()
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokensForSemantic,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
+    console.log('💰 [SCAN_SEMANTIC] Token check passed', {
+      userId: user_id,
+      currentBalance: tokenCheck.currentBalance,
+      estimatedCost: estimatedTokensForSemantic,
+      timestamp: new Date().toISOString()
     });
 
     const frontPhoto = photos.find(p => p.view === 'front');
@@ -223,6 +250,28 @@ Deno.serve(async (req) => {
       adjustmentsMade: adjustmentsMade.length,
       aiSuccess: aiAnalysisSuccess
     });
+
+    if (aiAnalysisSuccess && rawSemanticProfile?.ai_metadata?.usage) {
+      const usage = rawSemanticProfile.ai_metadata.usage;
+      const inputTokens = usage.prompt_tokens || 0;
+      const outputTokens = usage.completion_tokens || 0;
+      const costUsd = (inputTokens * 0.25 / 1000000) + (outputTokens * 2.00 / 1000000);
+
+      await consumeTokens(supabase, {
+        userId: user_id,
+        edgeFunctionName: 'scan-semantic',
+        operationType: 'semantic-morphology-analysis',
+        openaiModel: 'gpt-5-mini',
+        openaiInputTokens: inputTokens,
+        openaiOutputTokens: outputTokens,
+        openaiCostUsd: costUsd,
+        metadata: {
+          morphotype: validatedProfile.morphotype,
+          obesityLevel: validatedProfile.obesity,
+          muscularityLevel: validatedProfile.muscularity,
+        }
+      });
+    }
 
     return jsonResponse(response);
 

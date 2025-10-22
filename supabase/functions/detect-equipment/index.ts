@@ -7,6 +7,7 @@ import {
   getTotalEquipmentCount,
   ALL_EQUIPMENT_MAP
 } from "./equipment-reference.ts";
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -844,6 +845,43 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
+    const { data: location } = await supabase
+      .from('training_locations')
+      .select('user_id')
+      .eq('id', requestData.locationId)
+      .maybeSingle();
+
+    if (!location?.user_id) {
+      throw new Error('Could not find user_id for this location');
+    }
+
+    const estimatedTokensForEquipmentDetection = 80;
+    const tokenCheck = await checkTokenBalance(supabase, location.user_id, estimatedTokensForEquipmentDetection);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('DETECT_EQUIPMENT', 'Insufficient tokens for equipment detection', {
+        userId: location.user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokensForEquipmentDetection,
+        timestamp: new Date().toISOString()
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokensForEquipmentDetection,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
+    console.log('💰 [DETECT_EQUIPMENT] Token check passed', {
+      userId: location.user_id,
+      currentBalance: tokenCheck.currentBalance,
+      estimatedCost: estimatedTokensForEquipmentDetection,
+      locationId: requestData.locationId,
+      timestamp: new Date().toISOString()
+    });
+
     const { data: existingAnalysis } = await supabase
       .from("training_location_photo_analyses")
       .select("id, status, equipment_count")
@@ -912,6 +950,20 @@ Deno.serve(async (req: Request) => {
 
     console.log(`\n✅ ===== DETECTION COMPLETED IN ${processingTimeMs}ms =====`);
     console.log(`📊 Result: ${detections.length} unique equipment types detected\n`);
+
+    await consumeTokens(supabase, {
+      userId: location.user_id,
+      edgeFunctionName: 'detect-equipment',
+      operationType: 'equipment-detection-vision',
+      openaiModel: DETECTION_MODEL,
+      metadata: {
+        locationId: requestData.locationId,
+        photoId: requestData.photoId,
+        locationType: requestData.locationType,
+        equipmentDetected: detections.length,
+        processingTimeMs
+      }
+    });
 
     const successResponse = {
       success: true,

@@ -5,7 +5,8 @@ import { refetchMorphologyMapping } from '../_shared/utils/mappingRefetcher.ts';
 import { buildAIRefinementPrompt } from './promptBuilder.ts';
 import { callOpenAIForRefinement } from './openaiClient.ts';
 import { validateAndClampAIResults } from './aiResultValidator.ts';
-import { calculateRefinementDeltas, countActiveKeys } from './aiResultValidator.ts'; // Assurez-vous que ces fonctions sont exportées par aiResultValidator.ts
+import { calculateRefinementDeltas, countActiveKeys } from './aiResultValidator.ts';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 // AJOUTEZ UN LOG POUR VÉRIFIER L'ACCÈS À LA VARIABLE D'ENVIRONNEMENT
 const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -63,6 +64,42 @@ Deno.serve(async (req)=>{
       hasUserMeasurements: !!user_measurements,
       traceId,
       philosophy: 'phase_b_ai_driven_k5_envelope_constrained'
+    });
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration');
+    }
+    const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const estimatedTokensForRefine = 150;
+    const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokensForRefine);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('SCAN_REFINE_MORPHS', 'Insufficient tokens for morph refinement', {
+        traceId,
+        userId: user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokensForRefine,
+        timestamp: new Date().toISOString()
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokensForRefine,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
+    console.log('💰 [SCAN_REFINE_MORPHS] Token check passed', {
+      traceId,
+      userId: user_id,
+      currentBalance: tokenCheck.currentBalance,
+      estimatedCost: estimatedTokensForRefine,
+      timestamp: new Date().toISOString()
     });
     // PHASE B: Validate K=5 envelope is present
     if (!k5_envelope) {
@@ -178,6 +215,30 @@ Deno.serve(async (req)=>{
       aiConfidence: response.ai_confidence,
       philosophy: 'phase_b_strict_validation_success'
     });
+
+    if (aiRefinementResult?.ai_metadata?.usage) {
+      const usage = aiRefinementResult.ai_metadata.usage;
+      const inputTokens = usage.prompt_tokens || 0;
+      const outputTokens = usage.completion_tokens || 0;
+      const costUsd = (inputTokens * 0.25 / 1000000) + (outputTokens * 2.00 / 1000000);
+
+      await consumeTokens(supabase, {
+        userId: user_id,
+        edgeFunctionName: 'scan-refine-morphs',
+        operationType: 'morph-refinement-ai',
+        openaiModel: 'gpt-5-mini',
+        openaiInputTokens: inputTokens,
+        openaiOutputTokens: outputTokens,
+        openaiCostUsd: costUsd,
+        metadata: {
+          traceId,
+          scanId: scan_id,
+          activeKeysCount: response.active_keys_count,
+          clampedKeysCount: response.clamped_keys.length,
+        }
+      });
+    }
+
     return jsonResponse(response);
   } catch (error) {
     const processingTime = performance.now() - processingStartTime;

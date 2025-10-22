@@ -102,6 +102,33 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const estimatedTokensForFridgeScan = 120;
+    const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokensForFridgeScan);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('FRIDGE_SCAN_VISION', 'Insufficient tokens for fridge scan', {
+        userId: user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokensForFridgeScan,
+        timestamp: new Date().toISOString()
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokensForFridgeScan,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
+
+    console.log('💰 [FRIDGE_SCAN_VISION] Token check passed', {
+      userId: user_id,
+      currentBalance: tokenCheck.currentBalance,
+      estimatedCost: estimatedTokensForFridgeScan,
+      imagesCount: imagesToProcess.length,
+      timestamp: new Date().toISOString()
+    });
+
     // Check cache first
     const { data: cachedResult } = await supabase
       .from('ai_analysis_jobs')
@@ -637,6 +664,21 @@ Exemple de format attendu:
       prompt_version: 'ultra_exhaustive_v2',
       cache_key: cacheKey,
       timestamp: new Date().toISOString()
+    });
+
+    await consumeTokens(supabase, {
+      userId: user_id,
+      edgeFunctionName: 'fridge-scan-vision',
+      operationType: 'fridge-inventory-vision',
+      openaiModel: 'gpt-5-mini',
+      openaiInputTokens: inputTokens,
+      openaiOutputTokens: outputTokens,
+      openaiCostUsd: costUsd,
+      metadata: {
+        imagesProcessed: imagesToProcess.length,
+        itemsDetected: detectedItems.length,
+        cacheKey,
+      }
     });
 
     return new Response(JSON.stringify(response), {
