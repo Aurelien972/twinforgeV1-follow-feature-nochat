@@ -1,15 +1,15 @@
 import React, { useCallback, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Link } from '../nav/Link';
 import { ICONS } from '../../ui/icons/registry';
 import SpatialIcon from '../../ui/icons/SpatialIcon';
-import { useUserStore } from '../../system/store/userStore';
 import { getCircuitColor } from '../../ui/theme/circuits';
 import { navFor } from './navigation';
 import { useFeedback } from '@/hooks';
 import logger from '../../lib/utils/logger';
-import { supabase } from '../../system/supabase/client';
 import TokenBalanceWidget from './TokenBalanceWidget';
+import LogoutConfirmationModal from '../../ui/components/LogoutConfirmationModal';
+import { LogoutService } from '../../system/services/logoutService';
 
 interface NavSubItem {
   to: string;
@@ -276,41 +276,28 @@ function getSectionClass(title: string, type?: string): string {
 
 const Sidebar = React.memo(({ className = '' }: { className?: string }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const isActive = useCallback((path: string) => location.pathname === path, [location.pathname]);
 
-  // State for expanded forge menus
   const [expandedForges, setExpandedForges] = useState<Record<string, boolean>>({});
-
-  // Track the currently active forge to auto-close others
   const [activeForge, setActiveForge] = useState<string | null>(null);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  // Get navigation structure
   const navigation = navFor();
 
-  // Handle logout with smooth transition
-  const handleLogout = useCallback(async () => {
-    try {
-      logger.info('AUTH', 'Logout initiated');
+  const handleLogoutClick = useCallback(() => {
+    logger.info('SIDEBAR', 'Logout button clicked');
+    setIsLogoutModalOpen(true);
+  }, []);
 
-      // Sign out from Supabase
-      await supabase.auth.signOut();
+  const handleLogoutConfirm = useCallback(async () => {
+    logger.info('SIDEBAR', 'Logout confirmed');
+    await LogoutService.softLogout();
+  }, []);
 
-      // Clear local session state
-      useUserStore.getState().setSession(null);
-      useUserStore.getState().setProfile(null);
-
-      logger.info('AUTH', 'Logout successful, navigating to login');
-
-      // Navigate immediately to login page
-      navigate('/', { replace: true });
-    } catch (error) {
-      logger.error('AUTH', 'Logout error', { error });
-      console.error('Logout error:', error);
-      // Even on error, try to navigate to login
-      navigate('/', { replace: true });
-    }
-  }, [navigate]);
+  const handleLogoutCancel = useCallback(() => {
+    logger.info('SIDEBAR', 'Logout cancelled');
+    setIsLogoutModalOpen(false);
+  }, []);
 
   // Auto-expand menu if user is on a sub-page and close others
   React.useEffect(() => {
@@ -499,7 +486,7 @@ const Sidebar = React.memo(({ className = '' }: { className?: string }) => {
 
           {/* Bouton Déconnexion avec gradient orange */}
           <button
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             className="sidebar-item group focus-ring text-white/70 hover:text-white w-full"
             style={{
               '--item-circuit-color': '#FF6B35',
@@ -535,6 +522,12 @@ const Sidebar = React.memo(({ className = '' }: { className?: string }) => {
           </button>
         </div>
       </div>
+
+      <LogoutConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onConfirm={handleLogoutConfirm}
+        onCancel={handleLogoutCancel}
+      />
     </aside>
   );
 });

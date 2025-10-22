@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import SpatialIcon from '../../ui/icons/SpatialIcon';
@@ -6,8 +6,9 @@ import { ICONS } from '../../ui/icons/registry';
 import { useUserStore } from '../../system/store/userStore';
 import { useFeedback } from '../../hooks/useFeedback';
 import { useOverlayStore, Z_INDEX } from '../../system/store/overlayStore';
-import { supabase } from '../../system/supabase/client';
 import { pillClick, panelClose } from '../../audio/effects/forgeronSounds';
+import LogoutConfirmationModal from '../../ui/components/LogoutConfirmationModal';
+import { LogoutService } from '../../system/services/logoutService';
 
 interface UserPanelProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const UserPanel: React.FC<UserPanelProps> = ({ isOpen }) => {
   const { click } = useFeedback();
   const { close: closeOverlay } = useOverlayStore();
   const reduceMotion = useReducedMotion();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleProfileClick = () => {
     pillClick('#18E3FF');
@@ -32,15 +34,18 @@ const UserPanel: React.FC<UserPanelProps> = ({ isOpen }) => {
     navigate('/settings');
   };
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
     click();
-    try {
-      await supabase.auth.signOut();
-      closeOverlay();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleLogoutConfirm = async () => {
+    closeOverlay();
+    await LogoutService.softLogout();
+  };
+
+  const handleLogoutCancel = () => {
+    setIsLogoutModalOpen(false);
   };
 
   React.useEffect(() => {
@@ -210,7 +215,7 @@ const UserPanel: React.FC<UserPanelProps> = ({ isOpen }) => {
               <div className="h-px bg-white/10 my-1" />
 
               <motion.button
-                onClick={handleLogout}
+                onClick={handleLogoutClick}
                 className="glass-card rounded-xl px-4 py-3 flex items-center gap-3 w-full text-left"
                 style={{
                   background: 'var(--glass-opacity-base)',
@@ -235,6 +240,12 @@ const UserPanel: React.FC<UserPanelProps> = ({ isOpen }) => {
           </div>
         </motion.div>
       )}
+
+      <LogoutConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onConfirm={handleLogoutConfirm}
+        onCancel={handleLogoutCancel}
+      />
     </AnimatePresence>
   );
 };

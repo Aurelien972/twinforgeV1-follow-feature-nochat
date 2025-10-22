@@ -1,16 +1,17 @@
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from '../../app/nav/Link';
 import { ICONS } from '../icons/registry';
 import SpatialIcon from '../icons/SpatialIcon';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useUserStore } from '../../system/store/userStore';
 import { getCircuitColor } from '../theme/circuits';
 import { navFor } from '../../app/shell/navigation';
-import { supabase } from '../../system/supabase/client';
 import { useOverlayStore, Z_INDEX } from '../../system/store/overlayStore';
 import logger from '../../lib/utils/logger';
 import TokenBalanceWidget from '../../app/shell/TokenBalanceWidget';
+import LogoutConfirmationModal from '../components/LogoutConfirmationModal';
+import { LogoutService } from '../../system/services/logoutService';
 
 const Section = React.memo(({ title, children, type }: { title: string; children: React.ReactNode; type?: 'primary' | 'twin' | 'forge-category' }) => {
   const shouldHaveTopSpace = type === 'forge-category';
@@ -41,12 +42,11 @@ const MobileDrawer = React.memo(() => {
   const { isOpen, close } = useOverlayStore();
   const drawerOpen = isOpen('mobileDrawer');
   const location = useLocation();
-  const navigate = useNavigate();
   const navRef = React.useRef<HTMLElement>(null);
   const { profile } = useUserStore();
 
-  // State for expanded forge menus
   const [expandedForges, setExpandedForges] = React.useState<Record<string, boolean>>({});
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const isActive = useCallback(
     (path: string) => location.pathname === path,
@@ -129,28 +129,21 @@ const MobileDrawer = React.memo(() => {
     });
   }, []);
 
-  // Handle logout
-  const handleLogout = useCallback(async () => {
-    try {
-      // Sign out from Supabase
-      await supabase.auth.signOut();
+  const handleLogoutClick = useCallback(() => {
+    logger.info('MOBILE_DRAWER', 'Logout button clicked');
+    setIsLogoutModalOpen(true);
+  }, []);
 
-      // Clear local session state
-      useUserStore.getState().setSession(null);
-      useUserStore.getState().setProfile(null);
+  const handleLogoutConfirm = useCallback(async () => {
+    logger.info('MOBILE_DRAWER', 'Logout confirmed');
+    close();
+    await LogoutService.softLogout();
+  }, [close]);
 
-      // Close drawer
-      close();
-
-      // Navigate to login page
-      navigate('/', { replace: true });
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Even on error, close drawer and navigate
-      close();
-      navigate('/', { replace: true });
-    }
-  }, [navigate, close]);
+  const handleLogoutCancel = useCallback(() => {
+    logger.info('MOBILE_DRAWER', 'Logout cancelled');
+    setIsLogoutModalOpen(false);
+  }, []);
 
   return (
     <AnimatePresence>
@@ -405,7 +398,7 @@ const MobileDrawer = React.memo(() => {
 
                 {/* Bouton Déconnexion avec gradient orange - HARMONISÉ avec sidebar */}
                 <button
-                  onClick={handleLogout}
+                  onClick={handleLogoutClick}
                   className="sidebar-item group focus-ring text-white/70 hover:text-white w-full"
                   style={{
                     '--item-circuit-color': '#FF6B35',
@@ -442,6 +435,12 @@ const MobileDrawer = React.memo(() => {
               </div>
             </div>
           </motion.nav>
+
+          <LogoutConfirmationModal
+            isOpen={isLogoutModalOpen}
+            onConfirm={handleLogoutConfirm}
+            onCancel={handleLogoutCancel}
+          />
         </>
       )}
     </AnimatePresence>
