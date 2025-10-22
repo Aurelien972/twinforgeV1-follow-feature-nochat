@@ -17,7 +17,16 @@
 /* Sticky behavior - not on mobile for capture step */
 @media (max-width: 768px) {
   .wrap[data-step="capture"] {
-    position: static;
+    position: static !important;
+    top: auto !important;
+    transform: none !important;
+    z-index: auto !important;
+  }
+
+  .wrap[data-step="capture"] .card {
+    position: static !important;
+    top: auto !important;
+    transform: none !important;
   }
 
   .wrap[data-step="processing"],
