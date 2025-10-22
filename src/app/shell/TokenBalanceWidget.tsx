@@ -23,6 +23,7 @@ const TokenBalanceWidget: React.FC = () => {
   const realtimeChannelRef = useRef<any>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const loadingRef = useRef(false);
   const navigate = useNavigate();
   const { sidebarClick } = useFeedback();
   const { close } = useOverlayStore();
@@ -62,7 +63,14 @@ const TokenBalanceWidget: React.FC = () => {
 
   // Load balance with zero-trust approach (always from DB)
   const loadBalanceSecure = useCallback(async (source: 'initial' | 'realtime' | 'polling' | 'manual' = 'manual') => {
+    // Prevent concurrent loads
+    if (loadingRef.current) {
+      logger.debug('TOKEN_BALANCE_WIDGET', 'Load already in progress, skipping', { source });
+      return;
+    }
+
     try {
+      loadingRef.current = true;
       setIsSyncing(true);
 
       const result = await TokenService.getTokenBalance();
@@ -78,11 +86,19 @@ const TokenBalanceWidget: React.FC = () => {
           setBalance(secureBalance);
           setLastSyncTime(new Date());
 
-          logger.info('TOKEN_BALANCE_WIDGET', 'Balance loaded securely', {
-            source,
-            balance: result.balance,
-            checksum: secureBalance.checksum
-          });
+          // Only log initial loads and errors, not every single update
+          if (source === 'initial') {
+            logger.info('TOKEN_BALANCE_WIDGET', 'Balance loaded securely', {
+              source,
+              balance: result.balance,
+              checksum: secureBalance.checksum
+            });
+          } else {
+            logger.debug('TOKEN_BALANCE_WIDGET', 'Balance updated', {
+              source,
+              balance: result.balance
+            });
+          }
         } else {
           logger.error('TOKEN_BALANCE_WIDGET', 'Balance validation failed', { source });
         }
@@ -110,6 +126,7 @@ const TokenBalanceWidget: React.FC = () => {
         source
       });
     } finally {
+      loadingRef.current = false;
       setIsLoading(false);
       setIsSyncing(false);
     }
@@ -119,6 +136,7 @@ const TokenBalanceWidget: React.FC = () => {
   useEffect(() => {
     let mounted = true;
     let realtimeActive = true;
+    let lastSyncTimeRef = Date.now();
 
     const setupRealtime = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -126,6 +144,7 @@ const TokenBalanceWidget: React.FC = () => {
 
       // Initial load
       await loadBalanceSecure('initial');
+      lastSyncTimeRef = Date.now();
 
       // Setup realtime channel with better error handling
       const channel = supabase
@@ -141,19 +160,20 @@ const TokenBalanceWidget: React.FC = () => {
           async (payload) => {
             if (!mounted) return;
 
-            logger.info('TOKEN_BALANCE_WIDGET', 'Realtime update received', {
+            logger.debug('TOKEN_BALANCE_WIDGET', 'Realtime update received', {
               event: payload.eventType
             });
 
             await loadBalanceSecure('realtime');
+            lastSyncTimeRef = Date.now();
           }
         )
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
-            logger.info('TOKEN_BALANCE_WIDGET', 'Realtime subscription active');
+            logger.debug('TOKEN_BALANCE_WIDGET', 'Realtime subscription active');
             realtimeActive = true;
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            logger.error('TOKEN_BALANCE_WIDGET', 'Realtime subscription failed', { status });
+            logger.warn('TOKEN_BALANCE_WIDGET', 'Realtime subscription failed', { status });
             realtimeActive = false;
           }
         });
@@ -165,16 +185,18 @@ const TokenBalanceWidget: React.FC = () => {
         if (!realtimeActive && mounted) {
           logger.warn('TOKEN_BALANCE_WIDGET', 'Realtime inactive, falling back to polling');
           loadBalanceSecure('polling');
+          lastSyncTimeRef = Date.now();
         }
       }, 30000); // Check every 30 seconds
 
       // Periodic reconciliation (every 5 minutes)
       pollingIntervalRef.current = setInterval(() => {
         if (mounted) {
-          const timeSinceLastSync = Date.now() - lastSyncTime.getTime();
+          const timeSinceLastSync = Date.now() - lastSyncTimeRef;
           if (timeSinceLastSync > 300000) { // 5 minutes
-            logger.info('TOKEN_BALANCE_WIDGET', 'Periodic reconciliation');
+            logger.debug('TOKEN_BALANCE_WIDGET', 'Periodic reconciliation');
             loadBalanceSecure('polling');
+            lastSyncTimeRef = Date.now();
           }
         }
       }, 60000); // Check every minute
@@ -197,7 +219,7 @@ const TokenBalanceWidget: React.FC = () => {
         clearInterval(heartbeatIntervalRef.current);
       }
     };
-  }, [loadBalanceSecure, lastSyncTime]);
+  }, [loadBalanceSecure]);
 
   const handleClick = () => {
     sidebarClick();
