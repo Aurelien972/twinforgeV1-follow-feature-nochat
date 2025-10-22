@@ -9,8 +9,8 @@ import { useFeedback } from '../../../../hooks/useFeedback';
 import { useToast } from '../../../../ui/components/ToastProvider';
 import logger from '../../../../lib/utils/logger';
 
-// Types pour la pipeline
-export type ActivityPipelineStep = 'capture' | 'analysis' | 'review' | 'insights_generation';
+// Types pour la pipeline (3 étapes)
+export type ActivityPipelineStep = 'capture' | 'analysis' | 'review';
 
 export interface ActivityStepData {
   id: ActivityPipelineStep;
@@ -22,6 +22,7 @@ export interface ActivityStepData {
 
 export interface ActivityPipelineState {
   currentStep: ActivityPipelineStep;
+  progress: number;
   overallProgress: number;
   message: string;
   subMessage: string;
@@ -49,7 +50,7 @@ export interface ActivityPipelineState {
   };
 }
 
-// Configuration des étapes de la Forge Énergétique
+// Configuration des étapes de la Forge Énergétique (3 étapes)
 const ACTIVITY_STEPS: ActivityStepData[] = [
   {
     id: 'capture',
@@ -71,13 +72,6 @@ const ACTIVITY_STEPS: ActivityStepData[] = [
     subtitle: 'Validation et ajustement de vos données',
     icon: 'Target',
     color: '#1D4ED8'
-  },
-  {
-    id: 'insights_generation',
-    title: 'Génération d\'Insights',
-    subtitle: 'Analyse avancée de vos patterns d\'activité',
-    icon: 'Lightbulb',
-    color: '#8B5CF6'
   }
 ];
 
@@ -88,6 +82,7 @@ export function useActivityPipeline() {
 
   const [state, setState] = React.useState<ActivityPipelineState>({
     currentStep: 'capture',
+    progress: 0,
     overallProgress: 0,
     message: 'Prêt à forger votre énergie',
     subMessage: 'Commencez par enregistrer votre session d\'activité',
@@ -114,10 +109,6 @@ export function useActivityPipeline() {
       review: {
         message: 'Revue Énergétique',
         subMessage: 'Validation et ajustement de vos données'
-      },
-      insights_generation: {
-        message: 'Génération d\'Insights Énergétiques',
-        subMessage: 'Analyse avancée de vos patterns d\'activité'
       }
     };
 
@@ -127,6 +118,7 @@ export function useActivityPipeline() {
       ...prev,
       isActive: true,
       currentStep: initialStep,
+      progress: 0,
       overallProgress: 0,
       message: stepMessage.message,
       subMessage: stepMessage.subMessage
@@ -137,6 +129,7 @@ export function useActivityPipeline() {
     setState(prev => ({
       ...prev,
       currentStep: step,
+      progress,
       overallProgress: progress,
       message,
       subMessage: subMessage || ''
@@ -175,6 +168,7 @@ export function useActivityPipeline() {
       ...prev,
       isActive: false,
       currentStep: 'capture',
+      progress: 0,
       overallProgress: 0,
       message: 'Prêt à forger votre énergie',
       subMessage: 'Commencez par enregistrer votre session d\'activité',
@@ -208,6 +202,7 @@ export function useActivityPipeline() {
       ...prev,
       isActive: false,
       currentStep: 'capture',
+      progress: 0,
       overallProgress: 0,
       message: 'Prêt à forger votre énergie',
       subMessage: 'Commencez par enregistrer votre session d\'activité',

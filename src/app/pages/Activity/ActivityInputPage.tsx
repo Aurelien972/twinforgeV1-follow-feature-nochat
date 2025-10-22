@@ -148,7 +148,7 @@ const ActivityInputPage: React.FC = () => {
     }
 
     setIsProcessing(true);
-    actions.setStep('analysis', 25, 'Transcription Audio', 'Conversion de votre voix en texte...');
+    actions.setStep('analysis', 33, 'Transcription Audio', 'Conversion de votre voix en texte...');
 
     try {
       // Convertir le Blob en Base64
@@ -230,7 +230,7 @@ const ActivityInputPage: React.FC = () => {
       });
 
       // Étape 2: Analyse avec activity-analyzer
-      actions.setStep('analysis', 60, 'Analyse Énergétique', 'Extraction et calcul des activités...');
+      actions.setStep('analysis', 50, 'Analyse Énergétique', 'Extraction et calcul des activités...');
 
       const analysisResponse = await fetch(`${supabaseUrl}/functions/v1/activity-analyzer`, {
         method: 'POST',
@@ -345,7 +345,7 @@ const ActivityInputPage: React.FC = () => {
     }
 
     setIsProcessing(true);
-    actions.setStep('analysis', 40, 'Analyse Énergétique', 'Extraction et calcul des activités...');
+    actions.setStep('analysis', 33, 'Analyse Énergétique', 'Extraction et calcul des activités...');
 
     try {
       logger.info('ACTIVITY_INPUT', 'Processing text input', {
