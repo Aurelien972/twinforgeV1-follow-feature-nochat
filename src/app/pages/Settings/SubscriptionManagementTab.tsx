@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ConditionalMotion } from '../../../lib/motion';
 import GlassCard from '../../../ui/cards/GlassCard';
 import TokenIcon from '../../../ui/icons/TokenIcon';
@@ -9,6 +9,8 @@ import { TokenService, type TokenBalance, type PricingConfig, type UserSubscript
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { usePerformanceMode } from '../../../system/context/PerformanceModeContext';
+import { supabase } from '../../../system/supabase/client';
+import logger from '../../../lib/utils/logger';
 
 interface PlanConfig {
   color: string;
@@ -218,12 +220,86 @@ const SubscriptionManagementTab: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const realtimeChannelRef = useRef<any>(null);
 
   const isUltraPerformance = mode === 'high-performance';
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Setup realtime subscription for token balance updates
+  useEffect(() => {
+    let mounted = true;
+
+    const setupRealtime = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !mounted) return;
+
+      logger.info('SUBSCRIPTION_TAB', '📡 Setting up realtime subscription for token balance');
+
+      const channel = supabase
+        .channel(`subscription-tab-tokens-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'user_token_balance',
+            filter: `user_id=eq.${user.id}`,
+          },
+          async (payload) => {
+            if (!mounted) return;
+
+            logger.info('SUBSCRIPTION_TAB', '🔔 Token balance updated via realtime', {
+              event: payload.eventType,
+              oldBalance: payload.old?.available_tokens,
+              newBalance: payload.new?.available_tokens
+            });
+
+            // Reload token balance
+            const updatedBalance = await TokenService.getTokenBalance();
+            if (updatedBalance && mounted) {
+              setTokenBalance(updatedBalance);
+
+              // Show toast notification on balance change
+              if (payload.eventType === 'UPDATE' && payload.new?.available_tokens !== payload.old?.available_tokens) {
+                const diff = (payload.new?.available_tokens || 0) - (payload.old?.available_tokens || 0);
+                if (diff < 0) {
+                  showToast({
+                    type: 'info',
+                    title: 'Tokens consommés',
+                    message: `${Math.abs(diff)} tokens utilisés`,
+                    duration: 3000,
+                  });
+                } else if (diff > 0) {
+                  showToast({
+                    type: 'success',
+                    title: 'Tokens ajoutés',
+                    message: `+${diff} tokens`,
+                    duration: 3000,
+                  });
+                }
+              }
+            }
+          }
+        )
+        .subscribe((status) => {
+          logger.info('SUBSCRIPTION_TAB', '📡 Realtime subscription status', { status });
+        });
+
+      realtimeChannelRef.current = channel;
+    };
+
+    setupRealtime();
+
+    return () => {
+      mounted = false;
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+      }
+    };
+  }, [showToast]);
 
   const loadData = async () => {
     setIsLoading(true);

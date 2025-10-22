@@ -146,9 +146,14 @@ const TokenBalanceWidget: React.FC = () => {
       await loadBalanceSecure('initial');
       lastSyncTimeRef = Date.now();
 
-      // Setup realtime channel with better error handling
+      // Setup realtime channel with enhanced logging
       const channel = supabase
-        .channel(`token-balance-secure-${user.id}`)
+        .channel(`token-balance-secure-${user.id}`, {
+          config: {
+            broadcast: { self: false },
+            presence: { key: user.id }
+          }
+        })
         .on(
           'postgres_changes',
           {
@@ -160,8 +165,11 @@ const TokenBalanceWidget: React.FC = () => {
           async (payload) => {
             if (!mounted) return;
 
-            logger.debug('TOKEN_BALANCE_WIDGET', 'Realtime update received', {
-              event: payload.eventType
+            logger.info('TOKEN_BALANCE_WIDGET', '🔔 Realtime update received', {
+              event: payload.eventType,
+              oldBalance: payload.old?.available_tokens,
+              newBalance: payload.new?.available_tokens,
+              timestamp: new Date().toISOString()
             });
 
             await loadBalanceSecure('realtime');
@@ -169,37 +177,51 @@ const TokenBalanceWidget: React.FC = () => {
           }
         )
         .subscribe((status) => {
+          logger.info('TOKEN_BALANCE_WIDGET', '📡 Realtime subscription status change', {
+            status,
+            userId: user.id,
+            channelName: `token-balance-secure-${user.id}`
+          });
+
           if (status === 'SUBSCRIBED') {
-            logger.debug('TOKEN_BALANCE_WIDGET', 'Realtime subscription active');
+            logger.info('TOKEN_BALANCE_WIDGET', '✅ Realtime subscription active and listening for token balance changes');
             realtimeActive = true;
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            logger.warn('TOKEN_BALANCE_WIDGET', 'Realtime subscription failed', { status });
+            logger.error('TOKEN_BALANCE_WIDGET', '❌ Realtime subscription failed - falling back to polling', { status });
+            realtimeActive = false;
+          } else if (status === 'CLOSED') {
+            logger.warn('TOKEN_BALANCE_WIDGET', '⚠️ Realtime connection closed', { status });
             realtimeActive = false;
           }
         });
 
       realtimeChannelRef.current = channel;
 
-      // Heartbeat to detect disconnections
+      // Heartbeat to detect disconnections and fallback to polling
       heartbeatIntervalRef.current = setInterval(() => {
         if (!realtimeActive && mounted) {
-          logger.warn('TOKEN_BALANCE_WIDGET', 'Realtime inactive, falling back to polling');
+          logger.warn('TOKEN_BALANCE_WIDGET', '⚠️ Realtime inactive, falling back to polling');
           loadBalanceSecure('polling');
           lastSyncTimeRef = Date.now();
         }
       }, 30000); // Check every 30 seconds
 
-      // Periodic reconciliation (every 5 minutes)
+      // Aggressive polling fallback for critical updates (every 30 seconds)
+      // This ensures balance updates even if realtime is broken
       pollingIntervalRef.current = setInterval(() => {
         if (mounted) {
           const timeSinceLastSync = Date.now() - lastSyncTimeRef;
-          if (timeSinceLastSync > 300000) { // 5 minutes
-            logger.debug('TOKEN_BALANCE_WIDGET', 'Periodic reconciliation');
+          // Poll every 30 seconds to catch any missed updates
+          if (timeSinceLastSync > 30000) {
+            logger.debug('TOKEN_BALANCE_WIDGET', '🔄 Polling for balance updates', {
+              timeSinceLastSync: Math.round(timeSinceLastSync / 1000),
+              realtimeActive
+            });
             loadBalanceSecure('polling');
             lastSyncTimeRef = Date.now();
           }
         }
-      }, 60000); // Check every minute
+      }, 30000); // Check every 30 seconds
     };
 
     setupRealtime();
