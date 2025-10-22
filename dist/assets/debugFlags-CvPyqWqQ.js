@@ -1,0 +1,1 @@
+const s={avatar:{showBones:!1,showMesh:!0,showLights:!1,enablePostProcessing:!0},performance:{monitorFPS:!1,logRenderTime:!1},general:{verboseLogging:!1},diagnostics:{enabled:!1,activity:!1,progression:!1,insights:!1,fasting:!1,meals:!1,voice:!1,performance:!1,avatar:!1},DISABLE_FACE_CLIPPING:!1,SHOW_FULL_BODY_IN_FACE_MODE:!1,FORCE_MESH_VISIBLE:!1},a=e=>!1;export{s as D,a as s};
