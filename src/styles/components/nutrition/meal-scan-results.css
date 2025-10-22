@@ -622,3 +622,11 @@
 .performance-mode .btn-save-meal-cta {
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2) !important;
 }
+
+/* CRITIQUE: Forcer la couleur visible pour les calories en mode performance */
+.performance-mode .text-5xl,
+.performance-mode .text-6xl {
+  -webkit-text-fill-color: unset !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+}

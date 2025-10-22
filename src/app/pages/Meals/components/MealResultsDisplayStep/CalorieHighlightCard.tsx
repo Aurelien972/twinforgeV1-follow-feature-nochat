@@ -202,10 +202,8 @@ const CalorieHighlightCard: React.FC<CalorieHighlightCardProps> = ({
             <div
               className="text-5xl md:text-6xl font-black leading-none"
               style={isPerformanceMode ? {
-                background: 'linear-gradient(135deg, #FF4500, #FF8C00)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                color: '#FF6B35',
+                textShadow: '0 2px 8px rgba(0,0,0,0.3)'
               } : {
                 background: `
                   linear-gradient(135deg,
