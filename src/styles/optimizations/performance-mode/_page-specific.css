@@ -55,9 +55,18 @@
   opacity: 0.4 !important;
 }
 
+/* Guide breathing animation - disable only animation, keep element visible */
 .performance-mode .guide-breathing {
   animation: none !important;
   opacity: 1 !important;
+}
+
+/* IMPORTANT: Keep guide images visible in performance mode - only disable animations */
+.performance-mode img[alt*="Guide"],
+.performance-mode img[src*="guide"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 0.85 !important;
 }
 
 /* ================== MEALS PROGRESSION TAB ================== */

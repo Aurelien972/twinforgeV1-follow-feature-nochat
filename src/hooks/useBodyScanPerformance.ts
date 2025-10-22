@@ -19,6 +19,8 @@ export interface BodyScanPerformanceConfig {
   enableWhileTap: boolean;
   enableInitialAnimations: boolean;
   enableExitAnimations: boolean;
+  enableStaggerAnimations: boolean;
+  enableLoadingAnimations: boolean;
 
   // Animations CSS
   enableCSSAnimations: boolean;
@@ -65,6 +67,8 @@ export const useBodyScanPerformance = (): BodyScanPerformanceConfig => {
         enableWhileTap: false,
         enableInitialAnimations: false,
         enableExitAnimations: false,
+        enableStaggerAnimations: false,
+        enableLoadingAnimations: false,
 
         // Désactiver animations CSS décoratives
         enableCSSAnimations: false,
@@ -104,26 +108,28 @@ export const useBodyScanPerformance = (): BodyScanPerformanceConfig => {
         enableWhileHover: true,
         enableWhileTap: true,
         enableInitialAnimations: true,
-        enableExitAnimations: false, // Désactiver exit pour performance
+        enableExitAnimations: false,
+        enableStaggerAnimations: true,
+        enableLoadingAnimations: true,
 
         // Animations CSS modérées
         enableCSSAnimations: true,
         enableBreathingAnimations: true,
         enablePulseAnimations: true,
-        enableParticleEffects: false, // Désactiver particles
+        enableParticleEffects: false,
         enableShimmerEffects: true,
         enableCelebrationEffects: true,
 
         // Effets GPU modérés
         enableBackdropFilter: true,
-        enableComplexShadows: false, // Shadows simplifiées
-        enableGradientAnimations: false, // Gradients statiques
+        enableComplexShadows: false,
+        enableGradientAnimations: false,
         enableBlurEffects: true,
 
         // Overlays modérés
         enableScanLineOverlays: true,
         enableAnalysisGrids: true,
-        enableDataParticles: false, // Pas de particles
+        enableDataParticles: false,
         enableGlowEffects: true,
 
         // Images: mix de stratégies
@@ -144,6 +150,8 @@ export const useBodyScanPerformance = (): BodyScanPerformanceConfig => {
       enableWhileTap: true,
       enableInitialAnimations: true,
       enableExitAnimations: true,
+      enableStaggerAnimations: true,
+      enableLoadingAnimations: true,
 
       // Toutes les animations CSS activées
       enableCSSAnimations: true,

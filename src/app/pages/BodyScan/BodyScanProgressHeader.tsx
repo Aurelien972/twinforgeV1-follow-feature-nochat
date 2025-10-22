@@ -37,7 +37,16 @@ const BodyScanProgressHeader: React.FC<BodyScanProgressHeaderProps> = ({
   const stepSize = 100 / steps.length;
   const currentStepIndex = Math.max(0, steps.findIndex(s => s.id === currentStepId));
   const stepStart = currentStepIndex * stepSize;
-  const pctInStep = Math.max(0, Math.min(1, (safeProgress - stepStart) / stepSize));
+
+  // Calculate percentage within current step
+  // If progress is 0, show at least some progress for the current step
+  let pctInStep = 0;
+  if (safeProgress > 0) {
+    pctInStep = Math.max(0, Math.min(1, (safeProgress - stepStart) / stepSize));
+  } else if (currentStepIndex > 0) {
+    // If we're in a step but progress is 0, show minimal progress (5%)
+    pctInStep = 0.05;
+  }
 
   const currentIcon = STEP_ICONS[currentStepId] || 'Scan';
 

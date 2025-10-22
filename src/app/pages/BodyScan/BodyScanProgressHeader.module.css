@@ -32,13 +32,16 @@
   transform: none !important;
 }
 
-/* Sticky behavior - ONLY for processing, celebration, avatar on mobile */
+/* Mobile specific adjustments */
 @media (max-width: 768px) {
   .wrap[data-step="capture"] {
-    margin-top: 0 !important;
+    position: static !important;
+    top: auto !important;
+    margin-top: 1rem !important;
     margin-bottom: 1.5rem !important;
   }
 
+  /* Sticky behavior - ONLY for processing, celebration, avatar on mobile */
   .wrap[data-step="processing"],
   .wrap[data-step="celebration"],
   .wrap[data-step="avatar"] {

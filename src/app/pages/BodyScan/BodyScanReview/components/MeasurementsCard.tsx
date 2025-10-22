@@ -7,6 +7,7 @@ import { ICONS } from '../../../../../ui/icons/registry';
 import { useFeedback } from '../../../../../hooks/useFeedback';
 import { type SkinToneV2, isSkinToneV2 } from '../../../../../lib/scan/normalizeSkinTone';
 import logger from '../../../../../lib/utils/logger';
+import './measurements.css';
 
 interface MeasurementsCardProps {
   scanResults: any;
