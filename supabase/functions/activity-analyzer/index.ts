@@ -7,7 +7,7 @@
 */
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 // CORS Headers
 const corsHeaders = {
@@ -313,12 +313,15 @@ RÉPONSE REQUISE (JSON uniquement):
     const analysisData = await analysisResponse.json();
     const analysisResult = JSON.parse(analysisData.choices[0]?.message?.content || '{}');
 
-    // TOKEN CONSUMPTION - Use actual OpenAI usage data
+    // TOKEN CONSUMPTION - Use actual OpenAI usage data with atomic system
     const actualInputTokens = analysisData.usage?.prompt_tokens || 0;
     const actualOutputTokens = analysisData.usage?.completion_tokens || 0;
     const actualCostUsd = (actualInputTokens / 1000000 * 0.25) + (actualOutputTokens / 1000000 * 2.0);
 
-    await consumeTokens(supabase, {
+    // Generate unique request ID for idempotence
+    const requestId = crypto.randomUUID();
+
+    const tokenResult = await consumeTokensAtomic(supabase, {
       userId,
       edgeFunctionName: 'activity-analyzer',
       operationType: 'activity_analysis',
@@ -331,7 +334,16 @@ RÉPONSE REQUISE (JSON uniquement):
         clientTraceId,
         textLength: cleanText.length
       }
-    });
+    }, requestId);
+
+    if (!tokenResult.success) {
+      console.error('❌ [ACTIVITY_ANALYZER] Token consumption failed', {
+        userId,
+        error: tokenResult.error,
+        requestId
+      });
+      // Continue execution even if token consumption fails (log only)
+    }
 
     console.log('💰 [ACTIVITY_ANALYZER] Tokens consumed', {
       userId,
