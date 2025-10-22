@@ -409,6 +409,11 @@
   #main-content {
     padding-bottom: calc(var(--new-bottom-bar-height) + var(--new-bottom-bar-bottom-offset) + 16px) !important;
   }
+
+  /* Forge Corporelle pages - Body Scan & Avatar - extra padding for bottom bar */
+  .forge-body-page-container {
+    padding-bottom: calc(var(--new-bottom-bar-height) + var(--new-bottom-bar-bottom-offset) + 24px) !important;
+  }
 }
 
 /* Contraste élevé */

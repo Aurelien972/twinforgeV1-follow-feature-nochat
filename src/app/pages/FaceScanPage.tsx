@@ -469,7 +469,7 @@ const FaceScanPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-4 space-y-6">
+    <div className="max-w-4xl mx-auto mt-4 space-y-6 forge-body-page-container">
       {/* Face Scan Progress Header - Always visible when progress is active */}
       {isActive && steps.length > 0 && (
         <FaceScanProgressHeader

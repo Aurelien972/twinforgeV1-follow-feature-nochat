@@ -100,7 +100,7 @@ const AvatarPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-none">
+    <div className="space-y-6 w-full max-w-none forge-body-page-container">
       <PageHeader
         icon={headerContent.icon}
         title={headerContent.title}
