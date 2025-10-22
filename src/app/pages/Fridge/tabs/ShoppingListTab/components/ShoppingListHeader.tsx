@@ -26,7 +26,7 @@ const ShoppingListHeader: React.FC<ShoppingListHeaderProps> = ({
 
   return (
     <GlassCard
-      className="border-cyan-500/30 p-1"
+      className="border-cyan-500/30 p-2"
       style={isPerformanceMode ? {
         background: 'linear-gradient(145deg, color-mix(in srgb, #06b6d4 20%, #1e293b), color-mix(in srgb, #06b6d4 10%, #0f172a))',
         border: '1px solid color-mix(in srgb, #06b6d4 40%, transparent)',
@@ -48,7 +48,7 @@ const ShoppingListHeader: React.FC<ShoppingListHeaderProps> = ({
         `
       }}
     >
-      <div className="p-2">
+      <div className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <div className="relative">
