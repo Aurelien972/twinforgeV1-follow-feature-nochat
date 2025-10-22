@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -93,6 +94,26 @@ serve(async (req) => {
 
       // Stream cached recipes one by one
       return streamCachedRecipes(cachedResult.result_payload.recipes, startTime);
+    }
+
+    // Check token balance before OpenAI call (estimate ~30 tokens for recipe generation)
+    const estimatedTokens = 30;
+    const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('RECIPE_GENERATOR', 'Insufficient tokens', {
+        user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens,
+        timestamp: new Date().toISOString()
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
     }
 
     // Prepare ingredients list for AI
@@ -350,8 +371,8 @@ Réponds UNIQUEMENT avec un JSON valide contenant un tableau de recettes au form
       timestamp: new Date().toISOString()
     });
 
-    // Stream recipes from OpenAI
-    return streamRecipesFromOpenAI(recipePrompt, user_id, cacheKey, supabase, startTime, inventory_final, user_preferences, filters);
+    // Stream recipes from OpenAI with token consumption
+    return streamRecipesFromOpenAI(recipePrompt, user_id, cacheKey, supabase, startTime, inventory_final, user_preferences, filters, consumeTokens);
 
   } catch (error: any) {
     console.error('RECIPE_GENERATOR', 'Error in recipe generation', {
@@ -374,7 +395,7 @@ Réponds UNIQUEMENT avec un JSON valide contenant un tableau de recettes au form
 });
 
 // Stream recipes from OpenAI API with SSE
-async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey: string, supabase: any, startTime: number, inventory: any[], preferences: any, filters: any) {
+async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey: string, supabase: any, startTime: number, inventory: any[], preferences: any, filters: any, consumeTokensFn: typeof consumeTokens) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiApiKey) {
     throw new Error('OpenAI API key not configured');
@@ -565,11 +586,29 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
           updated_at: new Date().toISOString()
         });
 
+        // Consume tokens after successful generation
+        await consumeTokensFn(supabase, {
+          userId: userId,
+          edgeFunctionName: 'recipe-generator',
+          operationType: 'recipe_generation',
+          openaiModel: 'gpt-5-mini',
+          openaiInputTokens: totalTokens.input,
+          openaiOutputTokens: totalTokens.output,
+          openaiCostUsd: costUsd,
+          metadata: {
+            recipes_count: allRecipes.length,
+            processing_time_ms: processingTime,
+            has_preferences: !!preferences,
+            has_filters: !!filters
+          }
+        });
+
         console.log('RECIPE_GENERATOR', 'Streaming completed', {
           user_id: userId,
           recipes_streamed: allRecipes.length,
           processing_time_ms: processingTime,
           cost_usd: costUsd,
+          tokens_consumed: totalTokens.input + totalTokens.output,
           timestamp: new Date().toISOString()
         });
 

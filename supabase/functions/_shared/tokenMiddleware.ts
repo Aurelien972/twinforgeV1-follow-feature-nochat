@@ -163,7 +163,7 @@ export async function checkTokenBalance(
   try {
     const { data: balance, error: balanceError } = await supabase
       .from("user_token_balance")
-      .select("balance, user_id")
+      .select("available_tokens, user_id")
       .eq("user_id", userId)
       .single();
 
@@ -173,8 +173,11 @@ export async function checkTokenBalance(
           .from("user_token_balance")
           .insert({
             user_id: userId,
-            balance: 0,
-            last_reset_at: new Date().toISOString(),
+            available_tokens: 0,
+            subscription_tokens: 0,
+            onetime_tokens: 0,
+            bonus_tokens: 0,
+            last_monthly_reset: new Date().toISOString(),
           });
 
         if (insertError) {
@@ -213,11 +216,11 @@ export async function checkTokenBalance(
       .single();
 
     const isSubscribed = subscription?.status === "active";
-    const hasEnoughTokens = balance.balance >= requiredTokens;
+    const hasEnoughTokens = balance.available_tokens >= requiredTokens;
 
     return {
       hasEnoughTokens,
-      currentBalance: balance.balance,
+      currentBalance: balance.available_tokens,
       requiredTokens,
       isSubscribed,
       subscriptionStatus: subscription?.status,

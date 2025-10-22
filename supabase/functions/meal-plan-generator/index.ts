@@ -1,3 +1,5 @@
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -125,7 +127,7 @@ async function generateMealPlanWithAI(
   inventory: any[],
   weekNumber: number,
   startDate: string
-): Promise<MealPlan> {
+): Promise<{ mealPlan: MealPlan; tokenUsage: { input: number; output: number; costUsd: number } }> {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiApiKey) {
     throw new Error('OpenAI API key not found');
@@ -297,7 +299,13 @@ RÉPONDS UNIQUEMENT AVEC LE JSON COMPLET. NE FOURNIS AUCUN TEXTE EXPLICATIF AVAN
       throw new Error(`Failed to parse OpenAI response as JSON: ${parseError}`);
     }
 
-    return mealPlan;
+    const tokenUsage = {
+      input: data.usage?.prompt_tokens || 0,
+      output: data.usage?.completion_tokens || 0,
+      costUsd: ((data.usage?.prompt_tokens || 0) * 0.25 / 1000000) + ((data.usage?.completion_tokens || 0) * 2.00 / 1000000)
+    };
+
+    return { mealPlan, tokenUsage };
   } catch (error) {
     console.error('MEAL_PLAN_GENERATOR Error in generateMealPlanWithAI:', error);
     throw error;
@@ -336,8 +344,31 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
+
+    const { createClient } = await import('npm:@supabase/supabase-js@2');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     console.log('MEAL_PLAN_GENERATOR Supabase client initialized');
+
+    // Check token balance before OpenAI call (estimate ~50 tokens for meal plan)
+    const estimatedTokens = 50;
+    const tokenCheck = await checkTokenBalance(supabase, requestData.user_id, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('MEAL_PLAN_GENERATOR', 'Insufficient tokens', {
+        user_id: requestData.user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens,
+        timestamp: new Date().toISOString()
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
 
     console.log('MEAL_PLAN_GENERATOR Starting meal plan generation', {
       userId: requestData.user_id,
@@ -378,12 +409,30 @@ Deno.serve(async (req) => {
 
     console.log('MEAL_PLAN_GENERATOR Inventory optimization complete');
 
-    const mealPlan = await generateMealPlanWithAI(
+    const { mealPlan, tokenUsage } = await generateMealPlanWithAI(
       userProfile,
       inventory,
       requestData.week_number,
       requestData.start_date
     );
+
+    // Consume tokens after successful generation
+    await consumeTokens(supabase, {
+      userId: requestData.user_id,
+      edgeFunctionName: 'meal-plan-generator',
+      operationType: 'meal_plan_generation',
+      openaiModel: 'gpt-5-mini',
+      openaiInputTokens: tokenUsage.input,
+      openaiOutputTokens: tokenUsage.output,
+      openaiCostUsd: tokenUsage.costUsd,
+      metadata: {
+        week_number: requestData.week_number,
+        start_date: requestData.start_date,
+        inventory_count: inventory.length,
+        has_preferences: requestData.has_preferences,
+        days_generated: mealPlan.days?.length || 0
+      }
+    });
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
