@@ -33,6 +33,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -330,6 +331,7 @@ Deno.serve(async (req: Request) => {
       if (contentType.includes('application/json')) {
         const body = await req.json();
         sdpOffer = body.sdp;
+        const userId = body.user_id;
 
         if (!sdpOffer) {
           log('error', 'Missing SDP in JSON body', { requestId });
@@ -349,8 +351,42 @@ Deno.serve(async (req: Request) => {
           requestId,
           sdpLength: sdpOffer.length,
           model: body.model,
-          voice: body.voice
+          voice: body.voice,
+          userId
         });
+
+        // TOKEN PRE-CHECK - Realtime sessions can be expensive
+        if (userId) {
+          const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+          const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+          const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+          const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+          // Estimate 100 tokens for a typical realtime session (5-10 minutes)
+          const estimatedTokens = 100;
+          const tokenCheck = await checkTokenBalance(supabase, userId, estimatedTokens);
+
+          if (!tokenCheck.hasEnoughTokens) {
+            log('warn', 'Insufficient tokens for realtime session', {
+              userId,
+              currentBalance: tokenCheck.currentBalance,
+              requiredTokens: estimatedTokens
+            });
+
+            return createInsufficientTokensResponse(
+              tokenCheck.currentBalance,
+              estimatedTokens,
+              !tokenCheck.isSubscribed,
+              corsHeaders
+            );
+          }
+
+          log('info', 'Token pre-check passed for realtime session', {
+            userId,
+            currentBalance: tokenCheck.currentBalance,
+            estimatedTokens
+          });
+        }
 
         // Créer la session avec les paramètres optionnels
         const sdpAnswer = await createRealtimeSession(

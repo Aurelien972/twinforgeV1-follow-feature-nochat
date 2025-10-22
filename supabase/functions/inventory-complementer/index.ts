@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,6 +80,31 @@ serve(async (req) => {
       current_inventory_count: current_inventory.length,
       timestamp: new Date().toISOString()
     })
+
+    // TOKEN PRE-CHECK
+    const estimatedTokens = 35;
+    const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('INVENTORY_COMPLEMENTER', 'Insufficient tokens', {
+        user_id,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return new Response(
+        JSON.stringify(createInsufficientTokensResponse(
+          tokenCheck.currentBalance,
+          estimatedTokens,
+          !tokenCheck.isSubscribed,
+          corsHeaders
+        )),
+        {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
     // Fetch recent meals for the user
     const { data: recentMeals, error: mealsError } = await supabase
@@ -226,12 +252,32 @@ Assure-toi que le JSON est parfaitement formaté et valide.`;
       throw new Error('No content received from OpenAI');
     }
 
+    // TOKEN CONSUMPTION
+    const inputTokens = openaiData.usage?.prompt_tokens || 0;
+    const outputTokens = openaiData.usage?.completion_tokens || 0;
+    const costUsd = (inputTokens / 1000000 * 0.25) + (outputTokens / 1000000 * 2.0);
+
+    await consumeTokens(supabase, {
+      userId: user_id,
+      edgeFunctionName: 'inventory-complementer',
+      operationType: 'inventory_complement',
+      openaiModel: 'gpt-5-mini',
+      openaiInputTokens: inputTokens,
+      openaiOutputTokens: outputTokens,
+      openaiCostUsd: costUsd,
+      metadata: {
+        current_inventory_count: current_inventory.length,
+        recent_meals_count: recentMeals?.length || 0
+      }
+    });
+
     console.log('INVENTORY_COMPLEMENTER Raw AI response received', {
       user_id,
       raw_content_length: aiContent.length,
       raw_content_preview: aiContent.substring(0, 200),
-      input_tokens: openaiData.usage?.prompt_tokens,
-      output_tokens: openaiData.usage?.completion_tokens,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      costUsd: costUsd.toFixed(6),
       model_used: 'gpt-5-mini',
       timestamp: new Date().toISOString()
     });
@@ -305,6 +351,7 @@ Assure-toi que le JSON est parfaitement formaté et valide.`;
       JSON.stringify({
         success: true,
         suggested_items: normalizedItems,
+        tokens_consumed: estimatedTokens,
         analysis_summary: {
           current_inventory_count: current_inventory.length,
           recent_meals_count: recentMeals?.length || 0,

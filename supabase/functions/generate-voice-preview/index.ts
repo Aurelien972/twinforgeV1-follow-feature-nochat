@@ -10,6 +10,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,7 +93,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Récupérer les paramètres
-    const { voice, text } = await req.json();
+    const { voice, text, user_id } = await req.json();
 
     if (!voice || !text) {
       log('error', 'Missing required parameters', { requestId, hasVoice: !!voice, hasText: !!text });
@@ -108,8 +109,35 @@ Deno.serve(async (req: Request) => {
     log('info', 'Generating voice preview', {
       requestId,
       voice,
-      textLength: text.length
+      textLength: text.length,
+      userId: user_id
     });
+
+    // TOKEN PRE-CHECK - TTS pricing: $15/$1000 chars (tts-1)
+    if (user_id) {
+      const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+      const estimatedTokens = 25;
+      const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokens);
+
+      if (!tokenCheck.hasEnoughTokens) {
+        log('warn', 'Insufficient tokens for voice preview', {
+          userId: user_id,
+          currentBalance: tokenCheck.currentBalance,
+          requiredTokens: estimatedTokens
+        });
+
+        return createInsufficientTokensResponse(
+          tokenCheck.currentBalance,
+          estimatedTokens,
+          !tokenCheck.isSubscribed,
+          corsHeaders
+        );
+      }
+    }
 
     // Appeler l'API OpenAI TTS
     const response = await fetch(OPENAI_TTS_API, {
@@ -145,6 +173,38 @@ Deno.serve(async (req: Request) => {
 
     // Récupérer l'audio
     const audioData = await response.arrayBuffer();
+
+    // TOKEN CONSUMPTION - TTS: $15 per 1M chars
+    if (user_id) {
+      const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+      const charCount = text.length;
+      const costUsd = (charCount / 1000000) * 15;
+
+      await consumeTokens(supabase, {
+        userId: user_id,
+        edgeFunctionName: 'generate-voice-preview',
+        operationType: 'voice_preview_generation',
+        openaiModel: 'tts-1',
+        openaiInputTokens: 0,
+        openaiOutputTokens: 0,
+        openaiCostUsd: costUsd,
+        metadata: {
+          voice,
+          textLength: charCount,
+          audioSize: audioData.byteLength
+        }
+      });
+
+      log('info', 'Voice preview tokens consumed', {
+        userId: user_id,
+        charCount,
+        costUsd: costUsd.toFixed(6)
+      });
+    }
 
     log('info', 'Voice preview generated successfully', {
       requestId,

@@ -5,7 +5,10 @@
   Rôle: Analyser les patterns d'activité et générer des insights visuels + conseils personnalisés
   Modèle: gpt-5-mini (optimisé pour l'analyse de données et la génération d'insights)
   Fréquence: Avec mise en cache intelligente (évite les appels inutiles à OpenAI)
-*/ import { corsHeaders } from '../_shared/cors.ts';
+*/
+
+import { corsHeaders } from '../_shared/cors.ts';
+import { checkTokenBalance, consumeTokens, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 
 // Initialize Supabase client (will be imported dynamically)
 let createClient: any;
@@ -419,6 +422,25 @@ Deno.serve(async (req)=>{
       costImplication: 'This will consume OpenAI credits',
       timestamp: new Date().toISOString()
     });
+
+    // TOKEN PRE-CHECK
+    const estimatedTokens = 50;
+    const tokenCheck = await checkTokenBalance(supabase, userId, estimatedTokens);
+
+    if (!tokenCheck.hasEnoughTokens) {
+      console.warn('🔥 [ACTIVITY_INSIGHTS] Insufficient tokens', {
+        userId,
+        currentBalance: tokenCheck.currentBalance,
+        requiredTokens: estimatedTokens
+      });
+
+      return createInsufficientTokensResponse(
+        tokenCheck.currentBalance,
+        estimatedTokens,
+        !tokenCheck.isSubscribed,
+        corsHeaders
+      );
+    }
     
     // Préparer les données pour l'analyse IA
     const activitiesText = processActivitiesForAnalysis(activities);
@@ -622,13 +644,37 @@ RÉPONSE REQUISE (JSON uniquement):
       });
       
       insightsResult = JSON.parse(insightsData.choices?.[0]?.message?.content || '{}');
-      
+
       // Calcul du coût basé sur l'usage réel d'OpenAI
       inputTokens = insightsData.usage?.prompt_tokens || 0;
       outputTokens = insightsData.usage?.completion_tokens || 0;
       totalTokens = insightsData.usage?.total_tokens || 0;
       // Pricing gpt-5-mini: $0.25/1M input tokens, $2.00/1M output tokens
       costUsd = inputTokens / 1000000 * 0.25 + outputTokens / 1000000 * 2.0;
+
+      // TOKEN CONSUMPTION
+      await consumeTokens(supabase, {
+        userId,
+        edgeFunctionName: 'activity-progress-generator',
+        operationType: 'activity_progress_insights',
+        openaiModel: 'gpt-5-mini',
+        openaiInputTokens: inputTokens,
+        openaiOutputTokens: outputTokens,
+        openaiCostUsd: costUsd,
+        metadata: {
+          period,
+          activities_count: activities.length,
+          enriched_count: enrichedCount,
+          client_trace_id: clientTraceId
+        }
+      });
+
+      console.log('💰 [ACTIVITY_INSIGHTS] Tokens consumed', {
+        userId,
+        inputTokens,
+        outputTokens,
+        costUsd: costUsd.toFixed(6)
+      });
       
     } catch (openaiError) {
       console.error('🔥 [ACTIVITY_INSIGHTS] OpenAI API call failed - using fallback', {
@@ -847,7 +893,8 @@ RÉPONSE REQUISE (JSON uniquement):
       costUsd,
       confidence: 0.85,
       cached: false,
-      generated_at: new Date().toISOString()
+      generated_at: new Date().toISOString(),
+      tokens_consumed: estimatedTokens
     };
     return new Response(JSON.stringify(response), {
       status: 200,
