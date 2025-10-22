@@ -18,9 +18,9 @@ const AnalysisIcon: React.FC<AnalysisIconProps> = ({ progress }) => {
   return (
     <div
       style={{
-        width: '8rem',
-        height: '8rem',
-        margin: '0 auto 2rem',
+        width: '5rem',
+        height: '5rem',
+        margin: '0 auto 1.5rem',
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
@@ -31,9 +31,9 @@ const AnalysisIcon: React.FC<AnalysisIconProps> = ({ progress }) => {
       <div
         style={{
           position: 'absolute',
-          inset: '-1rem',
-          width: '10rem',
-          height: '10rem',
+          inset: '-0.75rem',
+          width: '6.5rem',
+          height: '6.5rem',
           borderRadius: '50%',
           background: `
             radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 60%),
@@ -71,7 +71,7 @@ const AnalysisIcon: React.FC<AnalysisIconProps> = ({ progress }) => {
       >
         <SpatialIcon
           Icon={ICONS.Zap}
-          size={48}
+          size={32}
           style={{
             color: '#FFFFFF',
             filter: perf.enableGlows ? `

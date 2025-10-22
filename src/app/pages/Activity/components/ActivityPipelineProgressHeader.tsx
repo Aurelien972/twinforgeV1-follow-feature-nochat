@@ -38,11 +38,7 @@ const ActivityPipelineProgressHeader: React.FC<ActivityPipelineProgressHeaderPro
 }) => {
   const safeProgress = Number.isFinite(progress) ? Math.min(100, Math.max(0, progress)) : 0;
 
-  const stepSize = 100 / steps.length;
   const currentStepIndex = Math.max(0, steps.findIndex(s => s.id === currentStepId));
-  const stepStart = currentStepIndex * stepSize;
-  const pctInStep = Math.max(0, Math.min(1, (safeProgress - stepStart) / stepSize));
-
   const currentIcon = STEP_ICONS[currentStepId] || 'Activity';
 
   return (
@@ -163,7 +159,17 @@ const ActivityPipelineProgressHeader: React.FC<ActivityPipelineProgressHeaderPro
               {steps.map((step, i) => {
                 const completed = i < currentStepIndex;
                 const current = i === currentStepIndex;
-                const width = completed ? '100%' : current ? `${pctInStep * 100}%` : '0%';
+                const stepSize = 100 / steps.length;
+                const stepStart = i * stepSize;
+                const stepEnd = (i + 1) * stepSize;
+
+                let width = '0%';
+                if (completed) {
+                  width = '100%';
+                } else if (current) {
+                  const progressInStep = Math.max(0, Math.min(100, ((safeProgress - stepStart) / stepSize) * 100));
+                  width = `${progressInStep}%`;
+                }
 
                 const segmentBg = i % 2 === 0
                   ? 'color-mix(in srgb, #3B82F6 38%, rgba(255,255,255,0.12))'
