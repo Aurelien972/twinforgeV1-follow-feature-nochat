@@ -1,4 +1,3 @@
-// src/app/pages/Meals/components/MealPhotoCaptureStep/MealPhotoCaptureStep.refactored.tsx
 /**
  * Meal Photo Capture Step - Refactored Component
  * Main component orchestrating the meal photo capture flow

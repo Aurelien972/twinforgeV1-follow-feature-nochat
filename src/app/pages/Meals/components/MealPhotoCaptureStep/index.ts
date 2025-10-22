@@ -4,7 +4,7 @@
  * Central export point for all MealPhotoCaptureStep components and utilities
  */
 
-export { default } from './MealPhotoCaptureStep.refactored';
+export { default } from './MealPhotoCaptureStep';
 export * from './types';
 export { mealScanBenefits, barcodeScanBenefits } from './benefitsConfig';
 export { usePhotoHandlers } from './usePhotoHandlers';
