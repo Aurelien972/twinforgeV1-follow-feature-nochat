@@ -119,7 +119,7 @@ CONTRAINTES:
 
 FORMAT DE RÉPONSE (JSON strict):
 {
-  "id": "${crypto.randomUUID()}",
+  "id": "générer-un-id-unique",
   "title": "${mealTitle}",
   "description": "Description appétissante et détaillée du plat (150-200 caractères)",
   "ingredients": [
@@ -170,7 +170,8 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
         content: prompt
       }
     ],
-    max_completion_tokens: 2000
+    max_completion_tokens: 2000,
+    response_format: { type: 'json_object' }
   };
 
   console.log('📤 Sending request to OpenAI:', {
@@ -203,7 +204,30 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
   }
 
   const data = await response.json()
-  const content = data.choices[0].message.content
+
+  console.log('📥 OpenAI response structure:', {
+    hasChoices: !!data.choices,
+    choicesLength: data.choices?.length,
+    firstChoice: data.choices?.[0] ? {
+      hasMessage: !!data.choices[0].message,
+      messageKeys: Object.keys(data.choices[0].message || {}),
+      contentLength: data.choices[0].message?.content?.length || 0,
+      finishReason: data.choices[0].finish_reason,
+      refusal: data.choices[0].message?.refusal
+    } : null,
+    usage: data.usage
+  });
+
+  const content = data.choices[0]?.message?.content
+
+  if (!content) {
+    console.error('❌ OpenAI returned empty content', {
+      finishReason: data.choices[0]?.finish_reason,
+      refusal: data.choices[0]?.message?.refusal,
+      fullResponse: JSON.stringify(data, null, 2)
+    });
+    throw new Error(`OpenAI returned empty content. Finish reason: ${data.choices[0]?.finish_reason}`);
+  }
 
   try {
     // Extract JSON from the response, handling potential markdown or extra text
@@ -218,7 +242,12 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte additionnel.`
     }
     
     const recipe = JSON.parse(jsonString) as DetailedRecipe
-    
+
+    // Ensure recipe has a valid UUID
+    if (!recipe.id || recipe.id === 'générer-un-id-unique') {
+      recipe.id = crypto.randomUUID();
+    }
+
     // Generate stable image signature
     const canonicalPayload = JSON.stringify({
       title: recipe.title,
