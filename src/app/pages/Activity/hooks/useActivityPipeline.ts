@@ -134,6 +134,9 @@ export function useActivityPipeline() {
       message,
       subMessage: subMessage || ''
     }));
+
+    // Scroll to top when changing steps
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const setAudioData = React.useCallback((audioData: string) => {
