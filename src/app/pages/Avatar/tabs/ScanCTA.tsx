@@ -123,8 +123,11 @@ const ScanCTA: React.FC = () => {
   const daysSinceLastScan = calculateDaysSinceLastScan(latestScan?.created_at || null);
   const scanStatus = getScanStatus(daysSinceLastScan);
 
-  // Afficher l'empty state si jamais scanné
-  if (!isLoading && !error && scanStatus.status === 'never_scanned') {
+  // Afficher l'empty state uniquement si l'utilisateur n'a JAMAIS complété de scan
+  // Vérifie d'abord le flag du profil (source de vérité), puis la présence d'un scan
+  const hasNeverScanned = !profile?.has_completed_body_scan && scanStatus.status === 'never_scanned';
+
+  if (!isLoading && !error && hasNeverScanned) {
     return <EmptyAvatarScannerState />;
   }
 
