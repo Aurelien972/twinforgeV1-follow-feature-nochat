@@ -55,7 +55,7 @@ const InsightsGenerationExitModal: React.FC<InsightsGenerationExitModalProps> = 
     if (fallbackUsed) {
       return {
         title: 'Insights de Base Disponibles',
-        message: 'L\'IA n\'était pas disponible, mais des insights basés sur des règles ont été générés. Voulez-vous quitter ou consulter ces insights ?',
+        message: 'L\'atelier d\'analyse n\'était pas disponible, mais des insights basés sur des règles ont été forgés. Voulez-vous quitter ou consulter ces insights ?',
         icon: 'Info' as const,
         color: '#F59E0B',
         actionText: 'Quitter',

@@ -25,9 +25,9 @@ export const PROGRESS_SIMULATION_STEPS: ProgressStep[] = [
     progressEnd: 15
   },
   {
-    title: 'Génération Intelligente',
+    title: 'Forge Nutritionnelle',
     subtitle: 'Création de recettes personnalisées',
-    message: 'Génération des repas avec IA...',
+    message: 'Forge des repas personnalisés...',
     duration: 8000,
     progressStart: 15,
     progressEnd: 75

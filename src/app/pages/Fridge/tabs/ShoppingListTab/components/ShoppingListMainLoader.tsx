@@ -82,10 +82,10 @@ const ShoppingListMainLoader: React.FC<ShoppingListMainLoaderProps> = ({
         {/* Progress Info */}
         <div className="space-y-2">
           <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-200 to-orange-100 bg-clip-text text-transparent drop-shadow-sm">
-            {currentLoadingTitle || 'TwinForge génère votre liste...'}
+            {currentLoadingTitle || 'TwinForge forge votre liste...'}
           </h3>
           <p className="text-white/70 text-sm">
-            {currentLoadingSubtitle || 'Intelligence artificielle en action pour vos courses parfaites'}
+            {currentLoadingSubtitle || 'La Forge travaille vos courses parfaites'}
           </p>
         </div>
 

@@ -47,17 +47,17 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
     if (!hasContext) {
       return 'Scannez votre frigo pour commencer';
     }
-    return `Générer Semaine ${currentWeek}`;
+    return `Forger Semaine ${currentWeek}`;
   };
 
   const getDescription = () => {
     if (!isWeekAvailable) {
-      return `Cette semaine ne peut pas encore être générée. Attendez que la semaine précédente soit terminée pour débloquer la planification.`;
+      return `Cette semaine ne peut pas encore être forgée. Attendez que la semaine précédente soit terminée pour débloquer la planification.`;
     }
     if (!hasContext) {
-      return 'Commencez par scanner votre frigo ou sélectionner un inventaire existant pour générer votre plan de repas personnalisé.';
+      return 'Commencez par scanner votre frigo ou sélectionner un inventaire existant pour forger votre plan de repas personnalisé.';
     }
-    return 'Votre plan de repas sera généré automatiquement en organisant vos recettes sur 7 jours avec optimisation nutritionnelle.';
+    return 'Votre plan de repas sera forgé automatiquement en organisant vos recettes sur 7 jours avec optimisation nutritionnelle.';
   };
 
   return (
@@ -145,8 +145,8 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
                   }}
                 />
               </div>
-              <h4 className="text-white font-semibold">Génération par la Forge</h4>
-              <p className="text-white/60 text-sm">Créez des plans uniques basés sur votre inventaire</p>
+              <h4 className="text-white font-semibold">Forge Nutritionnelle</h4>
+              <p className="text-white/60 text-sm">Forgez des plans uniques basés sur votre inventaire</p>
             </div>
 
             {/* Sauvegarde */}
@@ -280,10 +280,10 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
                   />
                 )}
                 <span className="relative">
-                  {isGenerating 
-                    ? 'Génération en cours...' 
-                    : hasContext 
-                    ? 'Générer mon plan de repas'
+                  {isGenerating
+                    ? 'Forge en action...'
+                    : hasContext
+                    ? 'Forger mon plan de repas'
                     : 'Scanner mon frigo'
                   }
                 </span>
@@ -381,7 +381,7 @@ const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({
               <div className="text-left">
                 <h5 className="text-purple-300 font-semibold text-sm mb-1">Astuce</h5>
                 <p className="text-white/70 text-sm">
-                  Les plans générés sont dynamiques. Vous pouvez les modifier et les sauvegarder pour les retrouver plus tard.
+                  Les plans forgés sont dynamiques. Vous pouvez les modifier et les sauvegarder pour les retrouver plus tard.
                 </p>
               </div>
             </div>

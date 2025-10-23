@@ -125,7 +125,7 @@ const RecipeGenerationLoader: React.FC = () => {
                 color="#10B981"
                 variant="pure"
               />
-              <span>Analyse des ingrédients et génération des instructions...</span>
+              <span>Analyse des ingrédients et forgeage des instructions...</span>
             </div>
 
             {/* Enhanced Progress Bar with Green Energy - No Shimmer */}

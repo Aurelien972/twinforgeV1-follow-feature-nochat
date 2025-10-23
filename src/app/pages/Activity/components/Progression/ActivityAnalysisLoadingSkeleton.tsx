@@ -7,7 +7,7 @@ import React from 'react';
 
 /**
  * Activity Analysis Loading Skeleton - Squelette de Chargement pour l'Analyse d'Activité
- * Interface immersive pendant la génération des insights énergétiques
+ * Interface immersive pendant le forgeage des insights énergétiques
  */
 const ActivityAnalysisLoadingSkeleton: React.FC = () => {
   const reduceMotion = usePreferredMotion() === 'reduced';
@@ -126,7 +126,7 @@ const ActivityAnalysisLoadingSkeleton: React.FC = () => {
               </h2>
               <p className="text-white/80 text-lg leading-relaxed max-w-md mx-auto">
                 Analyse de vos patterns d'activité
-                pour générer des insights personnalisés
+                pour forger des insights personnalisés
               </p>
             </div>
 
@@ -134,7 +134,7 @@ const ActivityAnalysisLoadingSkeleton: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
                 { phase: 'Analyse des Patterns', icon: 'BarChart3', color: 'var(--color-activity-primary)' },
-                { phase: 'Génération d\'Insights', icon: 'TrendingUp', color: 'var(--color-activity-secondary)' },
+                { phase: 'Forgeage d\'Insights', icon: 'TrendingUp', color: 'var(--color-activity-secondary)' },
                 { phase: 'Recommandations Personnalisées', icon: 'Target', color: 'var(--color-activity-accent)' }
               ].map((item, index) => (
                 <motion.div
@@ -472,7 +472,7 @@ const ActivityAnalysisLoadingSkeleton: React.FC = () => {
             <p className="text-white/70 text-sm">
               Analyse de vos {' '}
               <span className="font-semibold text-white">patterns énergétiques</span>
-              {' '} en cours pour générer des recommandations sur mesure...
+              {' '} en cours pour forger des recommandations sur mesure...
             </p>
           </div>
         </GlassCard>

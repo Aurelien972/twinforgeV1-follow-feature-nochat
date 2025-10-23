@@ -98,7 +98,7 @@ const EmptyCoachingAdviceState: React.FC<EmptyCoachingAdviceStateProps> = ({
               Obtenez des conseils ultra-personnalisés
             </h2>
             <p className="text-white/70 text-lg">
-              Coach IA analysant vos données pour des recommandations ciblées
+              Forge d'Entraînement forge vos conseils pour des recommandations ciblées
             </p>
           </div>
 

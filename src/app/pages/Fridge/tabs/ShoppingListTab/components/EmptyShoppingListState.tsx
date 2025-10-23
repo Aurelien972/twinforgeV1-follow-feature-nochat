@@ -34,14 +34,14 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
 
   // Dynamic button configuration based on available meal plans
   const buttonConfig = hasAvailableMealPlans ? {
-    text: "Générer une liste depuis un plan de repas",
+    text: "Forger une liste depuis un plan de repas",
     icon: ICONS.ShoppingCart,
     action: onGenerateFromPlan ? () => {
       logger.info('User initiated shopping list generation from meal plan');
       onGenerateFromPlan();
     } : () => {}
   } : {
-    text: "Scanner mon frigo pour générer une liste",
+    text: "Scanner mon frigo pour forger une liste",
     icon: ICONS.Scan,
     action: onScanFridge ? () => {
       logger.info('User initiated fridge scan for shopping list');
@@ -59,11 +59,11 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
 
   // Dynamic content based on meal plans availability
   const dynamicContent = hasAvailableMealPlans ? {
-    title: "Générez votre Liste de Courses",
-    description: "Créez une liste de courses optimisée à partir de vos plans de repas existants ou scannez votre frigo pour une approche personnalisée."
+    title: "Forgez votre Liste de Courses",
+    description: "Forgez une liste de courses optimisée à partir de vos plans de repas existants ou scannez votre frigo pour une approche personnalisée."
   } : {
     title: "Votre Atelier de Courses",
-    description: "Commencez par scanner votre frigo pour générer des listes de courses intelligentes basées sur vos ingrédients actuels."
+    description: "Commencez par scanner votre frigo pour forger des listes de courses intelligentes basées sur vos ingrédients actuels."
   };
 
   return (
@@ -126,8 +126,7 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
                 }}
               />
             </div>
-            <h4 className="text-white font-semibold mb-2">Génération Intelligente</h4>
-            <h4 className="text-white font-semibold mb-2">Génération par la Forge</h4>
+            <h4 className="text-white font-semibold mb-2">Forge des Courses</h4>
             <p className="text-white/70 text-sm">
               Mécanismes de la Forge pour des listes optimisées selon vos besoins nutritionnels.
             </p>
@@ -247,8 +246,8 @@ const EmptyShoppingListState: React.FC<EmptyShoppingListStateProps> = ({
               <h4 className="text-white font-medium mb-1">Astuce TwinForge</h4>
               <p className="text-white/70 text-sm">
                 {hasAvailableMealPlans 
-                  ? "Utilisez vos plans de repas existants pour générer des listes de courses optimisées, ou scannez votre frigo pour une approche basée sur vos ingrédients actuels."
-                  : "Commencez par scanner votre frigo pour identifier vos ingrédients disponibles et générer des listes de courses personnalisées."
+                  ? "Utilisez vos plans de repas existants pour forger des listes de courses optimisées, ou scannez votre frigo pour une approche basée sur vos ingrédients actuels."
+                  : "Commencez par scanner votre frigo pour identifier vos ingrédients disponibles et forger des listes de courses personnalisées."
                 }
               </p>
             </div>

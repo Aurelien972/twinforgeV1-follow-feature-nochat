@@ -27,7 +27,7 @@ const CapturedPhotosDisplay: React.FC<CapturedPhotosDisplayProps> = ({
       {/* Header de la Section */}
       <div className="flex items-center gap-4 mb-6">
         <MotionDiv
-          className={`fridge-icon-inventory ${isPerformanceMode ? '' : 'fridge-ai-focus'}`}
+          className={`fridge-icon-inventory ${isPerformanceMode ? '' : 'fridge-forge-focus'}`}
           style={{ width: '56px', height: '56px' }}
         >
           <SpatialIcon

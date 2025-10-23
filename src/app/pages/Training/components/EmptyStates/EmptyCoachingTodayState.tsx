@@ -98,7 +98,7 @@ const EmptyCoachingTodayState: React.FC<EmptyCoachingTodayStateProps> = ({
               Commencez votre coaching personnalisé
             </h2>
             <p className="text-white/70 text-lg">
-              Générez votre première séance avec intelligence artificielle
+              Forgez votre première séance personnalisée
             </p>
           </div>
 
@@ -129,9 +129,9 @@ const EmptyCoachingTodayState: React.FC<EmptyCoachingTodayStateProps> = ({
                   }}
                 />
               </div>
-              <h3 className="font-semibold text-white">Génération instantanée</h3>
+              <h3 className="font-semibold text-white">Forge instantanée</h3>
               <p className="text-white/60 text-sm">
-                Séances créées en temps réel selon vos objectifs
+                Séances forgées en temps réel selon vos objectifs
               </p>
             </div>
 
@@ -161,9 +161,9 @@ const EmptyCoachingTodayState: React.FC<EmptyCoachingTodayStateProps> = ({
                   }}
                 />
               </div>
-              <h3 className="font-semibold text-white">IA adaptative</h3>
+              <h3 className="font-semibold text-white">Forge Évolutive</h3>
               <p className="text-white/60 text-sm">
-                Programmes qui évoluent avec vos performances
+                Programmes forgés et raffinés avec vos performances
               </p>
             </div>
 
@@ -229,7 +229,7 @@ const EmptyCoachingTodayState: React.FC<EmptyCoachingTodayStateProps> = ({
                              drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3))`
                   }}
                 />
-                <span className="text-lg">Générer ma première séance</span>
+                <span className="text-lg">Forger ma première séance</span>
               </div>
 
               <div

@@ -105,7 +105,7 @@ export const InsightCards: React.FC<InsightCardsProps> = ({
             Insights en Préparation
           </h3>
           <p className="text-white/70 text-base mb-6 max-w-md mx-auto leading-relaxed">
-            TwinForge analyse vos patterns nutritionnels pour générer 
+            TwinForge forge les analyses de vos patterns nutritionnels pour forger
             des insights personnalisés. Continuez à scanner vos repas.
           </p>
           <div className="text-cyan-300 text-sm">
@@ -134,7 +134,7 @@ export const InsightCards: React.FC<InsightCardsProps> = ({
         </div>
         <div>
           <h2 className="text-white font-bold text-xl">Insights Personnalisés</h2>
-          <p className="text-green-200 text-sm">Patterns et conseils générés par nos systèmes d'analyse</p>
+          <p className="text-green-200 text-sm">Patterns et conseils forgés par l'atelier d'analyse</p>
         </div>
       </div>
 

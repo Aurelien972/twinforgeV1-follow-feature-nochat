@@ -116,11 +116,11 @@ const AIExplanationCardSkeleton: React.FC<{ weekNumber: number }> = ({ weekNumbe
           <div className="flex items-center justify-between text-xs text-green-200">
             <div className="flex items-center gap-2">
               <SpatialIcon Icon={ICONS.Sparkles} size={12} />
-              <span>Génération en cours...</span>
+              <span>Forge en action...</span>
             </div>
             <div className="flex items-center gap-2">
               <SpatialIcon Icon={ICONS.Clock} size={12} />
-              <span className="animate-pulse">Analyse en temps réel</span>
+              <span className="animate-pulse">Raffinage en temps réel</span>
             </div>
           </div>
         </div>
@@ -294,7 +294,7 @@ const AIExplanationCard: React.FC<AIExplanationCardProps> = ({
           <div className="flex items-center justify-between text-xs text-green-200">
             <div className="flex items-center gap-2">
               <SpatialIcon Icon={ICONS.Sparkles} size={12} />
-              <span>Généré par votre Forge Nutritionnelle</span>
+              <span>Forgé par votre Forge Nutritionnelle</span>
             </div>
             <div className="flex items-center gap-2">
               <SpatialIcon Icon={ICONS.Clock} size={12} />

@@ -51,7 +51,7 @@
   }
 }
 
-@keyframes fridge-ai-focus {
+@keyframes fridge-forge-focus {
   0%, 100% { 
     opacity: 0.6;
     transform: scale(1) translateZ(0);
@@ -155,8 +155,8 @@
   backface-visibility: hidden;
 }
 
-.fridge-ai-focus {
-  animation: fridge-ai-focus var(--analysis-focus-speed, 3s) ease-in-out infinite;
+.fridge-forge-focus {
+  animation: fridge-forge-focus var(--analysis-focus-speed, 3s) ease-in-out infinite;
   transform: translateZ(0);
   will-change: transform, opacity, box-shadow;
   backface-visibility: hidden;
@@ -210,8 +210,8 @@
     animation: fridge-data-particle 8s ease-out infinite !important;
   }
 
-  .fridge-ai-focus {
-    animation: fridge-ai-focus 6s ease-in-out infinite !important;
+  .fridge-forge-focus {
+    animation: fridge-forge-focus 6s ease-in-out infinite !important;
   }
   /* États statiques optimisés pour mobile */
 
@@ -245,7 +245,7 @@
   .fridge-scan-analysis-line,
   .fridge-grid-pulse,
   .fridge-data-particle,
-  .fridge-ai-focus,
+  .fridge-forge-focus,
   .fridge-glow-pulse,
   .fridge-spatial-shimmer {
     animation: none !important;
@@ -267,7 +267,7 @@
     transform: translateY(-30px) scale(1.1) translateZ(0) !important;
   }
 
-  .fridge-ai-focus {
+  .fridge-forge-focus {
     opacity: 0.8 !important;
     transform: scale(1.03) translateZ(0) !important;
     box-shadow: 0 0 40px color-mix(in srgb, var(--color-fridge-primary) 60%, transparent) !important;
@@ -309,7 +309,7 @@
 .fridge-scan-analysis-line,
 .fridge-grid-pulse,
 .fridge-data-particle,
-.fridge-ai-focus,
+.fridge-forge-focus,
 .fridge-ingredient-detection,
 .fridge-recipe-generation,
 .fridge-spatial-shimmer,
@@ -341,8 +341,8 @@
   --fridge-grid-opacity-base: 0.15;
   --fridge-grid-opacity-pulse: 0.35;
   --fridge-particle-opacity: 0.7;
-  --fridge-ai-focus-opacity: 0.6;
-  --fridge-ai-focus-opacity-peak: 1.0;
+  --fridge-forge-focus-opacity: 0.6;
+  --fridge-forge-focus-opacity-peak: 1.0;
 }
 
 /* =========================================
@@ -353,7 +353,7 @@
   .fridge-scan-analysis-line,
   .fridge-grid-pulse,
   .fridge-data-particle,
-  .fridge-ai-focus,
+  .fridge-forge-focus,
   .fridge-ingredient-detection,
   .fridge-recipe-generation,
   .fridge-spatial-shimmer,

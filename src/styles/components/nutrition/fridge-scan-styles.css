@@ -137,8 +137,8 @@
    FOCUS EFFECT - Anneaux de pulsation
    ========================================= */
 
-.fridge-ai-focus::after,
-.fridge-ai-focus::before {
+.fridge-forge-focus::after,
+.fridge-forge-focus::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -150,7 +150,7 @@
   backface-visibility: hidden;
 }
 
-.fridge-ai-focus::before {
+.fridge-forge-focus::before {
   animation-delay: 0.6s;
   border-color: color-mix(in srgb, var(--fridge-scan-secondary) 55%, transparent);
 }
@@ -310,8 +310,8 @@
     animation-duration: 4s;
   }
 
-  .fridge-ai-focus::after,
-  .fridge-ai-focus::before {
+  .fridge-forge-focus::after,
+  .fridge-forge-focus::before {
     animation-duration: 3s;
   }
 
@@ -349,10 +349,10 @@
   -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
 }
 
-.perf-low .fridge-ai-focus::after,
-.perf-low .fridge-ai-focus::before,
-.performance-mode .fridge-ai-focus::after,
-.performance-mode .fridge-ai-focus::before {
+.perf-low .fridge-forge-focus::after,
+.perf-low .fridge-forge-focus::before,
+.performance-mode .fridge-forge-focus::after,
+.performance-mode .fridge-forge-focus::before {
   animation: none !important;
   opacity: 0 !important;
 }
@@ -369,8 +369,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .fridge-icon-scan,
-  .fridge-ai-focus::after,
-  .fridge-ai-focus::before,
+  .fridge-forge-focus::after,
+  .fridge-forge-focus::before,
   .fridge-btn-scan-primary .shimmer-effect {
     animation: none !important;
   }
@@ -379,8 +379,8 @@
     transform: scale(1) translateZ(0) !important;
   }
 
-  .fridge-ai-focus::after,
-  .fridge-ai-focus::before {
+  .fridge-forge-focus::after,
+  .fridge-forge-focus::before {
     opacity: 0.4 !important;
     transform: scale(1.5) translateZ(0) !important;
   }
