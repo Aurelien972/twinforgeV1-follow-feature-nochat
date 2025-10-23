@@ -335,8 +335,8 @@ High resolution, vibrant colors, appetizing presentation.`;
       prompt: imagePrompt,
       size: '1024x1024',
       quality: 'medium',
-      output_format: 'url',
-      background: 'auto',
+      output_format: 'png',
+      response_format: 'url',
       n: 1,
     }),
   });
