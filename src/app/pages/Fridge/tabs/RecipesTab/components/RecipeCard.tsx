@@ -221,7 +221,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
 
         {/* Image de la Recette */}
         <div className="relative mb-4 h-48 rounded-lg overflow-hidden bg-gradient-to-br from-green-500/20 to-emerald-500/20">
-          {isLoading || recipe.isGeneratingImage ? (
+          {isLoading ? (
             <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 rounded-lg flex items-center justify-center">
               <div className="space-y-3 text-center">
                 <div className="w-12 h-12 mx-auto bg-white/10 rounded-full animate-pulse" />
@@ -229,6 +229,18 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
                   <div className="h-3 bg-white/20 rounded animate-pulse" />
                   <div className="h-2 bg-white/15 rounded animate-pulse w-3/4 mx-auto" />
                 </div>
+              </div>
+            </div>
+          ) : recipe.isGeneratingImage ? (
+            <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 rounded-lg flex flex-col items-center justify-center text-center p-4 relative">
+              <SpatialIcon
+                Icon={ICONS.ChefHat}
+                size={48}
+                className="text-white/40 mb-2"
+              />
+              <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                <p className="text-xs text-white/60">Image en génération...</p>
               </div>
             </div>
           ) : recipe.imageGenerationError ? (

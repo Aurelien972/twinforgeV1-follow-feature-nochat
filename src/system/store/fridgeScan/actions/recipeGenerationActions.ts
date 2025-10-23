@@ -519,12 +519,12 @@ export const createRecipeGenerationActions = (
               servings: recipeData.servings || 2,
               dietaryTags: recipeData.dietary_tags || [],
               nutritionalInfo: recipeData.nutritional_info || {},
-              imageUrl: undefined, // Will be generated later if needed
+              imageUrl: undefined, // Will be generated later
               imageSignature: recipeData.image_signature,
               reasons: recipeData.reasons || [],
               createdAt: new Date().toISOString(),
               status: 'ready',
-              isGeneratingImage: false // Initially false so card appears immediately
+              isGeneratingImage: true // Set to true to show loading state for image only
             };
 
             totalRecipesReceived++;
@@ -559,6 +559,23 @@ export const createRecipeGenerationActions = (
             }
 
             set({ recipeCandidates: updatedCandidates });
+
+            // Emit custom event to notify UI components that recipes have been updated
+            window.dispatchEvent(new CustomEvent('recipes-updated', {
+              detail: {
+                sessionId: state.currentSessionId,
+                recipeId: recipe.id,
+                totalRecipes: updatedCandidates.length,
+                timestamp: new Date().toISOString()
+              }
+            }));
+
+            logger.info('FRIDGE_SCAN_PIPELINE', 'Emitted recipes-updated event', {
+              sessionId: state.currentSessionId,
+              recipeId: recipe.id,
+              totalCandidates: updatedCandidates.length,
+              timestamp: new Date().toISOString()
+            });
 
             // Trigger background image generation for this recipe
             get()._triggerImageGenerationForRecipes([recipe], state.currentSessionId!);

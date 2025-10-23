@@ -372,6 +372,19 @@ export const useRecipeData = ({
     }
   }, [userId]);
 
+  // Sync recipeCandidates changes immediately to trigger re-render
+  useEffect(() => {
+    if (recipeCandidates.length > 0) {
+      logger.info('GENERATED_RECIPES_TAB', 'recipeCandidates updated, triggering re-render', {
+        recipeCandidatesCount: recipeCandidates.length,
+        newlyGeneratedCount: newlyGeneratedRecipes.length,
+        persistedCount: persistedRecipes.length,
+        allRecipesCount: allRecipes.length,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [recipeCandidates, newlyGeneratedRecipes, allRecipes]);
+
   // Refetch recipes when component gains focus (e.g., switching tabs)
   useEffect(() => {
     const handleVisibilityChange = () => {

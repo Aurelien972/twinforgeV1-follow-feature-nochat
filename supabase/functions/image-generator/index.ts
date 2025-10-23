@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
     }
 
     // AI-FIRST IMAGE GENERATION - Use GPT Image 1 with stock fallback
-    const imageResult = await generateImageWithFallback(recipe_details, image_signature);
+    const imageResult = await generateImageWithFallback(recipe_details, image_signature, supabase, recipe_id);
     const processingTime = Date.now() - startTime;
 
     // TOKEN CONSUMPTION - Only consume tokens if AI generation was used
@@ -334,6 +334,9 @@ High resolution, vibrant colors, appetizing presentation.`;
       model: 'gpt-image-1',
       prompt: imagePrompt,
       size: '1024x1024',
+      quality: 'medium',
+      output_format: 'url',
+      background: 'auto',
       n: 1,
     }),
   });
@@ -350,9 +353,28 @@ High resolution, vibrant colors, appetizing presentation.`;
   }
 
   const imageData = await imageResponse.json();
-  const imageUrl = imageData.data[0]?.url;
+
+  console.log('IMAGE_GENERATOR', 'GPT Image 1 API response received', {
+    response_structure: {
+      has_data_array: !!imageData.data,
+      data_length: imageData.data?.length || 0,
+      first_item_keys: imageData.data?.[0] ? Object.keys(imageData.data[0]) : [],
+      has_url: !!imageData.data?.[0]?.url,
+      has_b64_json: !!imageData.data?.[0]?.b64_json
+    },
+    full_response: imageData,
+    timestamp: new Date().toISOString()
+  });
+
+  const imageUrl = imageData.data?.[0]?.url;
 
   if (!imageUrl) {
+    console.error('IMAGE_GENERATOR', 'No image URL in GPT Image 1 response', {
+      response_data: imageData,
+      data_array: imageData.data,
+      first_item: imageData.data?.[0],
+      timestamp: new Date().toISOString()
+    });
     throw new Error('No image URL returned from GPT Image 1');
   }
 
@@ -365,8 +387,83 @@ High resolution, vibrant colors, appetizing presentation.`;
 
   return {
     url: imageUrl,
-    cost: 0.015 // GPT Image 1 pricing: $0.015 per image (75% cheaper than DALL-E 3)
+    cost: 0.015
   };
+}
+
+// Function to download image from OpenAI URL and upload to Supabase Storage
+async function uploadImageToStorage(
+  imageUrl: string,
+  recipeId: string,
+  supabase: any
+): Promise<string> {
+  try {
+    console.log('IMAGE_GENERATOR', 'Downloading image from OpenAI URL', {
+      recipe_id: recipeId,
+      url: imageUrl,
+      timestamp: new Date().toISOString()
+    });
+
+    // Download image from OpenAI URL
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to download image: ${imageResponse.status}`);
+    }
+
+    const imageBlob = await imageResponse.blob();
+    const imageBuffer = await imageBlob.arrayBuffer();
+
+    console.log('IMAGE_GENERATOR', 'Image downloaded successfully', {
+      recipe_id: recipeId,
+      size_bytes: imageBuffer.byteLength,
+      content_type: imageBlob.type,
+      timestamp: new Date().toISOString()
+    });
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const filename = `recipe-${recipeId}-${timestamp}.png`;
+    const filepath = `recipes/${filename}`;
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('recipe-images')
+      .upload(filepath, imageBuffer, {
+        contentType: imageBlob.type || 'image/png',
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      throw new Error(`Failed to upload to storage: ${uploadError.message}`);
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('recipe-images')
+      .getPublicUrl(filepath);
+
+    const permanentUrl = publicUrlData.publicUrl;
+
+    console.log('IMAGE_GENERATOR', 'Image uploaded to Supabase Storage successfully', {
+      recipe_id: recipeId,
+      filepath: filepath,
+      permanent_url: permanentUrl,
+      timestamp: new Date().toISOString()
+    });
+
+    return permanentUrl;
+
+  } catch (error) {
+    console.error('IMAGE_GENERATOR', 'Failed to upload image to storage', {
+      recipe_id: recipeId,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+
+    // Return original URL as fallback
+    return imageUrl;
+  }
 }
 
 // Stock Image Selection Function
@@ -403,7 +500,12 @@ function selectStockImage(recipeDetails: any): string {
 }
 
 // Main Image Generation Function with AI-First Strategy
-async function generateImageWithFallback(recipeDetails: any, imageSignature: string): Promise<{ url: string, cost: number, method: string }> {
+async function generateImageWithFallback(
+  recipeDetails: any,
+  imageSignature: string,
+  supabase: any,
+  recipeId: string
+): Promise<{ url: string, cost: number, method: string }> {
   console.log('IMAGE_GENERATOR', 'Starting AI-first image generation strategy', {
     recipe_title: recipeDetails.title,
     image_signature: imageSignature,
@@ -441,31 +543,55 @@ async function generateImageWithFallback(recipeDetails: any, imageSignature: str
 
     console.log('IMAGE_GENERATOR', 'GPT Image 1 generation successful', {
       recipe_title: recipeDetails.title,
-      image_url: aiResult.url,
+      temporary_url: aiResult.url,
       cost_usd: aiResult.cost,
       method: 'gpt_image_1',
       timestamp: new Date().toISOString()
     });
 
+    // Upload to Supabase Storage for permanent storage (OpenAI URLs expire in 60min)
+    const permanentUrl = await uploadImageToStorage(aiResult.url, recipeId, supabase);
+
+    console.log('IMAGE_GENERATOR', 'Image permanently stored', {
+      recipe_title: recipeDetails.title,
+      recipe_id: recipeId,
+      temporary_url: aiResult.url,
+      permanent_url: permanentUrl,
+      timestamp: new Date().toISOString()
+    });
+
     return {
-      url: aiResult.url,
+      url: permanentUrl,
       cost: aiResult.cost,
       method: 'gpt_image_1'
     };
 
   } catch (aiError) {
+    const errorMessage = aiError.message || 'Unknown error';
+
+    let fallbackReason = 'gpt_image_1_api_error';
+    if (errorMessage.includes('401')) {
+      fallbackReason = 'api_key_invalid';
+    } else if (errorMessage.includes('403')) {
+      fallbackReason = 'organization_not_verified';
+    } else if (errorMessage.includes('429')) {
+      fallbackReason = 'rate_limit_exceeded';
+    } else if (errorMessage.includes('500') || errorMessage.includes('502') || errorMessage.includes('503')) {
+      fallbackReason = 'openai_server_error';
+    }
+
     console.warn('IMAGE_GENERATOR', 'GPT Image 1 generation failed, falling back to stock images', {
       recipe_title: recipeDetails.title,
-      ai_error: aiError.message,
-      fallback_reason: 'gpt_image_1_api_error',
+      ai_error: errorMessage,
+      fallback_reason: fallbackReason,
+      error_stack: aiError.stack,
       timestamp: new Date().toISOString()
     });
 
-    // Fallback to stock images
     return {
       url: selectStockImage(recipeDetails),
       cost: 0,
-      method: 'stock_fallback_ai_error'
+      method: `stock_fallback_${fallbackReason}`
     };
   }
 }

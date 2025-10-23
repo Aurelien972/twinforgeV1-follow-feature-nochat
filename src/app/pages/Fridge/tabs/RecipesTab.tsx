@@ -303,7 +303,7 @@ const RecipesTab: React.FC = () => {
                   {displayedRecipes.map((recipe, index) => {
                     const isSaved = persistedRecipes.some(r => r.id === recipe.id);
                     const isNewlyGenerated = recipeCandidates.some(r => r.id === recipe.id) && !isSaved;
-                    
+
                     return (
                       <RecipeCard
                         key={recipe.id}
@@ -311,7 +311,7 @@ const RecipesTab: React.FC = () => {
                         index={index}
                         isSaved={isSaved}
                         isNewlyGenerated={isNewlyGenerated}
-                        isLoading={recipe.status === 'loading' || recipe.isGeneratingImage}
+                        isLoading={recipe.status === 'loading'}
                         onToggleSaveStatus={() => handleToggleSaveStatus(recipe)}
                         onView={handleViewRecipe}
                       />
