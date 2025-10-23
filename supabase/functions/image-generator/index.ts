@@ -336,7 +336,7 @@ High resolution, vibrant colors, appetizing presentation.`;
       size: '1024x1024',
       quality: 'medium',
       output_format: 'png',
-      response_format: 'url',
+      background: 'auto',
       n: 1,
     }),
   });
