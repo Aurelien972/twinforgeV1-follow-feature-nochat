@@ -6,46 +6,47 @@
 import type { ProgressStep, MealDetail, MealPlanDay } from './types';
 
 // Predefined progress steps for simulation
+// These steps provide smooth UI feedback while waiting for backend events
 export const PROGRESS_SIMULATION_STEPS: ProgressStep[] = [
   {
     title: 'Initialisation de la Forge Nutritionnelle',
     subtitle: 'Préparation de votre plan personnalisé',
     message: 'Analyse de votre profil nutritionnel...',
-    duration: 3000,
+    duration: 2000,
     progressStart: 0,
-    progressEnd: 15
+    progressEnd: 10
   },
   {
     title: 'Analyse des Préférences',
     subtitle: 'Optimisation selon vos goûts',
     message: 'Traitement de vos préférences alimentaires...',
-    duration: 2500,
-    progressStart: 15,
-    progressEnd: 30
+    duration: 2000,
+    progressStart: 10,
+    progressEnd: 15
   },
   {
     title: 'Génération Intelligente',
     subtitle: 'Création de recettes personnalisées',
     message: 'Génération des repas avec IA...',
-    duration: 4000,
-    progressStart: 30,
-    progressEnd: 60
+    duration: 8000,
+    progressStart: 15,
+    progressEnd: 75
   },
   {
     title: 'Optimisation Nutritionnelle',
     subtitle: 'Équilibrage des macronutriments',
     message: 'Calcul des valeurs nutritionnelles...',
     duration: 2000,
-    progressStart: 60,
-    progressEnd: 80
+    progressStart: 75,
+    progressEnd: 85
   },
   {
     title: 'Finalisation',
     subtitle: 'Derniers ajustements',
     message: 'Finalisation de votre plan hebdomadaire...',
-    duration: 1500,
-    progressStart: 80,
-    progressEnd: 95
+    duration: 1000,
+    progressStart: 85,
+    progressEnd: 87
   }
 ];
 

@@ -86,21 +86,37 @@ export const generateMealPlanCore = async (
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('No session found');
 
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/meal-plan-generator`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        user_id: user.id,
-        week_number: weekNumber,
-        start_date: weekStartDate.toISOString().split('T')[0],
-        end_date: weekEndDate.toISOString().split('T')[0],
-        inventory_count: inventory?.length || 0,
-        has_preferences: !!userProfile
-      })
-    });
+    // Create AbortController for timeout management
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minutes timeout
+
+    let response: Response;
+    try {
+      response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/meal-plan-generator`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          week_number: weekNumber,
+          start_date: weekStartDate.toISOString().split('T')[0],
+          end_date: weekEndDate.toISOString().split('T')[0],
+          inventory_count: inventory?.length || 0,
+          has_preferences: !!userProfile
+        }),
+        signal: controller.signal
+      });
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        throw new Error('La génération du plan prend trop de temps. Veuillez réessayer.');
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -120,12 +136,18 @@ export const generateMealPlanCore = async (
     let estimatedWeeklyCost: number | null = null;
     let batchCookingDays: string[] = [];
     let aiExplanation: any = null;
+    let streamCompleted = false;
+    let lastEventTime = Date.now();
 
     try {
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          streamCompleted = true;
+          break;
+        }
 
+        lastEventTime = Date.now();
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n');
 
@@ -152,16 +174,23 @@ export const generateMealPlanCore = async (
 
                 onComplete(updatedPlan);
 
-                // Update progress
+                // Calculate progress based on received days: each day = ~11% (7 days = ~77%), leaving 23% for initialization and finalization
                 const readyDaysCount = transformedDays.filter(d => d.status === 'ready').length;
-                const progress = Math.min(90, (readyDaysCount / 7) * 80);
-                onProgress(progress);
+                const daysProgress = Math.floor((readyDaysCount / 7) * 77);
+                const totalProgress = Math.min(90, 10 + daysProgress); // Start at 10%, max 87% for days
+
+                onProgress(
+                  totalProgress,
+                  readyDaysCount < 7 ? 'Génération en cours' : 'Finalisation',
+                  readyDaysCount < 7 ? `${readyDaysCount} jour${readyDaysCount > 1 ? 's' : ''} sur 7 généré${readyDaysCount > 1 ? 's' : ''}` : 'Derniers ajustements',
+                  readyDaysCount < 7 ? `Création du jour ${readyDaysCount + 1}...` : 'Optimisation finale...'
+                );
 
                 logger.info('MEAL_PLAN_STORE', 'Day received and skeleton replaced', {
                   date: transformedDay.date,
                   dayName: transformedDay.dayName,
                   readyDaysCount,
-                  progress,
+                  progress: totalProgress,
                   timestamp: new Date().toISOString()
                 });
               } else if (data.type === 'complete') {
@@ -170,6 +199,7 @@ export const generateMealPlanCore = async (
                 estimatedWeeklyCost = data.data.estimated_weekly_cost;
                 batchCookingDays = data.data.batch_cooking_days || [];
                 aiExplanation = data.data.ai_explanation || null;
+                streamCompleted = true;
               }
             } catch (parseError) {
               logger.warn('MEAL_PLAN_STORE', 'Failed to parse SSE data', {
@@ -181,13 +211,90 @@ export const generateMealPlanCore = async (
           }
         }
       }
+    } catch (streamError) {
+      logger.error('MEAL_PLAN_STORE', 'Stream reading error', {
+        error: streamError instanceof Error ? streamError.message : 'Unknown error',
+        transformedDaysCount: transformedDays.length,
+        streamCompleted,
+        timestamp: new Date().toISOString()
+      });
+
+      // If we received some days but stream failed, try to recover
+      if (transformedDays.length > 0 && !streamCompleted) {
+        logger.warn('MEAL_PLAN_STORE', 'Attempting to recover partial plan', {
+          daysReceived: transformedDays.length,
+          timestamp: new Date().toISOString()
+        });
+        // Continue with partial data instead of throwing
+      } else {
+        throw streamError;
+      }
     } finally {
       reader.releaseLock();
     }
 
     const readyDays = transformedDays.filter(d => d.status === 'ready');
-    if (readyDays.length === 0) {
-      throw new Error('No meal plan days received from generation');
+
+    // Fallback: if stream failed but we have some days, try to fetch complete plan from database
+    if (readyDays.length === 0 || !streamCompleted) {
+      logger.warn('MEAL_PLAN_STORE', 'Incomplete plan received, attempting database recovery', {
+        receivedDays: transformedDays.length,
+        streamCompleted,
+        timestamp: new Date().toISOString()
+      });
+
+      try {
+        // Wait a moment for backend to save
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Try to fetch the latest plan from database
+        const { data: savedPlans, error: fetchError } = await supabase
+          .from('meal_plans')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (!fetchError && savedPlans && savedPlans.length > 0) {
+          const savedPlan = savedPlans[0].plan_data;
+          if (savedPlan && savedPlan.days && savedPlan.days.length === 7) {
+            logger.info('MEAL_PLAN_STORE', 'Successfully recovered plan from database', {
+              planId: savedPlans[0].id,
+              daysCount: savedPlan.days.length,
+              timestamp: new Date().toISOString()
+            });
+
+            // Transform and use the saved plan
+            const recoveredDays = savedPlan.days.map((day: any) => transformEdgeDayToFrontendDay(day));
+
+            const recoveredPlanData: MealPlanData = {
+              id: savedPlans[0].id,
+              weekNumber,
+              startDate: weekStartDate.toISOString().split('T')[0],
+              days: recoveredDays,
+              createdAt: savedPlans[0].created_at,
+              updatedAt: savedPlans[0].updated_at,
+              nutritionalSummary: savedPlan.nutritional_highlights,
+              estimatedWeeklyCost: savedPlan.estimated_weekly_cost,
+              batchCookingDays: savedPlan.batch_cooking_days || [],
+              aiExplanation: savedPlan.ai_explanation
+            };
+
+            onProgress(100, 'Terminé !', 'Votre plan est prêt', 'Plan de repas récupéré avec succès');
+            onComplete(recoveredPlanData);
+            stopProgressSimulation();
+
+            return recoveredPlanData;
+          }
+        }
+      } catch (recoveryError) {
+        logger.error('MEAL_PLAN_STORE', 'Failed to recover plan from database', {
+          error: recoveryError instanceof Error ? recoveryError.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      throw new Error('Aucun jour de plan reçu. Le plan a peut-être été généré côté serveur, veuillez actualiser la page.');
     }
 
     const mealPlanData: MealPlanData = {
@@ -203,9 +310,11 @@ export const generateMealPlanCore = async (
       aiExplanation
     };
 
+    // Final progress update
     onProgress(100, 'Terminé !', 'Votre plan est prêt', 'Plan de repas généré avec succès');
     onComplete(mealPlanData);
 
+    // Stop progress simulation
     stopProgressSimulation();
 
     logger.info('MEAL_PLAN_STORE', 'Meal plan generation completed', {

@@ -130,7 +130,7 @@ const PlanGenerationProgress: React.FC<PlanGenerationProgressProps> = ({
           <div className="max-w-md mx-auto space-y-3">
             <div className="flex justify-between text-sm text-white/70">
               <span>Progression</span>
-              <span>{Math.round(progress)}%</span>
+              <span className="font-semibold">{Math.round(progress)}%</span>
             </div>
             <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
               <MotionDiv
@@ -173,9 +173,36 @@ const PlanGenerationProgress: React.FC<PlanGenerationProgressProps> = ({
           <div className="text-sm text-white/60">
             <div className="flex items-center justify-center gap-2">
               <SpatialIcon Icon={ICONS.Zap} size={14} style={{ color: '#8B5CF6' }} />
-              <span>Analyse de la Forge • Optimisation nutritionnelle • Planification de la Forge</span>
+              <span>
+                {progress < 15 ? 'Analyse de la Forge' :
+                 progress < 75 ? 'Génération intelligente des repas' :
+                 progress < 90 ? 'Optimisation nutritionnelle' :
+                 'Finalisation du plan'}
+              </span>
             </div>
           </div>
+
+          {/* Indicateur de connexion backend */}
+          {progress > 10 && progress < 100 && (
+            <MotionDiv
+              className="text-xs text-white/40 flex items-center justify-center gap-2"
+              {...(!isPerformanceMode && {
+                initial: { opacity: 0 },
+                animate: { opacity: 1 },
+                transition: { delay: 0.5 }
+              })}
+            >
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{
+                  background: '#10B981',
+                  boxShadow: '0 0 8px #10B981',
+                  animation: 'pulse 2s ease-in-out infinite'
+                }}
+              />
+              <span>Connecté au serveur de génération</span>
+            </MotionDiv>
+          )}
         </div>
       </GlassCard>
     </MotionDiv>
