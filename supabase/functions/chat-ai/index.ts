@@ -2,11 +2,12 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { consumeTokensAtomic, createInsufficientTokensResponse } from "../_shared/tokenMiddleware.ts";
 import { validateChatAIRequest } from "./requestValidator.ts";
+import { createCSRFProtection } from "../_shared/csrfProtection.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, X-CSRF-Token",
 };
 
 interface ChatRequest {
@@ -101,10 +102,45 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: validationError }),
         {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Sprint 3 Phase 5.3: CSRF Protection for AI chat (prompt injection prevention)
+    const csrfProtection = createCSRFProtection(supabase);
+    const csrfToken = req.headers.get('x-csrf-token');
+
+    const csrfValidation = await csrfProtection.validateRequest(
+      user.id,
+      csrfToken,
+      req,
+      'chat-ai'
+    );
+
+    if (!csrfValidation.valid) {
+      log('error', 'CSRF validation failed', requestId, {
+        error: csrfValidation.error,
+        tokenProvided: !!csrfToken,
+        originValidated: csrfValidation.originValidated,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: 'CSRF validation failed',
+          message: csrfValidation.error
+        }),
+        {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }
+
+    log('info', 'CSRF validation passed', requestId, {
+      tokenValidated: csrfValidation.tokenValidated,
+      originValidated: csrfValidation.originValidated,
+    });
 
     log('info', '✅ Request parsed and validated successfully', requestId, {
       mode,

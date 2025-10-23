@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
 import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
 import { validateMealAnalysisRequest } from './requestValidator.ts';
+import { createCSRFProtection } from '../_shared/csrfProtection.ts';
 
 interface ScannedProductData {
   barcode: string;
@@ -179,7 +180,7 @@ interface OpenAIVisionResponse {
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, X-CSRF-Token",
 };
 
 /**
@@ -797,6 +798,53 @@ Deno.serve(async (req: Request) => {
         }
       );
     }
+
+    // Initialize Supabase client for CSRF validation
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration');
+    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Sprint 3 Phase 5.3: CSRF Protection for meal data integrity
+    const csrfProtection = createCSRFProtection(supabase);
+    const csrfToken = req.headers.get('x-csrf-token');
+
+    const csrfValidation = await csrfProtection.validateRequest(
+      requestBody.user_id,
+      csrfToken,
+      req,
+      'meal-analyzer'
+    );
+
+    if (!csrfValidation.valid) {
+      console.error('MEAL_ANALYZER', 'CSRF validation failed', {
+        user_id: requestBody.user_id,
+        error: csrfValidation.error,
+        tokenProvided: !!csrfToken,
+        originValidated: csrfValidation.originValidated,
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'CSRF validation failed',
+          message: csrfValidation.error,
+          ai_powered: false
+        }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    console.log('MEAL_ANALYZER', 'CSRF validation passed', {
+      user_id: requestBody.user_id,
+      tokenValidated: csrfValidation.tokenValidated,
+      originValidated: csrfValidation.originValidated,
+    });
 
     // DETAILED LOG: Complete request body for debugging
     console.log('MEAL_ANALYZER_DEBUG', 'Complete request body received and validated', {

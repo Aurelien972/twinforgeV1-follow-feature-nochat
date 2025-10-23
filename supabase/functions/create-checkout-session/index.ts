@@ -1,10 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { createCSRFProtection } from "../_shared/csrfProtection.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, X-CSRF-Token",
 };
 
 interface CheckoutRequest {
@@ -56,6 +57,43 @@ Deno.serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Sprint 3 Phase 5.3: CSRF Protection for financial operations
+    const csrfProtection = createCSRFProtection(supabase);
+    const csrfToken = req.headers.get("x-csrf-token");
+
+    const csrfValidation = await csrfProtection.validateRequest(
+      user.id,
+      csrfToken,
+      req,
+      "create-checkout-session"
+    );
+
+    if (!csrfValidation.valid) {
+      console.error("CREATE_CHECKOUT_SESSION", "CSRF validation failed", {
+        user_id: user.id,
+        error: csrfValidation.error,
+        tokenProvided: !!csrfToken,
+        originValidated: csrfValidation.originValidated,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "CSRF validation failed",
+          message: csrfValidation.error,
+        }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log("CREATE_CHECKOUT_SESSION", "CSRF validation passed", {
+      user_id: user.id,
+      tokenValidated: csrfValidation.tokenValidated,
+      originValidated: csrfValidation.originValidated,
+    });
 
     const body: CheckoutRequest = await req.json();
 

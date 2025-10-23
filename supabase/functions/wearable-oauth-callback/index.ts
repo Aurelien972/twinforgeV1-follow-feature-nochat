@@ -1,8 +1,10 @@
 import { corsHeaders } from '../_shared/cors.ts';
+import { validateOriginSimple } from '../_shared/csrfProtection.ts';
 
 /**
  * Wearable OAuth Callback Handler
  * Handles OAuth callbacks from all wearable providers
+ * Sprint 3 Phase 5.3: Origin validation for device linking security
  */
 
 interface OAuthCallbackRequest {
@@ -64,6 +66,32 @@ Deno.serve(async (req: Request) => {
         }
       );
     }
+
+    // Sprint 3 Phase 5.3: Validate origin for OAuth callback security
+    const originValidation = validateOriginSimple(req);
+    if (!originValidation.valid) {
+      console.error('WEARABLE_OAUTH_CALLBACK', 'Origin validation failed', {
+        provider,
+        error: originValidation.error,
+        origin: req.headers.get('origin'),
+        referer: req.headers.get('referer'),
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: 'Origin validation failed',
+          message: originValidation.error
+        }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    console.log('WEARABLE_OAUTH_CALLBACK', 'Origin validation passed', {
+      provider,
+    });
 
     if (error) {
       return new Response(
