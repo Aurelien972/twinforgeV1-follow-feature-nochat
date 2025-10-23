@@ -85,7 +85,10 @@
   pointer-events: none;
   opacity: 1;
   z-index: 1;
-  animation: borderPulse 4s ease-in-out infinite;
+  /* Animation COMPLÈTEMENT désactivée */
+  animation: none !important;
+  animation-name: none !important;
+  animation-play-state: paused !important;
 }
 
 /* Ambient glow layer underneath */
@@ -103,22 +106,21 @@
   opacity: 0.8;
   z-index: -1;
   pointer-events: none;
-  animation: glowPulse 3s ease-in-out infinite alternate;
+  /* Animation COMPLÈTEMENT désactivée */
+  animation: none !important;
+  animation-name: none !important;
+  animation-play-state: paused !important;
 }
 
+/* Animations borderPulse et glowPulse COMPLÈTEMENT désactivées */
 @keyframes borderPulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.9; }
 }
 
 @keyframes glowPulse {
-  0% {
-    opacity: 0.6;
+  0%, 100% {
+    opacity: 0.8;
     transform: scale(1);
-  }
-  100% {
-    opacity: 0.9;
-    transform: scale(1.02);
   }
 }
 
@@ -299,7 +301,8 @@
     inset 0 1px 0 rgba(255,255,255,0.3);
 
   transform: scale(1.05) translateZ(0);
-  animation: activePulse 2s ease-in-out infinite;
+  /* Animation désactivée - état actif statique */
+  animation: none !important;
 }
 
 /* État actif spécifique pour le bouton central */
@@ -323,6 +326,7 @@
   transform: scale(1.08) translateZ(0);
 }
 
+/* Animation activePulse COMPLÈTEMENT désactivée */
 /* @keyframes activePulse {
   0%, 100% {
     box-shadow:
@@ -330,13 +334,6 @@
       0 0 24px color-mix(in srgb, var(--button-color) 35%, transparent),
       0 0 48px color-mix(in srgb, var(--button-color) 20%, transparent),
       inset 0 1px 0 rgba(255,255,255,0.3);
-  }
-  50% {
-    box-shadow:
-      var(--liquid-pill-shadow),
-      0 0 32px color-mix(in srgb, var(--button-color) 45%, transparent),
-      0 0 64px color-mix(in srgb, var(--button-color) 30%, transparent),
-      inset 0 1px 0 rgba(255,255,255,0.35);
   }
 }
 
@@ -447,20 +444,17 @@
 .new-bottom-bar-button:focus-visible .new-bottom-bar-icon-container {
   box-shadow:
     var(--liquid-pill-shadow),
-    0 0 0 4px rgba(247, 147, 30, 0.3);
-  animation: focusGlow 1.5s ease-in-out infinite;
+    0 0 0 4px rgba(247, 147, 30, 0.4);
+  /* Animation focus désactivée - état statique */
+  animation: none !important;
 }
 
+/* Animation focusGlow COMPLÈTEMENT désactivée */
 @keyframes focusGlow {
   0%, 100% {
     box-shadow:
       var(--liquid-pill-shadow),
-      0 0 0 4px rgba(247, 147, 30, 0.3);
-  }
-  50% {
-    box-shadow:
-      var(--liquid-pill-shadow),
-      0 0 0 6px rgba(247, 147, 30, 0.5);
+      0 0 0 4px rgba(247, 147, 30, 0.4);
   }
 }
 

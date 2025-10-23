@@ -91,9 +91,9 @@ export const Header = React.memo(() => {
                 boxShadow: centralMenuOpen
                   ? `0 0 0 1px rgba(255, 255, 255, 0.15) inset, 0 4px 32px rgba(247, 147, 30, 0.5), 0 2px 16px rgba(0, 0, 0, 0.25)`
                   : `0 0 0 1px rgba(255, 255, 255, 0.08) inset, 0 4px 24px rgba(247, 147, 30, 0.25), 0 2px 12px rgba(0, 0, 0, 0.2)`,
-                transition: 'transform 280ms cubic-bezier(0.25, 0.1, 0.25, 1), background 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms cubic-bezier(0.16, 1, 0.3, 1)',
+                transition: 'background 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms cubic-bezier(0.16, 1, 0.3, 1)',
                 transform: 'translateZ(0)',
-                willChange: 'transform, filter',
+                willChange: 'auto',
                 cursor: 'pointer'
               }}
               aria-label="Ouvrir les outils du forgeron"
@@ -108,8 +108,6 @@ export const Header = React.memo(() => {
                   toggle('centralMenu');
                 }
               }}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
             >
               {/* Carrés fixes aux 4 coins - sans animation */}
               {[0, 1, 2, 3].map((i) => (
@@ -184,9 +182,9 @@ export const Header = React.memo(() => {
                   0 2px 12px rgba(0, 0, 0, 0.18),
                   inset 0 1px 0 rgba(255, 255, 255, 0.12)
                 `,
-                transition: 'transform 280ms cubic-bezier(0.25, 0.1, 0.25, 1), background 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms cubic-bezier(0.16, 1, 0.3, 1)',
+                transition: 'background 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms cubic-bezier(0.16, 1, 0.3, 1)',
                 transform: 'translateZ(0)',
-                willChange: 'transform, filter',
+                willChange: 'auto',
                 cursor: 'pointer'
               }}
               onMouseEnter={(e) => {
@@ -235,8 +233,6 @@ export const Header = React.memo(() => {
                   toggle('mobileDrawer');
                 }
               }}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
             >
               <SpatialIcon
                 Icon={ICONS.Menu}

@@ -48,7 +48,12 @@
   pointer-events: none;
   opacity: 0.95;
   z-index: 2;
-  animation: borderFlow 6s ease-in-out infinite;
+  /* Animation COMPLÈTEMENT désactivée */
+  animation: none !important;
+  animation-name: none !important;
+  animation-play-state: paused !important;
+  /* Position statique du gradient */
+  background-position: 0% 50% !important;
 }
 
 /* Ambient glow underneath */
@@ -66,29 +71,27 @@
   opacity: 0.75;
   z-index: -1;
   pointer-events: none;
-  animation: sidebarGlow 4s ease-in-out infinite alternate;
+  /* Animation COMPLÈTEMENT désactivée */
+  animation: none !important;
+  animation-name: none !important;
+  animation-play-state: paused !important;
   filter: blur(10px);
+  /* État statique sans transformation */
+  transform: scale(1);
 }
 
+/* Animations borderFlow et sidebarGlow COMPLÈTEMENT désactivées */
 @keyframes borderFlow {
   0%, 100% {
     background-position: 0% 50%;
-    opacity: 0.8;
-  }
-  50% {
-    background-position: 100% 50%;
-    opacity: 1;
+    opacity: 0.9;
   }
 }
 
 @keyframes sidebarGlow {
-  0% {
-    opacity: 0.65;
-    transform: scale(0.98);
-  }
-  100% {
-    opacity: 0.85;
-    transform: scale(1.01);
+  0%, 100% {
+    opacity: 0.75;
+    transform: scale(1);
   }
 }
 

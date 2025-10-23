@@ -173,11 +173,9 @@ const CentralActionsMenu: React.FC<CentralActionsMenuProps> = ({ isOpen }) => {
           position: 'relative',
           isolation: 'isolate'
         } as React.CSSProperties}
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: isComingSoon ? 0.5 : 1, y: 0 }}
         animate={{ opacity: isComingSoon ? 0.5 : 1, y: 0 }}
-        transition={{ ...springy, delay: reduceMotion ? 0 : index * 0.05 }}
-        whileHover={reduceMotion || isComingSoon ? {} : {}}
-        whileTap={reduceMotion || isComingSoon ? {} : {}}
+        transition={{ duration: 0 }}
         role="menuitem"
         aria-label={action.description || action.label}
         aria-disabled={isComingSoon}
@@ -229,32 +227,28 @@ const CentralActionsMenu: React.FC<CentralActionsMenuProps> = ({ isOpen }) => {
   const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
   const isDesktop = window.innerWidth >= 1024;
 
-  // Animation variants: UNIFIED single-step appearance (no two-phase)
+  // Animation variants: COMPLÈTEMENT désactivées - apparition instantanée
   const animationVariants = {
     initial: {
-      opacity: 0,
-      scale: 0.92,
-      y: -20
+      opacity: 1,
+      scale: 1,
+      y: 0
     },
     animate: {
       opacity: 1,
       scale: 1,
       y: 0,
       transition: {
-        duration: 0.25,
-        ease: [0.25, 0.1, 0.25, 1],
-        // All properties animate together
-        opacity: { duration: 0.25 },
-        scale: { duration: 0.25 },
-        y: { duration: 0.25 }
+        duration: 0,
+        ease: [0.25, 0.1, 0.25, 1]
       }
     },
     exit: {
       opacity: 0,
-      scale: 0.94,
-      y: -16,
+      scale: 1,
+      y: 0,
       transition: {
-        duration: 0.2,
+        duration: 0.1,
         ease: [0.25, 0.1, 0.25, 1]
       }
     }
@@ -439,11 +433,9 @@ const CentralActionsMenu: React.FC<CentralActionsMenuProps> = ({ isOpen }) => {
                           inset 0 1px 0 rgba(255, 255, 255, 0.2)
                         `
                       }}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 1, y: 0 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ ...springy, delay: reduceMotion ? 0 : 0.3 }}
-                      whileHover={reduceMotion ? {} : { y: -2, scale: 1.02 }}
-                      whileTap={reduceMotion ? {} : { scale: 0.98 }}
+                      transition={{ duration: 0 }}
                       role="menuitem"
                       aria-label={action.description || action.label}
                     >

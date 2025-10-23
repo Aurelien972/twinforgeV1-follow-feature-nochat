@@ -58,7 +58,10 @@
   pointer-events: none;
   opacity: 0.8;
   z-index: 1;
-  animation: none;
+  /* Animation COMPLÈTEMENT désactivée */
+  animation: none !important;
+  animation-name: none !important;
+  animation-play-state: paused !important;
 }
 
 /* Ambient glow layer underneath matching bottom bar */
@@ -76,9 +79,13 @@
   opacity: 0.6;
   z-index: -1;
   pointer-events: none;
-  animation: none;
+  /* Animation COMPLÈTEMENT désactivée */
+  animation: none !important;
+  animation-name: none !important;
+  animation-play-state: paused !important;
 }
 
+/* Animations border et glow COMPLÈTEMENT désactivées - conservées pour référence */
 @keyframes borderPulse {
   0%, 100% { opacity: 0.8; }
 }
@@ -280,20 +287,17 @@
   outline-offset: 3px;
   box-shadow:
     var(--liquid-pill-shadow),
-    0 0 0 4px rgba(24, 227, 255, 0.3) !important;
-  animation: focusGlow 1.5s ease-in-out infinite;
+    0 0 0 4px rgba(24, 227, 255, 0.4) !important;
+  /* Animation focus désactivée - état statique */
+  animation: none !important;
 }
 
+/* Animation focusGlow COMPLÈTEMENT désactivée - état statique uniquement */
 @keyframes focusGlow {
   0%, 100% {
     box-shadow:
       var(--liquid-pill-shadow),
-      0 0 0 4px rgba(24, 227, 255, 0.3);
-  }
-  50% {
-    box-shadow:
-      var(--liquid-pill-shadow),
-      0 0 0 6px rgba(24, 227, 255, 0.5);
+      0 0 0 4px rgba(24, 227, 255, 0.4);
   }
 }
 

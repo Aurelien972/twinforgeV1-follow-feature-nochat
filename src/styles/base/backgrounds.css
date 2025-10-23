@@ -63,23 +63,26 @@
     /* Gradient cosmique */
     radial-gradient(circle at 50% 50%, var(--forge-medium) 0%, var(--forge-deep) 40%, var(--forge-void) 100%);
 
-  /* Animation désactivée - fond statique pour toutes les performances */
-  animation: none;
+  /* Animation COMPLÈTEMENT désactivée - fond 100% statique */
+  animation: none !important;
+  animation-name: none !important;
+  animation-play-state: paused !important;
+  animation-duration: 0s !important;
 
-  /* Background size FIXE pour fond statique */
-  background-size: 400% 300%, 350% 250%, 100% 100%;
+  /* Background size FIXE pour fond statique - AUCUN MOUVEMENT */
+  background-size: 400% 300%, 350% 250%, 100% 100% !important;
+  background-position: center center !important;
+  background-attachment: scroll !important;
 
-  /* Optimisation GPU minimale */
+  /* Optimisation GPU minimale - pas de will-change */
   transform: translateZ(0);
-  will-change: auto;
+  will-change: auto !important;
   backface-visibility: hidden;
 }
 
+/* Animation cosmic-forge-pulse DÉSACTIVÉE - conservée pour référence uniquement */
 @keyframes cosmic-forge-pulse {
   0%, 100% { background-size: 400% 300%, 350% 250%, 100% 100%; }
-  25%      { background-size: 405% 305%, 355% 255%, 101% 101%; }
-  50%      { background-size: 410% 310%, 360% 260%, 102% 102%; }
-  75%      { background-size: 405% 305%, 355% 255%, 101% 101%; }
 }
 
 /* =========================================
@@ -524,7 +527,7 @@ html.mode-high-performance .forge-particle,
 }
 
 /* =========================================
-   DISTORSION THERMIQUE — Desktop
+   DISTORSION THERMIQUE — Desktop - DÉSACTIVÉE (conservée pour aspect visuel)
    ========================================= */
 @media (min-width: 1025px) {
   .bg-twinforge-visionos::before {
@@ -534,17 +537,18 @@ html.mode-high-performance .forge-particle,
     background:
       radial-gradient(ellipse 200% 150% at 30% 70%,
         color-mix(in srgb, var(--forge-ember) 1%, transparent) 0%, transparent 60%);
-    animation: thermal-distortion 12s ease-in-out infinite;
+    /* Animation DÉSACTIVÉE - effet statique uniquement */
+    animation: none !important;
     opacity: 0.3;
     mix-blend-mode: overlay;
     pointer-events: none;
-    transform: translateZ(0);
-    will-change: transform, opacity;
+    transform: scale(1) translateZ(0);
+    will-change: auto;
   }
 }
+/* Animation thermal-distortion DÉSACTIVÉE */
 @keyframes thermal-distortion {
-  0%, 100% { transform: scale(1) rotate(0deg) translateZ(0); opacity: 0.2; }
-  50%      { transform: scale(1.05) rotate(1deg) translateZ(0); opacity: 0.4; }
+  0%, 100% { transform: scale(1) rotate(0deg) translateZ(0); opacity: 0.3; }
 }
 
 /* =========================================
