@@ -2,6 +2,8 @@ import { jsonResponse, corsHeaders } from './response.ts';
 import { validateCommitRequest } from './requestValidator.ts';
 import { storeBodyScanData } from './scanDataStorage.ts';
 import { updateUserProfile } from './profileUpdater.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createSecurityLogger } from '../_shared/securityLogger.ts';
 
 /**
  * Scan Commit Edge Function - Final Persistence
@@ -55,6 +57,24 @@ Deno.serve(async (req) => {
 
     if (validationError) {
       console.error('❌ [scan-commit] Request validation failed:', validationError);
+
+      // Sprint 3 Phase 4.2: Log validation failure
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const securityLogger = createSecurityLogger(supabase);
+
+        await securityLogger.logValidationError(
+          'scan-commit',
+          validationError,
+          req,
+          requestData.user_id
+        );
+      } catch (logError) {
+        console.error('⚠️ [scan-commit] Failed to log security event:', logError);
+      }
+
       return jsonResponse(
         {
           error: validationError,

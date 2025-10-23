@@ -1,6 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { validateFridgeScanRequest } from './requestValidator.ts';
+import { createSecurityLogger } from '../_shared/securityLogger.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,24 +33,34 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { image_base64, user_id } = await req.json();
+    const requestBody = await req.json();
+    const { image_base64, user_id } = requestBody;
 
-    // Validate input
-    if (!image_base64 || !Array.isArray(image_base64) || image_base64.length === 0) {
-      return new Response(JSON.stringify({
-        error: 'image_base64 array is required'
-      }), {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+    // Sprint 3 Phase 3.2: Validate request with unified validation system
+    const validationError = validateFridgeScanRequest(requestBody);
+    if (validationError) {
+      console.error('FRIDGE_SCAN_VALIDATION', 'Request validation failed', {
+        error: validationError,
+        userId: user_id,
+        timestamp: new Date().toISOString()
       });
-    }
 
-    if (!user_id) {
+      // Initialize Supabase for logging (before token check)
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      const securityLogger = createSecurityLogger(supabase);
+
+      // Sprint 3 Phase 4.2: Log validation failure
+      await securityLogger.logValidationError(
+        'fridge-scan-vision',
+        validationError,
+        req,
+        user_id
+      );
+
       return new Response(JSON.stringify({
-        error: 'user_id is required'
+        error: validationError
       }), {
         status: 400,
         headers: {
@@ -101,6 +113,9 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Initialize security logger (Sprint 3 Phase 4.2)
+    const securityLogger = createSecurityLogger(supabase);
 
     const estimatedTokensForFridgeScan = 120;
     const tokenCheck = await checkTokenBalance(supabase, user_id, estimatedTokensForFridgeScan);
