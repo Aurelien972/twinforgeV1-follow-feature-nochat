@@ -638,10 +638,9 @@ export const createRecipeGenerationActions = (
             logger.error('FRIDGE_SCAN_PIPELINE', 'Error parsing SSE error event', {
               sessionId: state.currentSessionId,
               error: parseError instanceof Error ? parseError.message : 'Unknown error',
-              rawData: data,
               timestamp: new Date().toISOString()
             });
-            throw new Error(`Recipe generation failed: ${data}`);
+            throw new Error('Recipe generation failed');
           }
         }
       };

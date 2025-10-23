@@ -7,13 +7,11 @@ import React from 'react';
 import { ConditionalMotion } from '../../../lib/motion/ConditionalMotion';
 import { useBodyScanPerformance } from '../../../hooks/useBodyScanPerformance';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import GlassCard from '../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../ui/icons/registry';
 import { useFeedback } from '../../../hooks/useFeedback';
 import { useProgressStore } from '../../../system/store/progressStore';
-import { useUserStore } from '../../../system/store/userStore';
 import logger from '../../../lib/utils/logger';
 
 /**
@@ -26,12 +24,10 @@ const BodyScanCelebrationStep: React.FC = () => {
   const navigate = useNavigate();
   const { successMajor, success } = useFeedback();
   const { completeProgress } = useProgressStore();
-  const queryClient = useQueryClient();
-  const { profile, refreshProfile } = useUserStore();
-
+  
   // Prevent infinite loops by tracking initialization
   const hasInitialized = React.useRef(false);
-
+  
   // Get scan results from navigation state
   const scanResults = location.state?.scanResults;
   // NOUVEAU: Détecter si c'est un scan facial
@@ -41,40 +37,24 @@ const BodyScanCelebrationStep: React.FC = () => {
   React.useEffect(() => {
     // Prevent multiple executions
     if (hasInitialized.current) return;
-
+    
     if (!scanResults) {
       // MODIFIED: Redirection conditionnelle
       navigate(isFaceScan ? '/avatar#avatar' : '/body-scan', { replace: true });
       return;
     }
-
+    
     // Trigger celebration effects only once
     successMajor();
     completeProgress();
     hasInitialized.current = true;
-
-    // Invalider le cache pour forcer le rafraîchissement des scans
-    queryClient.invalidateQueries({ queryKey: ['body-scans', 'latest', profile?.userId] });
-    queryClient.invalidateQueries({ queryKey: ['body-scans'] });
-
-    // Rafraîchir le profil pour récupérer le flag has_completed_body_scan
-    if (profile?.userId) {
-      refreshProfile().catch((error) => {
-        logger.error('CELEBRATION', 'Failed to refresh profile after scan', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          userId: profile.userId
-        });
-      });
-    }
-
+    
     logger.info('CELEBRATION', 'Celebration step mounted with scan results', {
       hasResults: !!scanResults,
       confidence: getConfidenceFromScanResults(scanResults),
-      isFaceScan: isFaceScan,
-      cacheInvalidated: true,
-      profileRefreshTriggered: !!profile?.userId
+      isFaceScan: isFaceScan // NOUVEAU: Log isFaceScan
     });
-  }, [scanResults, navigate, successMajor, completeProgress, isFaceScan, queryClient, profile?.userId, refreshProfile]);
+  }, [scanResults, navigate, successMajor, completeProgress, isFaceScan]);
 
   if (!scanResults) {
     return null;

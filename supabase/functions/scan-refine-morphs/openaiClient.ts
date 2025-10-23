@@ -50,11 +50,8 @@
             content: content
           }
         ],
-        max_completion_tokens: 5000, // OPTIMIZED: Reduced from 10000 to 5000 for faster morphological refinement
-        temperature: 0.7,
-        top_p: 0.9,
-        presence_penalty: 0,
-        frequency_penalty: 0
+        max_completion_tokens: 10000 // OPTIMIZED: Reduced from 12000 to 10000 (kept higher for complex refinement)
+        // Note: GPT-5-mini supports default temperature (1) - parameter omitted to use default
       })
     });
     if (!response.ok) {

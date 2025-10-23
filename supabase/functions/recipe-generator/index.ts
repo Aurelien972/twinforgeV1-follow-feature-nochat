@@ -291,6 +291,7 @@ INGRÉDIENTS DISPONIBLES:
 ${ingredientsList}
 
 ${existingRecipesContext}CONTRAINTES FITNESS STRICTES:
+CONTRAINTES FITNESS STRICTES:
 - Équipement disponible: ${availableEquipment}
 ${dietaryConstraints.length > 0 ? `- RESTRICTIONS ALIMENTAIRES: ${dietaryConstraints.join(' | ')}` : ''}
 ${foodConstraints.length > 0 ? `- PRÉFÉRENCES ALIMENTAIRES: ${foodConstraints.join(' | ')}` : ''}
@@ -363,32 +364,12 @@ Réponds UNIQUEMENT avec un JSON valide contenant un tableau de recettes au form
   }
 ]`;
 
-    const promptLength = recipePrompt.length;
-    const estimatedTokens = Math.ceil(promptLength / 4);
-
     console.log('RECIPE_GENERATOR', 'Starting streaming OpenAI request', {
       user_id,
-      prompt_length: promptLength,
-      estimated_input_tokens: estimatedTokens,
-      existing_recipes_count: existing_recipes?.length || 0,
-      inventory_items_count: inventory_final.length,
+      prompt_length: recipePrompt.length,
       model: 'gpt-5-mini',
       timestamp: new Date().toISOString()
     });
-
-    // Log a sample of the prompt for debugging (first 500 and last 500 chars)
-    if (promptLength > 1000) {
-      console.log('RECIPE_GENERATOR', 'Prompt sample (first 500 chars)', {
-        user_id,
-        prompt_start: recipePrompt.substring(0, 500),
-        timestamp: new Date().toISOString()
-      });
-      console.log('RECIPE_GENERATOR', 'Prompt sample (last 500 chars)', {
-        user_id,
-        prompt_end: recipePrompt.substring(promptLength - 500),
-        timestamp: new Date().toISOString()
-      });
-    }
 
     // Stream recipes from OpenAI with token consumption
     return streamRecipesFromOpenAI(recipePrompt, user_id, cacheKey, supabase, startTime, inventory_final, user_preferences, filters, consumeTokensAtomic);
@@ -431,34 +412,9 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
         const skeletonEvent = `event: skeleton\ndata: ${JSON.stringify({ recipe_count: 4, count: 4 })}\n\n`;
         controller.enqueue(encoder.encode(skeletonEvent));
 
-        // Log prompt details for debugging
-        const promptLength = prompt.length;
-        const estimatedTokens = Math.ceil(promptLength / 4); // Rough estimate
-
         console.log('RECIPE_GENERATOR', 'Calling OpenAI streaming API', {
           user_id: userId,
           model: 'gpt-5-mini',
-          prompt_length: promptLength,
-          estimated_input_tokens: estimatedTokens,
-          max_completion_tokens: 6000,
-          timestamp: new Date().toISOString()
-        });
-
-        const requestBody = {
-          model: 'gpt-5-mini',
-          messages: [{ role: 'user', content: prompt }],
-          max_completion_tokens: 6000,
-          temperature: 0.7,
-          top_p: 0.9,
-          presence_penalty: 0,
-          frequency_penalty: 0,
-          stream: true
-        };
-
-        console.log('RECIPE_GENERATOR', 'Request body prepared', {
-          user_id: userId,
-          body_keys: Object.keys(requestBody),
-          messages_count: requestBody.messages.length,
           timestamp: new Date().toISOString()
         });
 
@@ -468,32 +424,16 @@ async function streamRecipesFromOpenAI(prompt: string, userId: string, cacheKey:
             'Authorization': `Bearer ${openaiApiKey}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify({
+            model: 'gpt-5-mini',
+            messages: [{ role: 'user', content: prompt }],
+            max_completion_tokens: 15000,
+            stream: true
+          })
         });
 
         if (!openaiResponse.ok) {
-          // Capture detailed error response from OpenAI
-          let errorDetails = '';
-          try {
-            const errorBody = await openaiResponse.text();
-            errorDetails = errorBody;
-            console.error('RECIPE_GENERATOR', 'OpenAI API error details', {
-              user_id: userId,
-              status: openaiResponse.status,
-              statusText: openaiResponse.statusText,
-              error_body: errorBody,
-              headers: Object.fromEntries(openaiResponse.headers.entries()),
-              timestamp: new Date().toISOString()
-            });
-          } catch (e) {
-            console.error('RECIPE_GENERATOR', 'Failed to read error body', {
-              user_id: userId,
-              error: e instanceof Error ? e.message : 'Unknown error',
-              timestamp: new Date().toISOString()
-            });
-          }
-
-          throw new Error(`OpenAI API error: ${openaiResponse.status} - ${openaiResponse.statusText}. Details: ${errorDetails}`);
+          throw new Error(`OpenAI API error: ${openaiResponse.status}`);
         }
 
         const reader = openaiResponse.body?.getReader();

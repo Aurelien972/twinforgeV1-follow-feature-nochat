@@ -19,5 +19,4 @@ export interface UserProfile {
   job_category?: 'office' | 'field' | 'shift' | 'manual' | 'student' | 'other';
   country?: string;
   updated_at?: string;
-  has_completed_body_scan?: boolean;
 }

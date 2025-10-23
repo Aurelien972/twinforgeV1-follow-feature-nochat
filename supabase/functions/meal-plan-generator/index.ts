@@ -238,11 +238,7 @@ RÉPONDS UNIQUEMENT AVEC LE JSON COMPLET. NE FOURNIS AUCUN TEXTE EXPLICATIF AVAN
             content: truncatedPrompt
           }
         ],
-        max_completion_tokens: 8000,
-        temperature: 0.7,
-        top_p: 0.85,
-        presence_penalty: 0,
-        frequency_penalty: 0
+        max_completion_tokens: 15000
       }),
     });
 

@@ -344,18 +344,14 @@ async function callOpenAIVisionAPI(
             type: "image_url",
             image_url: {
               url: `data:image/jpeg;base64,${imageData}`,
-              detail: "low" // Use low detail for faster processing (80% speed improvement)
+              detail: "high" // Use high detail for better food recognition
             }
           }
         ]
       }
     ],
     response_format: { type: "json_object" },
-    max_completion_tokens: 2500,
-    temperature: 0.5,
-    top_p: 0.9,
-    presence_penalty: 0,
-    frequency_penalty: 0,
+    max_completion_tokens: 4000,
   };
   
   console.log('OPENAI_VISION_API', 'Sending request to OpenAI', {
