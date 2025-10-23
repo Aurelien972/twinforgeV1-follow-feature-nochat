@@ -103,6 +103,7 @@
 @import './components/nutrition/fasting-cta-3d.css';
 @import './components/nutrition/meal-scan-results.css';
 @import './components/nutrition/fridge-scan-animations.css';
+@import './components/nutrition/fridge-scan-styles.css';
 @import '../ui/components/skeletons/skeletons.css';
 
 /* =========================================

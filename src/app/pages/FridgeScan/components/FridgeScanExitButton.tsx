@@ -17,13 +17,14 @@ const FridgeScanExitButton: React.FC<FridgeScanExitButtonProps> = ({
   onManualExit
 }) => {
   
-  // Only show exit button if active and not on photo step or validation step
+  // Only show exit button if active and on analyze or complement step
+  // For validation step, the button is integrated in ReviewEditActionsCard
   if (!isActive || currentStep === 'photo' || currentStep === 'validation') {
     return null;
   }
 
   return (
-    <div className="flex justify-center pt-6">
+    <div className="flex justify-center mt-6">
       <button
         onClick={onManualExit}
         className="fridge-btn-danger px-6 py-3"

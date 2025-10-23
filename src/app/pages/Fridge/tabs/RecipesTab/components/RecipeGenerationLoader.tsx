@@ -68,7 +68,7 @@ const RecipeGenerationLoader: React.FC = () => {
             >
               <SpatialIcon
                 Icon={ICONS.ChefHat}
-                size={56}
+                size={64}
                 color="#fff"
                 variant="pure"
               />
@@ -90,10 +90,10 @@ const RecipeGenerationLoader: React.FC = () => {
             </p>
           </div>
 
-          {/* Enhanced Animated Dots with Green Theme */}
+          {/* Enhanced Animated Dots with Green Theme - Always animated */}
           <div className="flex justify-center gap-3">
             {[0, 1, 2].map((index) => (
-              <MotionDiv
+              <motion.div
                 key={index}
                 className="rounded-full"
                 style={{
@@ -102,18 +102,16 @@ const RecipeGenerationLoader: React.FC = () => {
                   background: 'linear-gradient(135deg, #10B981, #34D399)',
                   boxShadow: isPerformanceMode ? 'none' : '0 0 12px color-mix(in srgb, #10B981 60%, transparent)'
                 }}
-                {...(!isPerformanceMode && {
-                  animate: {
-                    scale: [1, 1.4, 1],
-                    opacity: [0.6, 1, 0.6]
-                  },
-                  transition: {
-                    duration: 1.2,
-                    repeat: Infinity,
-                    delay: index * 0.15,
-                    ease: "easeInOut"
-                  }
-                })}
+                animate={{
+                  scale: [1, 1.4, 1],
+                  opacity: [0.6, 1, 0.6]
+                }}
+                transition={{
+                  duration: isPerformanceMode ? 1.5 : 1.2,
+                  repeat: Infinity,
+                  delay: index * 0.15,
+                  ease: "easeInOut"
+                }}
               />
             ))}
           </div>
@@ -138,22 +136,20 @@ const RecipeGenerationLoader: React.FC = () => {
                 boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)'
               }}
             >
-              <MotionDiv
+              <motion.div
                 className="h-full rounded-full"
                 style={{
                   background: 'linear-gradient(90deg, #10B981, #34D399, #6EE7B7)',
                   boxShadow: isPerformanceMode ? 'none' : '0 0 15px color-mix(in srgb, #10B981 60%, transparent)'
                 }}
-                {...(!isPerformanceMode && {
-                  animate: {
-                    width: ['30%', '70%', '30%']
-                  },
-                  transition: {
-                    duration: 2.5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }
-                })}
+                animate={{
+                  width: ['30%', '70%', '30%']
+                }}
+                transition={{
+                  duration: isPerformanceMode ? 3.5 : 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
               />
             </div>
           </div>
