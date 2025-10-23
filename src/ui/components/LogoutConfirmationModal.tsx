@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import SpatialIcon from '../icons/SpatialIcon';
 import { ICONS } from '../icons/registry';
@@ -37,7 +38,7 @@ const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -53,7 +54,10 @@ const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({
 
           <motion.div
             className="fixed inset-0 flex items-center justify-center p-4"
-            style={{ zIndex: Z_INDEX.MODAL + 1 }}
+            style={{
+              zIndex: Z_INDEX.MODAL + 1,
+              pointerEvents: 'none'
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -75,7 +79,8 @@ const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({
                   0 8px 32px rgba(0, 0, 0, 0.4),
                   inset 0 1px 0 rgba(255, 255, 255, 0.2),
                   inset 0 -1px 0 rgba(0, 0, 0, 0.2)
-                `
+                `,
+                pointerEvents: 'auto'
               }}
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
@@ -180,6 +185,14 @@ const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({
       )}
     </AnimatePresence>
   );
+
+  const modalRoot = typeof document !== 'undefined' ? document.getElementById('modal-root') : null;
+
+  if (!modalRoot) {
+    return null;
+  }
+
+  return ReactDOM.createPortal(modalContent, modalRoot);
 };
 
 export default LogoutConfirmationModal;

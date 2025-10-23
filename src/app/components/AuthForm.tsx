@@ -42,13 +42,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         ? 'rgba(255, 255, 255, 0.08)'
         : isBalanced
         ? `
-            radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--color-plasma-cyan) 10%, transparent) 0%, transparent 60%),
+            radial-gradient(circle at 30% 20%, rgba(255, 107, 53, 0.12) 0%, transparent 60%),
             rgba(255, 255, 255, 0.07)
           `
         : `
-            radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--color-plasma-cyan) 14%, transparent) 0%, transparent 60%),
-            radial-gradient(circle at 70% 80%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(61, 19, 179, 0.06) 0%, transparent 70%),
+            radial-gradient(circle at 30% 20%, rgba(255, 107, 53, 0.14) 0%, transparent 60%),
+            radial-gradient(circle at 70% 80%, rgba(253, 200, 48, 0.10) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(247, 147, 30, 0.08) 0%, transparent 70%),
             rgba(255, 255, 255, 0.06)
           `,
       // Shadows: 6 ombres → 3 ombres → 1 ombre
@@ -57,20 +57,20 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         : isBalanced
         ? `
             0 20px 56px rgba(0, 0, 0, 0.45),
-            0 0 32px color-mix(in srgb, var(--color-plasma-cyan) 15%, transparent),
+            0 0 32px rgba(255, 107, 53, 0.20),
             inset 0 1px 0 rgba(255, 255, 255, 0.2)
           `
         : `
             0 24px 64px rgba(0, 0, 0, 0.5),
-            0 0 48px color-mix(in srgb, var(--color-plasma-cyan) 20%, transparent),
-            0 0 96px color-mix(in srgb, var(--color-plasma-cyan) 12%, transparent),
-            0 0 120px rgba(255, 107, 53, 0.08),
+            0 0 48px rgba(255, 107, 53, 0.25),
+            0 0 96px rgba(253, 200, 48, 0.15),
+            0 0 120px rgba(247, 147, 30, 0.10),
             inset 0 2px 0 rgba(255, 255, 255, 0.25),
             inset 0 -2px 0 rgba(0, 0, 0, 0.15)
           `,
       borderColor: isHighPerf
         ? 'rgba(255, 255, 255, 0.2)'
-        : 'color-mix(in srgb, var(--color-plasma-cyan) 30%, transparent)',
+        : 'rgba(255, 107, 53, 0.35)',
     };
   }, [mode]);
 
@@ -162,7 +162,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           
           onSuccess?.();
         } else {
-          setError('Veuillez vérifier votre email pour confirmer votre compte');
+          setError('Veuillez vérifier votre email (pensez à vérifier vos spams) pour confirmer votre compte');
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -206,9 +206,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         zIndex: 1,
         isolation: 'isolate',
         background: `
-          radial-gradient(circle at 20% 30%, rgba(24, 227, 255, 0.08) 0%, transparent 50%),
-          radial-gradient(circle at 80% 70%, rgba(255, 107, 53, 0.06) 0%, transparent 50%),
-          radial-gradient(circle at 50% 50%, rgba(61, 19, 179, 0.04) 0%, transparent 60%),
+          radial-gradient(circle at 20% 30%, rgba(255, 107, 53, 0.12) 0%, transparent 50%),
+          radial-gradient(circle at 80% 70%, rgba(253, 200, 48, 0.10) 0%, transparent 50%),
+          radial-gradient(circle at 50% 50%, rgba(247, 147, 30, 0.06) 0%, transparent 60%),
           linear-gradient(180deg, #0B0E17 0%, #0F1219 50%, #0B0E17 100%)
         `
       }}
@@ -270,7 +270,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: animationDuration * 0.875, delay: shouldAnimate ? 0.2 : 0, ease: "easeOut" }}
                 style={{
-                  filter: mode === 'quality' ? 'drop-shadow(0 0 16px color-mix(in srgb, var(--color-plasma-cyan) 25%, transparent)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.1))' : 'drop-shadow(0 0 8px color-mix(in srgb, var(--color-plasma-cyan) 20%, transparent))'
+                  filter: mode === 'quality' ? 'drop-shadow(0 0 20px rgba(255, 107, 53, 0.4)) drop-shadow(0 0 12px rgba(253, 200, 48, 0.3))' : 'drop-shadow(0 0 12px rgba(255, 107, 53, 0.35))',
+                  transform: 'scale(1.3)'
                 }}
               >
                 <TwinForgeLogo variant="desktop" isHovered={false} />
@@ -279,10 +280,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
             <div style={{ position: 'relative', zIndex: 103, pointerEvents: 'auto' }}>
               <h1 className="text-xl font-bold text-white mb-2 text-center">
-                {isSignUp ? 'Rejoindre TwinForge' : 'Connexion TwinForge'}
+                {isSignUp ? 'Créez votre Forgerie' : 'Connexion à la Forgerie'}
               </h1>
               <p className="text-white/70 text-sm text-center mb-4">
-                {isSignUp ? 'Créez votre Forge Spatiale' : 'Accédez à votre Forge Spatiale'}
+                {isSignUp ? 'Entrez dans la Forge' : 'Accédez à votre Forge'}
               </p>
             </div>
 
@@ -426,22 +427,23 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                       <GlassCard
                         className="p-3"
                         style={{
-                          background: 'rgba(239, 68, 68, 0.15)',
-                          borderColor: 'rgba(239, 68, 68, 0.4)',
+                          background: 'rgba(255, 152, 67, 0.12)',
+                          borderColor: 'rgba(255, 152, 67, 0.30)',
                           backdropFilter: errorCardBackdrop,
-                          boxShadow: mode === 'high-performance' ? '0 0 12px rgba(239, 68, 68, 0.25)' : '0 0 20px rgba(239, 68, 68, 0.3)',
+                          boxShadow: mode === 'high-performance' ? '0 0 12px rgba(255, 152, 67, 0.20)' : '0 0 20px rgba(255, 152, 67, 0.25)',
                           position: 'relative',
                           zIndex: 107,
                           pointerEvents: 'auto'
                         }}
                       >
                         <div className="flex items-start gap-2">
-                          <SpatialIcon 
-                            Icon={ICONS.AlertTriangle} 
-                            size={14} 
-                            className="text-red-300 mt-0.5" 
+                          <SpatialIcon
+                            Icon={ICONS.AlertTriangle}
+                            size={14}
+                            className="mt-0.5"
+                            style={{ color: '#FFB366' }}
                           />
-                          <p className="text-red-200 text-sm leading-relaxed">{error}</p>
+                          <p className="text-sm leading-relaxed" style={{ color: '#FFD9B3' }}>{error}</p>
                         </div>
                       </GlassCard>
                     </motion.div>
@@ -460,26 +462,27 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                     cursor: 'pointer',
                     background: `
                       linear-gradient(135deg,
-                        color-mix(in srgb, var(--brand-primary) 80%, transparent),
-                        color-mix(in srgb, var(--color-plasma-cyan) 60%, transparent)
+                        rgba(255, 107, 53, 0.95),
+                        rgba(247, 147, 30, 0.90),
+                        rgba(253, 200, 48, 0.85)
                       )
                     `,
                     backdropFilter: buttonBackdropFilter,
                     boxShadow: mode === 'high-performance'
-                      ? '0 8px 24px color-mix(in srgb, var(--brand-primary) 30%, transparent), inset 0 2px 0 rgba(255,255,255,0.3)'
+                      ? '0 8px 24px rgba(255, 107, 53, 0.35), inset 0 2px 0 rgba(255,255,255,0.3)'
                       : mode === 'balanced'
                       ? `
-                          0 10px 32px color-mix(in srgb, var(--brand-primary) 35%, transparent),
-                          0 0 48px color-mix(in srgb, var(--brand-primary) 25%, transparent),
+                          0 10px 32px rgba(255, 107, 53, 0.40),
+                          0 0 48px rgba(253, 200, 48, 0.25),
                           inset 0 2px 0 rgba(255,255,255,0.35)
                         `
                       : `
-                          0 12px 40px color-mix(in srgb, var(--brand-primary) 40%, transparent),
-                          0 0 60px color-mix(in srgb, var(--brand-primary) 30%, transparent),
-                          0 0 100px color-mix(in srgb, var(--color-plasma-cyan) 20%, transparent),
+                          0 12px 40px rgba(255, 107, 53, 0.45),
+                          0 0 60px rgba(247, 147, 30, 0.35),
+                          0 0 100px rgba(253, 200, 48, 0.25),
                           inset 0 3px 0 rgba(255,255,255,0.4)
                         `,
-                    border: '2px solid color-mix(in srgb, var(--brand-primary) 60%, transparent)',
+                    border: '2px solid rgba(255, 107, 53, 0.60)',
                     borderRadius: '999px',
                     padding: '0.75rem 1.5rem',
                     minHeight: '48px',
@@ -595,6 +598,64 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                     <span>
                       {googleLoading ? 'Redirection...' : 
                        isSignUp ? 'Créer un compte avec Google' : 'Se connecter avec Google'}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Bouton Apple Auth */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    click();
+                    alert('Connexion avec Apple - Fonctionnalité en cours de configuration');
+                  }}
+                  disabled={googleLoading || loading}
+                  className="w-full auth-apple-button mb-4"
+                  style={{
+                    position: 'relative',
+                    zIndex: 106,
+                    pointerEvents: 'auto',
+                    cursor: 'pointer',
+                    background: `
+                      linear-gradient(135deg,
+                        rgba(0, 0, 0, 0.95),
+                        rgba(20, 20, 20, 0.90)
+                      )
+                    `,
+                    backdropFilter: buttonBackdropFilter,
+                    boxShadow: mode === 'high-performance'
+                      ? '0 6px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.15)'
+                      : mode === 'balanced'
+                      ? '0 7px 28px rgba(0, 0, 0, 0.45), 0 0 32px rgba(255, 255, 255, 0.05), inset 0 1.5px 0 rgba(255,255,255,0.18)'
+                      : `
+                          0 8px 32px rgba(0, 0, 0, 0.5),
+                          0 0 40px rgba(255, 255, 255, 0.08),
+                          inset 0 2px 0 rgba(255,255,255,0.2)
+                        `,
+                    border: '2px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '999px',
+                    padding: '0.75rem 1.5rem',
+                    minHeight: '48px',
+                    color: 'white',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!loading && !googleLoading) {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  }}
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                    </svg>
+                    <span>
+                      {isSignUp ? 'Créer un compte avec Apple' : 'Se connecter avec Apple'}
                     </span>
                   </div>
                 </button>

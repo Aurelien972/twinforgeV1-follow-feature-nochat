@@ -35,6 +35,7 @@ export const Z_INDEX = {
   CENTRAL_MENU: 9998,
   MOBILE_DRAWER: 9998,
   BACKDROP: 9993,
+  MODAL: 9999,
 } as const;
 
 /**
