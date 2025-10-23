@@ -202,30 +202,62 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 **Rôle** : Planificateur nutritionnel hebdomadaire fitness-oriented
 
 **Capacités principales** :
-- Génération de plans hebdomadaires complets (petit-déj, déjeuner, dîner, snacks)
+- Génération de plans hebdomadaires complets (21 repas: petit-déj, déjeuner, dîner, snacks)
 - Optimisation macros par jour selon objectifs fitness
 - Utilisation intelligente de l'inventaire disponible
-- Variation automatique pour éviter la monotonie
+- Variation automatique pour éviter la monotonie (cuisines, techniques de cuisson)
 - Export shopping list basé sur l'inventaire manquant
+- Streaming par jour (affichage progressif des 7 jours)
 
 **Points de différenciation** :
+- **IA Explanation Transparente** : Raisonnement derrière chaque choix nutritionnel
 - Batch cooking supporté (préparer en avance)
 - Respect des contraintes temps (weekday vs weekend)
 - Équilibrage protéines/glucides/lipides selon objectif
 - Génération de la liste de courses automatiquement
+- **CRÉATIVITÉ FORCÉE** : Anti-répétition algorithmique, diversité structurelle obligatoire
+- Personnalisation totale : allergies, intolérances, préférences gustatives, niveau de cuisine
 
 **Cas d'usage marketing** :
 - "Votre semaine de repas planifiée en 2 minutes par l'IA"
 - "Plans nutritionnels optimisés pour votre objectif fitness précis"
 - "De l'inventaire à l'assiette : l'IA utilise ce que vous avez déjà"
+- "L'IA explique POURQUOI chaque repas est conçu ainsi pour VOUS"
 
 **Coût estimé** : 50-80 jetons par plan hebdomadaire
 
 ---
 
+### 9. Générateur de Liste de Courses (shopping-list-generator)
+**Modèle** : GPT-5-mini
+**Rôle** : Optimisateur de courses alimentaires intelligentes
+
+**Capacités principales** :
+- Génération automatique basée sur plan de repas hebdomadaire
+- Soustraction intelligente de l'inventaire existant (scan frigo)
+- Regroupement par catégories de magasin (fruits, légumes, viandes, produits laitiers, conserves)
+- Estimation budgétaire par article et totale
+- Suggestions d'alternatives économiques
+- Priorisation des achats essentiels vs optionnels
+
+**Points de différenciation** :
+- **Zéro Gaspillage** : Utilise ce que vous avez déjà, achète seulement le nécessaire
+- Conseils de conservation et durées de péremption
+- Astuces anti-gaspillage (congélation, préparation en avance)
+- Portions optimales par personne
+
+**Cas d'usage marketing** :
+- "De votre frigo à la liste de courses : l'IA calcule exactement ce qu'il vous manque"
+- "Courses optimisées, budget maîtrisé, zéro gaspillage alimentaire"
+- "L'IA vous fait économiser en évitant les achats inutiles"
+
+**Coût estimé** : 30-45 jetons par liste de courses
+
+---
+
 ## ⏱️ Forge du Temps - Agents de Jeûne Intermittent
 
-### 9. Générateur d'Insights de Jeûne (fasting-insights-generator)
+### 10. Générateur d'Insights de Jeûne (fasting-insights-generator)
 **Modèle** : GPT-5-mini
 **Rôle** : Expert en physiologie du jeûne et cétogenèse
 
@@ -251,7 +283,7 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ---
 
-### 10. Analyseur de Progression de Jeûne (fasting-progression-analyzer)
+### 11. Analyseur de Progression de Jeûne (fasting-progression-analyzer)
 **Modèle** : GPT-5-mini
 **Rôle** : Analyseur de tendances et évolution métabolique
 
@@ -279,7 +311,7 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ## 🧬 Forge Corporelle - Agents de Scan 3D et Morphologie
 
-### 11. Scan Estimateur (scan-estimate)
+### 12. Scan Estimateur (scan-estimate)
 **Modèle** : GPT-5 Vision API
 **Rôle** : Expert en anthropométrie et estimation visuelle
 
@@ -305,7 +337,7 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ---
 
-### 12. Scan Matcher (scan-match)
+### 13. Scan Matcher (scan-match)
 **Modèle** : GPT-5-mini
 **Rôle** : Expert en morphologie et sélection d'archétype
 
@@ -331,7 +363,7 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ---
 
-### 13. Raffineur de Morphs (scan-refine-morphs)
+### 14. Raffineur de Morphs (scan-refine-morphs)
 **Modèle** : GPT-5-mini
 **Rôle** : Expert en ajustement morphologique fin
 
@@ -357,7 +389,7 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ---
 
-### 14. Scan Sémantique (scan-semantic)
+### 15. Scan Sémantique (scan-semantic)
 **Modèle** : GPT-5-mini
 **Rôle** : Analyseur contextuel et feedback utilisateur
 
@@ -383,7 +415,7 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ---
 
-### 15. Générateur d'Insights Morphologiques (generate-morph-insights)
+### 16. Générateur d'Insights Morphologiques (generate-morph-insights)
 **Modèle** : GPT-5-mini
 **Rôle** : Expert en interprétation morphologique et conseils personnalisés
 
@@ -409,9 +441,45 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ---
 
+## 🎤 Forge Vocale - Coach Vocal Temps Réel
+
+### 17. Coach Vocal Temps Réel (voice-coach-realtime)
+**Modèle** : GPT-4o-realtime-preview
+**Rôle** : Coach vocal interactif avec latence ultra-faible
+
+**Capacités principales** :
+- **Streaming Bidirectionnel Audio** : Conversation vocale en temps réel (latence <1s)
+- Compréhension contextuelle de l'entraînement en cours
+- Guidance technique pendant l'exercice (corrections de forme, encouragements)
+- Adaptation dynamique selon fatigue perçue
+- Rappels de respiration et technique
+- Célébration des accomplissements instantanée
+
+**Points de différenciation** :
+- **Latence Ultra-Faible** : WebRTC + GPT-4o-realtime pour réactivité maximale
+- **Audio Natif** : Pas de transcription intermédiaire, traitement audio direct
+- Contexte d'entraînement enrichi (exercices, séries, repos)
+- Ajustement difficulté en temps réel selon voix utilisateur (essoufflement, fatigue)
+- Propose alternatives si détecte difficulté excessive
+
+**Cas d'usage marketing** :
+- "Votre coach personnel qui vous guide à la voix pendant l'entraînement"
+- "Corrections en temps réel : comme avoir un entraîneur à côté de vous"
+- "L'IA qui vous encourage au moment exact où vous en avez besoin"
+- "Coach vocal intelligent : comprend votre état de fatigue et ajuste"
+
+**Scénarios d'usage** :
+1. **CrossFit WOD** : Coach compte les reps, encourage pendant série, rappelle technique, célèbre finish
+2. **Course Endurance** : Surveille allure, rappelle hydratation, ajuste intensité selon zones cardio
+3. **Musculation** : Corrections de forme en direct, rappels tempo, gestion repos entre séries
+
+**Coût estimé** : ~100 jetons/minute (5€-20€/h selon input/output ratio)
+
+---
+
 ## 🔧 Agents Utilitaires et Support
 
-### 16. Transcripteur Audio (audio-transcribe)
+### 18. Transcripteur Audio (audio-transcribe)
 **Modèle** : OpenAI Whisper API
 **Rôle** : Transcription vocale haute précision
 
@@ -437,7 +505,7 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ---
 
-### 17. Générateur de Voix Prévisualisation (generate-voice-preview)
+### 19. Générateur de Voix Prévisualisation (generate-voice-preview)
 **Modèle** : OpenAI TTS API
 **Rôle** : Synthèse vocale pour coach virtuel
 
@@ -462,7 +530,7 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 
 ---
 
-### 18. Générateur d'Images (image-generator)
+### 20. Générateur d'Images (image-generator)
 **Modèle** : OpenAI DALL-E 3
 **Rôle** : Création visuelle pour recettes et contenus
 
@@ -494,17 +562,19 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 | Forge | Nombre d'Agents | Modèles Utilisés | Cas d'Usage Principal |
 |-------|----------------|------------------|----------------------|
 | **Forge Énergétique** | 4 agents | GPT-5-mini | Activité physique, biométrie, progression |
-| **Forge Nutritionnelle** | 4 agents | GPT-5-mini + Vision | Repas, recettes, inventaire, plans |
+| **Forge Nutritionnelle** | 5 agents | GPT-5-mini + Vision | Repas, recettes, inventaire, plans, courses |
 | **Forge du Temps** | 2 agents | GPT-5-mini | Jeûne intermittent, insights métaboliques |
 | **Forge Corporelle** | 5 agents | GPT-5 + GPT-5-mini + Vision | Scans 3D, morphologie, archétypes |
+| **Forge Vocale** | 1 agent | GPT-4o-realtime-preview | Coach vocal temps réel |
 | **Utilitaires** | 3 agents | Whisper, TTS, DALL-E 3 | Audio, voix, images |
 
 ### Par Modèle IA
 
 | Modèle OpenAI | Agents Utilisant | Pricing Moyen | Use Case |
 |---------------|------------------|---------------|----------|
-| **GPT-5-mini** | 13 agents | $0.25/1M input, $2.00/1M output | Analyse rapide, génération insights, conversations |
+| **GPT-5-mini** | 14 agents | $0.25/1M input, $2.00/1M output | Analyse rapide, génération insights, conversations |
 | **GPT-5 Vision** | 3 agents | $5.00/1M input, $10.00/1M output | Analyse photos repas, scan corpo, frigo |
+| **GPT-4o-realtime** | 1 agent | $5.00/1M input, $20.00/1M output, $100/1M audio | Coach vocal temps réel |
 | **Whisper** | 1 agent | $0.006/minute | Transcription vocale |
 | **TTS** | 1 agent | $15.00/1M caractères | Génération voix coach |
 | **DALL-E 3** | 1 agent | $0.04-0.08/image | Visuels recettes, contenus |
@@ -525,9 +595,9 @@ TwinForge déploie une constellation d'agents IA spécialisés, chacun étant un
 ### Pour Investisseurs / B2B
 
 **"Un écosystème IA complet, pas un simple chatbot"**
-- 18 agents spécialisés couvrant santé, fitness, nutrition, morphologie
+- 20 agents spécialisés couvrant santé, fitness, nutrition, morphologie, vocal
 - Architecture économique avec système de jetons unifié
-- Technologie de pointe : GPT-5, Vision, Whisper, TTS, DALL-E 3
+- Technologie de pointe : GPT-5, GPT-4o-realtime, Vision, Whisper, TTS, DALL-E 3
 - ROI mesurable : réduction coûts opérationnels, scalabilité illimitée
 
 **"Intelligence distribuée et évolutive"**
