@@ -22,7 +22,7 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 10 * 60 * 1000, // 10 minutes - increased for better persistence
-      gcTime: 24 * 60 * 60 * 1000, // 24 hours - keep data longer in cache
+      gcTime: 8 * 60 * 60 * 1000, // 8 hours - optimized (was 24h, too aggressive for frequent data)
       retry: 1,
       refetchOnWindowFocus: false, // Prevent unnecessary refetches
       refetchOnMount: (query) => {

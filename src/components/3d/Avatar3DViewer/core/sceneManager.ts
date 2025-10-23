@@ -5,6 +5,7 @@ import { setupAdaptiveLighting } from '../../../../lib/3d/setup/lightingSetupMob
 import { setupStudioEnvironment, calculateEnvMapIntensity } from '../../../../lib/3d/setup/environmentSetup';
 import logger from '../../../../lib/utils/logger';
 import { detectDeviceCapabilities, getOptimalPerformanceConfig, type PerformanceConfig } from '../../../../lib/3d/performance/mobileDetection';
+import { deviceCapabilityManager } from '../../../../lib/device/deviceCapabilityManager';
 
 export interface SceneInstance {
   renderer: THREE.WebGLRenderer;
@@ -29,24 +30,26 @@ interface SceneCreationOptions {
 export function createScene(options: SceneCreationOptions): SceneInstance {
   const { container, finalGender, faceOnly, serverScanId, performanceConfig: customConfig } = options;
 
-  // MOBILE OPTIMIZATION: Detect device capabilities and get optimal config
+  // MOBILE OPTIMIZATION: Use unified deviceCapabilityManager for consistent performance detection
+  const globalCapabilities = deviceCapabilityManager.getCapabilities();
   const deviceCapabilities = detectDeviceCapabilities();
   const performanceConfig = customConfig || getOptimalPerformanceConfig(deviceCapabilities);
 
-  logger.info('SCENE_MANAGER', 'Creating Three.js scene with mobile optimizations', {
+  logger.info('SCENE_MANAGER', 'Creating Three.js scene with unified performance optimizations', {
     gender: finalGender,
     faceOnly,
     serverScanId,
     containerSize: { width: container.clientWidth, height: container.clientHeight },
     deviceType: deviceCapabilities.type,
-    performanceLevel: deviceCapabilities.performanceLevel,
+    globalPerformanceLevel: globalCapabilities.performanceLevel,
+    localPerformanceLevel: deviceCapabilities.performanceLevel,
     isMobile: deviceCapabilities.isMobile,
     isLowEndDevice: deviceCapabilities.isLowEndDevice,
     optimizedPixelRatio: performanceConfig.pixelRatio,
     shadowsEnabled: performanceConfig.shadowsEnabled,
     maxLights: performanceConfig.maxLights,
     targetFPS: performanceConfig.targetFPS,
-    philosophy: 'mobile_optimized_scene_creation'
+    philosophy: 'unified_performance_management'
   });
 
   // MOBILE OPTIMIZATION: Create renderer with adaptive settings

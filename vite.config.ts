@@ -114,8 +114,18 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Core vendor libraries
+          // OPTIMIZATION: Three.js separation - 30MB library loaded only when needed (Avatar3DViewer)
           if (id.includes('node_modules')) {
+            if (id.includes('three') || id.includes('@react-three')) {
+              return 'three-js';
+            }
+
+            // OPTIMIZATION: Recharts separation - 5.6MB library loaded only in charts/insights
+            if (id.includes('recharts')) {
+              return 'recharts';
+            }
+
+            // Core vendor libraries
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor';
             }
@@ -140,9 +150,17 @@ export default defineConfig({
             if (id.includes('date-fns')) {
               return 'date-utils';
             }
+            if (id.includes('react-leaflet') || id.includes('leaflet')) {
+              return 'maps';
+            }
             if (id.includes('nanoid') || id.includes('zustand') || id.includes('clsx')) {
               return 'utils';
             }
+          }
+
+          // OPTIMIZATION: 3D-related code (loaded with Avatar3DViewer)
+          if (id.includes('/src/lib/3d/') || id.includes('/src/components/3d/')) {
+            return 'three-app';
           }
 
           // App-specific chunking
@@ -157,6 +175,12 @@ export default defineConfig({
           }
           if (id.includes('/src/app/pages/Profile/')) {
             return 'page-profile';
+          }
+          if (id.includes('/src/app/pages/Avatar/')) {
+            return 'page-avatar';
+          }
+          if (id.includes('/src/app/pages/Activity/')) {
+            return 'page-activity';
           }
           if (id.includes('/src/ui/')) {
             return 'ui-components';

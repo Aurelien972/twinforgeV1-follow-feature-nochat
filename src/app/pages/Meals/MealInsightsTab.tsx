@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mealsRepo } from '../../../system/data/repositories/mealsRepo';
@@ -10,7 +10,9 @@ import SpatialIcon from '../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../ui/icons/registry';
 import { InsightCards } from './components/MealInsights/AIInsightCards';
 import AnalysisLoadingSkeleton from './components/MealInsights/AILoadingSkeleton';
-import MacroDistributionChart from './components/MealInsights/MacroDistributionChart';
+
+// Lazy load Recharts components (5.6MB)
+const MacroDistributionChart = lazy(() => import('./components/MealInsights/MacroDistributionChart'));
 import { getChartData } from './components/MealInsights/chartDataUtils';
 import EmptyMealInsightsState from './components/MealInsights/EmptyMealInsightsState';
 
@@ -248,10 +250,12 @@ const MealInsightsTab: React.FC<MealInsightsTabProps> = ({ onLoadingChange }) =>
       )}
 
       {/* Distribution des Macronutriments */}
-      <MacroDistributionChart 
-        data={chartData.macroDistribution}
-        profile={profile}
-      />
+      <Suspense fallback={<GlassCard className="p-6"><div className="text-center text-gray-400">Chargement du graphique...</div></GlassCard>}>
+        <MacroDistributionChart
+          data={chartData.macroDistribution}
+          profile={profile}
+        />
+      </Suspense>
 
       {/* Insights - Patterns et Conseils Stratégiques */}
       <InsightCards 

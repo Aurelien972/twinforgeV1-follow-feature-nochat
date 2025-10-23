@@ -3,11 +3,13 @@
  * Uses specialized hooks and components for clean separation of concerns
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBodyScanPerformance } from '../../../hooks/useBodyScanPerformance';
-import Avatar3DViewer from '../../../components/3d/Avatar3DViewer';
+
+// Lazy load Avatar3DViewer (Three.js = 30MB)
+const Avatar3DViewer = lazy(() => import('../../../components/3d/Avatar3DViewer'));
 import GlassCard from '../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../ui/icons/registry';
@@ -253,9 +255,10 @@ const BodyScanReview: React.FC = () => {
         </div>
         
         <div className="avatar-3d-viewer-container h-[400px] sm:h-[500px] md:h-[550px] lg:h-[600px] xl:h-[650px] rounded-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10 border border-purple-400/20 relative overflow-hidden">
-          <Avatar3DViewer
-            ref={avatar3DRef}
-            scanResult={scanResults}
+          <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><div className="text-sm text-gray-400">Chargement du viewer 3D...</div></div>}>
+            <Avatar3DViewer
+              ref={avatar3DRef}
+              scanResult={scanResults}
             userProfile={stableUserProfile || { sex: resolvedGender, height_cm: 175, weight_kg: 70 }}
             morphData={finalShapeParams}
             limbMasses={stableLimbMasses}
@@ -270,6 +273,7 @@ const BodyScanReview: React.FC = () => {
             onViewerReady={handleViewerReady}
             showControls={true}
           />
+          </Suspense>
         </div>
       </GlassCard>
 

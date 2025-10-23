@@ -1,12 +1,14 @@
 // src/app/pages/Avatar/tabs/HistoricalScanModal.tsx
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import GlassCard from '../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../ui/icons/registry';
-import Avatar3DViewer from '../../../../components/3d/Avatar3DViewer';
+
+// Lazy load Avatar3DViewer
+const Avatar3DViewer = lazy(() => import('../../../../components/3d/Avatar3DViewer'));
 import { bodyScanRepo } from '../../../../system/data/repositories/bodyScanRepo';
 import { useUserStore } from '../../../../system/store/userStore';
 import { format } from 'date-fns';
@@ -154,19 +156,21 @@ const HistoricalScanModal: React.FC<HistoricalScanModalProps> = ({ scanId, onClo
                   
                   return null;
                 })()}
-                <Avatar3DViewer
-                  ref={avatar3DRef}
-                  scanResult={scan}
-                  userProfile={userProfile}
-                  morphData={scan.metrics?.final_shape_params || scan.metrics?.morph_values}
-                  limbMasses={scan.metrics?.final_limb_masses || scan.metrics?.limb_masses}
-                  skinTone={scan.metrics?.skin_tone}
-                  resolvedGender={scan.metrics?.resolved_gender || userProfile?.sex}
-                  className="w-full h-full"
-                  autoRotate={true}
-                  showControls={true}
-                  onViewerReady={() => setIsViewerReady(true)}
-                />
+                <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><SpatialIcon Icon={ICONS.Loader2} size={32} className="text-purple-400 animate-spin" /></div>}>
+                  <Avatar3DViewer
+                    ref={avatar3DRef}
+                    scanResult={scan}
+                    userProfile={userProfile}
+                    morphData={scan.metrics?.final_shape_params || scan.metrics?.morph_values}
+                    limbMasses={scan.metrics?.final_limb_masses || scan.metrics?.limb_masses}
+                    skinTone={scan.metrics?.skin_tone}
+                    resolvedGender={scan.metrics?.resolved_gender || userProfile?.sex}
+                    className="w-full h-full"
+                    autoRotate={true}
+                    showControls={true}
+                    onViewerReady={() => setIsViewerReady(true)}
+                  />
+                </Suspense>
                 </div>
             )}
             </div>

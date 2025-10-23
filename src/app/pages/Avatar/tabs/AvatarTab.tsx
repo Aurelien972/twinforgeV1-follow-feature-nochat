@@ -1,8 +1,10 @@
 // src/app/pages/Avatar/tabs/AvatarTab.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import Avatar3DViewer from '../../../../components/3d/Avatar3DViewer';
+
+// Lazy load Avatar3DViewer (Three.js = 30MB, lazy loading = initial bundle -30%)
+const Avatar3DViewer = lazy(() => import('../../../../components/3d/Avatar3DViewer'));
 import GlassCard from '../../../../ui/cards/GlassCard';
 import SpatialIcon from '../../../../ui/icons/SpatialIcon';
 import { ICONS } from '../../../../ui/icons/registry';
@@ -232,19 +234,21 @@ const AvatarTab: React.FC = () => {
         </div>
 
         <div className="avatar-3d-viewer-container h-[400px] sm:h-[500px] lg:h-[600px] rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 relative overflow-hidden">
-          <Avatar3DViewer
-            userProfile={userProfile}
-            morphData={displayMorphData}
-            limbMasses={displayLimbMasses}
-            skinTone={displaySkinTone}
-            resolvedGender={displayGender}
-            faceMorphData={faceMorphData}
-            faceSkinTone={faceSkinTone}
-            className="w-full h-full"
-            autoRotate={true}
-            showControls={true}
-            onViewerReady={handleViewerReady}
-          />
+          <Suspense fallback={<AvatarTabSkeleton />}>
+            <Avatar3DViewer
+              userProfile={userProfile}
+              morphData={displayMorphData}
+              limbMasses={displayLimbMasses}
+              skinTone={displaySkinTone}
+              resolvedGender={displayGender}
+              faceMorphData={faceMorphData}
+              faceSkinTone={faceSkinTone}
+              className="w-full h-full"
+              autoRotate={true}
+              showControls={true}
+              onViewerReady={handleViewerReady}
+            />
+          </Suspense>
         </div>
       </GlassCard>
       
