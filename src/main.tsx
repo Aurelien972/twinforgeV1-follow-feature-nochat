@@ -5,10 +5,32 @@ import React, { lazy, useEffect, useRef, useState, Suspense } from 'react';
 import App from './app/App.tsx';
 import './styles/index.css';
 import { AppProviders } from './app/providers/AppProviders';
-import { logEnvConfig, env } from './system/env';
+import { logEnvConfig, env, validateEnvironment } from './system/env';
 import { logSupabaseConfig } from './system/supabase/client';
 import logger from './lib/utils/logger';
 import { logMealScannerFeatureFlags } from './config/featureFlags';
+
+// Validate environment variables at startup (critical for security)
+try {
+  validateEnvironment();
+} catch (error) {
+  logger.error('STARTUP', 'Environment validation failed - application cannot start', {
+    error: error instanceof Error ? error.message : 'Unknown error',
+  });
+  // Show error screen in production
+  if (import.meta.env.PROD) {
+    document.body.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #0B0E17; color: white; font-family: system-ui; padding: 2rem;">
+        <div style="max-width: 600px; text-align: center;">
+          <h1 style="font-size: 2rem; margin-bottom: 1rem;">Configuration Error</h1>
+          <p style="color: #FF6B6B; margin-bottom: 1rem;">The application is not properly configured. Please contact support.</p>
+          <p style="color: #888; font-size: 0.875rem;">Error: ${error instanceof Error ? error.message : 'Unknown error'}</p>
+        </div>
+      </div>
+    `;
+    throw error;
+  }
+}
 import { supabase } from './system/supabase/client';
 import { AuthForm } from './app/components/AuthForm';
 import { LoadingFallback } from './app/components/LoadingFallback';

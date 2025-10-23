@@ -34,15 +34,52 @@
   to = "/index.html"
   status = 200
 
-# Security headers
+# =============================================================================
+# SECURITY HEADERS - Applied to all pages
+# =============================================================================
 [[headers]]
   for = "/*"
   [headers.values]
+    # Prevent clickjacking attacks
     X-Frame-Options = "DENY"
+
+    # Prevent MIME type sniffing
     X-Content-Type-Options = "nosniff"
+
+    # Enable XSS protection (legacy browsers)
     X-XSS-Protection = "1; mode=block"
+
+    # Control referrer information
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(self), geolocation=()"
+
+    # Feature Policy - restrict device access
+    Permissions-Policy = "camera=(), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()"
+
+    # HSTS - Force HTTPS (31536000 = 1 year)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+    # CORS Policy - Isolate browsing context
+    Cross-Origin-Embedder-Policy = "require-corp"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Resource-Policy = "same-origin"
+
+    # Content Security Policy - Report Only Mode
+    # Start with report-only to identify violations before enforcing
+    Content-Security-Policy-Report-Only = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https: blob: https://kwipydbtjagypocpvbwn.supabase.co;
+      connect-src 'self' https://kwipydbtjagypocpvbwn.supabase.co wss://kwipydbtjagypocpvbwn.supabase.co https://api.openai.com;
+      media-src 'self' blob: https://kwipydbtjagypocpvbwn.supabase.co;
+      object-src 'none';
+      frame-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      upgrade-insecure-requests;
+    """
 
 # Cache static assets
 [[headers]]

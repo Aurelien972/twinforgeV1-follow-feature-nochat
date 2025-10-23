@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
@@ -10,6 +10,7 @@ import { IllustrationCacheProvider } from '../../system/context/IllustrationCach
 import { PerformanceModeProvider } from '../../system/context/PerformanceModeContext';
 import { useDevicePerformance } from '../../hooks/useDevicePerformance';
 import { useAutoSync } from '../../hooks/useAutoSync';
+import { useTokenRefresh } from '../../hooks/useTokenRefresh';
 import { useUserStore } from '../../system/store/userStore';
 import logger from '../../lib/utils/logger';
 import { BackgroundManager } from '../../ui/components/BackgroundManager';
@@ -216,6 +217,25 @@ function AutoSyncInitializer({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function TokenRefreshManager({ children }: { children: React.ReactNode }) {
+  const { isRefreshing, lastRefresh, nextRefreshAt, failureCount } = useTokenRefresh();
+
+  useEffect(() => {
+    if (isRefreshing) {
+      logger.debug('TOKEN_REFRESH_MANAGER', 'Token refresh in progress');
+    }
+    if (lastRefresh) {
+      logger.debug('TOKEN_REFRESH_MANAGER', 'Last token refresh', {
+        lastRefresh: lastRefresh.toISOString(),
+        nextRefreshAt: nextRefreshAt?.toISOString(),
+        failureCount,
+      });
+    }
+  }, [isRefreshing, lastRefresh, nextRefreshAt, failureCount]);
+
+  return <>{children}</>;
+}
+
 function PerformanceAlertManager() {
   const { showAlert, recommendation, dismissAlert } = usePerformanceRecommendationAlert();
 
@@ -248,8 +268,10 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
                 <ToastProvider>
                   <PerformanceInitializer>
                     <AutoSyncInitializer>
-                      <PerformanceAlertManager />
-                      {children}
+                      <TokenRefreshManager>
+                        <PerformanceAlertManager />
+                        {children}
+                      </TokenRefreshManager>
                     </AutoSyncInitializer>
                   </PerformanceInitializer>
                 </ToastProvider>
