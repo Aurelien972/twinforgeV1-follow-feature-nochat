@@ -41,7 +41,9 @@ const ScannerTab: React.FC = () => {
       return (data?.length || 0) > 0;
     },
     enabled: !!session?.user?.id,
-    staleTime: 30 * 1000, // Réduit à 30 secondes pour une meilleure réactivité
+    staleTime: 5 * 1000, // 5 secondes pour détecter rapidement les nouveaux scans
+    gcTime: 0, // Ne pas garder en cache trop longtemps
+    refetchOnMount: true, // Toujours refetch au montage
   });
 
   // Afficher l'empty state si aucun historique

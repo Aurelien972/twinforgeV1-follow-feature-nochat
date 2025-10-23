@@ -262,16 +262,18 @@ export const createSessionActions = (
       // Invalidate React Query cache to update Scanner tab
       try {
         const { queryClient } = await import('../../../../app/providers/AppProviders');
-        if (queryClient) {
-          await queryClient.invalidateQueries({
-            queryKey: ['fridge-scan-sessions', 'has-history']
-          });
 
-          logger.info('FRIDGE_SCAN_PIPELINE', 'React Query cache invalidated for Scanner tab', {
-            sessionId: state.currentSessionId,
-            timestamp: new Date().toISOString()
-          });
-        }
+        // Invalidate all fridge-scan-sessions queries to force refresh
+        await queryClient.invalidateQueries({
+          queryKey: ['fridge-scan-sessions'],
+          refetchType: 'all'
+        });
+
+        logger.info('FRIDGE_SCAN_PIPELINE', 'React Query cache invalidated for Scanner tab', {
+          sessionId: state.currentSessionId,
+          queriesInvalidated: ['fridge-scan-sessions'],
+          timestamp: new Date().toISOString()
+        });
       } catch (error) {
         logger.warn('FRIDGE_SCAN_PIPELINE', 'Failed to invalidate React Query cache', {
           error: error instanceof Error ? error.message : 'Unknown error',
