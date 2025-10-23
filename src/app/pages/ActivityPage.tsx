@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Tabs from '../../ui/tabs/TabsComponent';
 import { ICONS } from '../../ui/icons/registry';
 import { useScrollMemory } from '../../hooks/scroll/useScrollMemory';
 import ActivityDailyTab from './Activity/ActivityDailyTab';
-import ActivityInsightsTab from './Activity/ActivityInsightsTab';
-import ActivityProgressTab from './Activity/ActivityProgressTab';
 import ActivityHistoryTab from './Activity/ActivityHistoryTab';
 import { useFeedback } from '../../hooks/useFeedback';
 import logger from '../../lib/utils/logger';
 import PageHeader from '../../ui/page/PageHeader';
+import LoadingFallback from '../components/LoadingFallback';
 import './Activity/styles/index.css';
+
+// Lazy load heavy tabs with Recharts (323KB) - only loaded when user visits these tabs
+const ActivityInsightsTab = lazy(() => import('./Activity/ActivityInsightsTab'));
+const ActivityProgressTab = lazy(() => import('./Activity/ActivityProgressTab'));
 
 /**
  * Get dynamic header content based on active tab
@@ -111,11 +114,15 @@ const ActivityPage: React.FC = () => {
         </Tabs.Panel>
 
         <Tabs.Panel value="insights" className="mt-6">
-          <ActivityInsightsTab />
+          <Suspense fallback={<LoadingFallback />}>
+            <ActivityInsightsTab />
+          </Suspense>
         </Tabs.Panel>
 
         <Tabs.Panel value="progression" className="mt-6">
-          <ActivityProgressTab />
+          <Suspense fallback={<LoadingFallback />}>
+            <ActivityProgressTab />
+          </Suspense>
         </Tabs.Panel>
 
         <Tabs.Panel value="history" className="mt-6">

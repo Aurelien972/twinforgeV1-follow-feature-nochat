@@ -1,4 +1,5 @@
 import { supabase } from '../supabase/client';
+import logger from '../../lib/utils/logger';
 
 export interface TokenBalance {
   balance: number;
@@ -69,13 +70,13 @@ export class TokenService {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching token balance:', error);
+        logger.error('TOKEN_SERVICE', 'Error fetching token balance', { error });
         return null;
       }
 
       // If no data, user token balance hasn't been initialized yet
       if (!data) {
-        console.warn('Token balance not found for user - may need initialization:', user.id);
+        logger.warn('TOKEN_SERVICE', 'Token balance not found for user - may need initialization', { userId: user.id });
         return null;
       }
 
@@ -84,7 +85,7 @@ export class TokenService {
         lastResetAt: data.last_monthly_reset,
       };
     } catch (error) {
-      console.error('Unexpected error fetching token balance:', error);
+      logger.logError('Unexpected error fetching token balance', error);
       return null;
     }
   }
@@ -102,7 +103,7 @@ export class TokenService {
         .limit(limit);
 
       if (error) {
-        console.error('Error fetching token transactions:', error);
+        logger.error('TOKEN_SERVICE', 'Error fetching token transactions', { error });
         return [];
       }
 
@@ -123,7 +124,7 @@ export class TokenService {
         createdAt: tx.created_at,
       }));
     } catch (error) {
-      console.error('Unexpected error fetching token transactions:', error);
+      logger.logError('Unexpected error fetching token transactions', error);
       return [];
     }
   }
@@ -138,7 +139,7 @@ export class TokenService {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching pricing config:', error);
+        logger.error('TOKEN_SERVICE', 'Error fetching pricing config', { error });
         return null;
       }
 
@@ -147,7 +148,7 @@ export class TokenService {
         tokenPacks: data.token_packs,
       };
     } catch (error) {
-      console.error('Unexpected error fetching pricing config:', error);
+      logger.logError('Unexpected error fetching pricing config', error);
       return null;
     }
   }
@@ -165,7 +166,7 @@ export class TokenService {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching user subscription:', error);
+        logger.error('TOKEN_SERVICE', 'Error fetching user subscription', { error });
         return null;
       }
 
@@ -188,7 +189,7 @@ export class TokenService {
         updatedAt: data.updated_at,
       };
     } catch (error) {
-      console.error('Unexpected error fetching user subscription:', error);
+      logger.logError('Unexpected error fetching user subscription', error);
       return null;
     }
   }
@@ -224,14 +225,14 @@ export class TokenService {
 
       if (!response.ok) {
         const error = await response.json();
-        console.error('Error creating checkout session:', error);
+        logger.error('TOKEN_SERVICE', 'Error creating checkout session', { error });
         return null;
       }
 
       const data = await response.json();
       return { url: data.url };
     } catch (error) {
-      console.error('Unexpected error creating checkout session:', error);
+      logger.logError('Unexpected error creating checkout session', error);
       return null;
     }
   }
@@ -259,14 +260,14 @@ export class TokenService {
 
       if (!response.ok) {
         const error = await response.json();
-        console.error('Error creating portal session:', error);
+        logger.error('TOKEN_SERVICE', 'Error creating portal session', { error });
         return null;
       }
 
       const data = await response.json();
       return { url: data.url };
     } catch (error) {
-      console.error('Unexpected error creating portal session:', error);
+      logger.logError('Unexpected error creating portal session', error);
       return null;
     }
   }

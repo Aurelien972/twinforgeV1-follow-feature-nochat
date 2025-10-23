@@ -110,14 +110,18 @@ export default defineConfig({
   },
   build: {
     target: 'es2020',
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 800, // Increased for 3D-heavy app (realistic for Avatar3DViewer)
     rollupOptions: {
       output: {
         manualChunks(id) {
           // OPTIMIZATION: Three.js separation - 30MB library loaded only when needed (Avatar3DViewer)
           if (id.includes('node_modules')) {
-            if (id.includes('three') || id.includes('@react-three')) {
-              return 'three-js';
+            // Separate Three.js core from React-Three wrappers for better caching
+            if (id.includes('node_modules/three/')) {
+              return 'three-core';
+            }
+            if (id.includes('@react-three')) {
+              return 'react-three';
             }
 
             // OPTIMIZATION: Recharts separation - 5.6MB library loaded only in charts/insights

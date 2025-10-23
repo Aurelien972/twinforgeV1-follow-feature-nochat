@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useLocation, useBlocker } from 'react-router-dom';
 import { Tabs, useTabsKeyboard } from '../../../ui/tabs';
 import { useScrollMemory } from '../../../hooks/scroll/useScrollMemory';
 import FastingDailyTab from './components/Tabs/FastingDailyTab';
-import FastingInsightsTab from './components/Tabs/FastingInsightsTab';
-import FastingProgressionTab from './components/Tabs/FastingProgressionTab';
 import FastingHistoryTab from './components/Tabs/FastingHistoryTab';
 import { useFeedback } from '../../../hooks/useFeedback';
 import logger from '../../../lib/utils/logger';
 import PageHeader from '../../../ui/page/PageHeader';
 import ConfirmationModal from '../../../ui/components/ConfirmationModal';
+import LoadingFallback from '../../components/LoadingFallback';
+
+// Lazy load heavy tabs with Recharts - only loaded when user visits these tabs
+const FastingInsightsTab = lazy(() => import('./components/Tabs/FastingInsightsTab'));
+const FastingProgressionTab = lazy(() => import('./components/Tabs/FastingProgressionTab'));
 
 /**
  * Get dynamic header content based on active tab
@@ -206,11 +209,15 @@ const FastingPage: React.FC = () => {
         </Tabs.Panel>
 
         <Tabs.Panel value="insights">
-          <FastingInsightsTab onLoadingChange={handleAIGenerationLoadingChange} />
+          <Suspense fallback={<LoadingFallback />}>
+            <FastingInsightsTab onLoadingChange={handleAIGenerationLoadingChange} />
+          </Suspense>
         </Tabs.Panel>
 
         <Tabs.Panel value="progression">
-          <FastingProgressionTab onLoadingChange={handleAIGenerationLoadingChange} />
+          <Suspense fallback={<LoadingFallback />}>
+            <FastingProgressionTab onLoadingChange={handleAIGenerationLoadingChange} />
+          </Suspense>
         </Tabs.Panel>
 
         <Tabs.Panel value="history">

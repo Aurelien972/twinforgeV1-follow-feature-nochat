@@ -18,7 +18,7 @@ const LOG_LEVEL_CONFIG = {
     level: 'warn' as LogLevel, // Only warnings and errors in staging
   },
   production: {
-    level: 'silent' as LogLevel, // SILENT in production - no logs except critical errors sent to monitoring
+    level: 'error' as LogLevel, // ERROR in production - only critical errors, no info/warn/debug
   },
 } as const;
 

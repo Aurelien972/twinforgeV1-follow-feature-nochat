@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useLocation, useNavigate, useBlocker } from 'react-router-dom';
 import { Tabs, useTabsKeyboard } from '../../../ui/tabs';
 import { ICONS } from '../../../ui/icons/registry';
 import { useScrollMemory } from '../../../hooks/scroll/useScrollMemory';
 import DailyRecapTab from './DailyRecapTab';
-import MealInsightsTab from './MealInsightsTab';
 import MealHistoryTab from './MealHistoryTab';
-import ProgressionTab from './ProgressionTab';
 import { useFeedback } from '../../../hooks/useFeedback';
 import logger from '../../../lib/utils/logger';
 import PageHeader from '../../../ui/page/PageHeader';
 import ScanExitConfirmationModal from './components/MealScanFlow/ScanExitConfirmationModal';
 import Portal from '../../../ui/components/Portal';
+import LoadingFallback from '../../components/LoadingFallback';
+
+// Lazy load heavy tabs with Recharts - only loaded when user visits these tabs
+const MealInsightsTab = lazy(() => import('./MealInsightsTab'));
+const ProgressionTab = lazy(() => import('./ProgressionTab'));
 
 /**
  * Get dynamic header content based on active tab
@@ -209,11 +212,15 @@ const MealsPage: React.FC = () => {
         </Tabs.Panel>
         
         <Tabs.Panel value="insights">
-          <MealInsightsTab onLoadingChange={handleAIGenerationLoadingChange} />
+          <Suspense fallback={<LoadingFallback />}>
+            <MealInsightsTab onLoadingChange={handleAIGenerationLoadingChange} />
+          </Suspense>
         </Tabs.Panel>
-        
+
         <Tabs.Panel value="progression">
-          <ProgressionTab />
+          <Suspense fallback={<LoadingFallback />}>
+            <ProgressionTab />
+          </Suspense>
         </Tabs.Panel>
         
         <Tabs.Panel value="history">
