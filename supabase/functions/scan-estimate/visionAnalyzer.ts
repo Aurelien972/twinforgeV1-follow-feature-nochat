@@ -168,7 +168,11 @@ export async function analyzePhotosWithVision(frontPhotoUrl, profilePhotoUrl, us
                 content: content
               }
             ],
-            max_completion_tokens: 8000 // OPTIMIZED: Reduced from 12000 to 8000 for faster responses
+            max_completion_tokens: 3000, // OPTIMIZED: Reduced from 8000 to 3000 for faster body scan analysis
+            temperature: 0.6,
+            top_p: 0.9,
+            presence_penalty: 0,
+            frequency_penalty: 0
             // Note: GPT-5-mini supports default temperature (1) - parameter omitted to use default
           })
         },
