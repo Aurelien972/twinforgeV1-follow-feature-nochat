@@ -297,12 +297,32 @@ await consumeTokensAtomic(supabase, {
   }
 });
 
-// AI Image Generation Function - GPT Image 1 Integration
-async function generateAIImage(recipeDetails: any, openaiApiKey: string): Promise<{ url: string, cost: number }> {
+// Decode base64 string to PNG buffer
+function decodeBase64ToPNG(base64String: string): Uint8Array {
+  try {
+    const binaryString = atob(base64String);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  } catch (error) {
+    console.error('IMAGE_GENERATOR', 'Failed to decode base64', {
+      error: error.message,
+      base64_length: base64String?.length || 0,
+      timestamp: new Date().toISOString()
+    });
+    throw new Error(`Base64 decode error: ${error.message}`);
+  }
+}
+
+// AI Image Generation Function - GPT Image 1 Integration (Base64 Response)
+async function generateAIImage(recipeDetails: any, openaiApiKey: string): Promise<{ b64_json: string, cost: number }> {
   console.log('IMAGE_GENERATOR', 'Starting GPT Image 1 generation', {
     recipe_title: recipeDetails.title,
     ingredients_count: recipeDetails.ingredients?.length || 0,
     model: 'gpt-image-1',
+    response_format: 'b64_json',
     timestamp: new Date().toISOString()
   });
 
@@ -312,7 +332,7 @@ async function generateAIImage(recipeDetails: any, openaiApiKey: string): Promis
     .map((i: any) => i.name)
     .join(', ');
 
-  const imagePrompt = `A beautiful, appetizing photo of ${recipeDetails.title}. 
+  const imagePrompt = `A beautiful, appetizing photo of ${recipeDetails.title}.
 Professional food photography, well-lit, colorful, restaurant quality presentation.
 Main ingredients visible: ${mainIngredients}.
 Style: Clean, modern, Instagram-worthy food photo with natural lighting.
@@ -335,9 +355,7 @@ High resolution, vibrant colors, appetizing presentation.`;
       prompt: imagePrompt,
       size: '1024x1024',
       quality: 'medium',
-      output_format: 'png',
-      background: 'auto',
-      n: 1,
+      n: 1
     }),
   });
 
@@ -360,63 +378,57 @@ High resolution, vibrant colors, appetizing presentation.`;
       data_length: imageData.data?.length || 0,
       first_item_keys: imageData.data?.[0] ? Object.keys(imageData.data[0]) : [],
       has_url: !!imageData.data?.[0]?.url,
-      has_b64_json: !!imageData.data?.[0]?.b64_json
+      has_b64_json: !!imageData.data?.[0]?.b64_json,
+      b64_json_length: imageData.data?.[0]?.b64_json?.length || 0
     },
-    full_response: imageData,
     timestamp: new Date().toISOString()
   });
 
-  const imageUrl = imageData.data?.[0]?.url;
+  const base64Image = imageData.data?.[0]?.b64_json;
 
-  if (!imageUrl) {
-    console.error('IMAGE_GENERATOR', 'No image URL in GPT Image 1 response', {
+  if (!base64Image) {
+    console.error('IMAGE_GENERATOR', 'No base64 image in GPT Image 1 response', {
       response_data: imageData,
       data_array: imageData.data,
       first_item: imageData.data?.[0],
+      available_fields: imageData.data?.[0] ? Object.keys(imageData.data[0]) : [],
       timestamp: new Date().toISOString()
     });
-    throw new Error('No image URL returned from GPT Image 1');
+    throw new Error('No base64 image returned from GPT Image 1');
   }
 
   console.log('IMAGE_GENERATOR', 'GPT Image 1 generation successful', {
-    image_url: imageUrl,
+    b64_json_length: base64Image.length,
     cost_usd: 0.015,
     model: 'gpt-image-1',
     timestamp: new Date().toISOString()
   });
 
   return {
-    url: imageUrl,
+    b64_json: base64Image,
     cost: 0.015
   };
 }
 
-// Function to download image from OpenAI URL and upload to Supabase Storage
-async function uploadImageToStorage(
-  imageUrl: string,
+// Function to upload base64 image directly to Supabase Storage
+async function uploadBase64ImageToStorage(
+  base64Image: string,
   recipeId: string,
   supabase: any
 ): Promise<string> {
   try {
-    console.log('IMAGE_GENERATOR', 'Downloading image from OpenAI URL', {
+    console.log('IMAGE_GENERATOR', 'Uploading base64 image to Supabase Storage', {
       recipe_id: recipeId,
-      url: imageUrl,
+      b64_length: base64Image.length,
       timestamp: new Date().toISOString()
     });
 
-    // Download image from OpenAI URL
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to download image: ${imageResponse.status}`);
-    }
+    // Decode base64 to PNG buffer
+    const imageBuffer = decodeBase64ToPNG(base64Image);
 
-    const imageBlob = await imageResponse.blob();
-    const imageBuffer = await imageBlob.arrayBuffer();
-
-    console.log('IMAGE_GENERATOR', 'Image downloaded successfully', {
+    console.log('IMAGE_GENERATOR', 'Base64 decoded successfully', {
       recipe_id: recipeId,
-      size_bytes: imageBuffer.byteLength,
-      content_type: imageBlob.type,
+      buffer_size_bytes: imageBuffer.byteLength,
       timestamp: new Date().toISOString()
     });
 
@@ -429,12 +441,18 @@ async function uploadImageToStorage(
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('recipe-images')
       .upload(filepath, imageBuffer, {
-        contentType: imageBlob.type || 'image/png',
+        contentType: 'image/png',
         cacheControl: '3600',
         upsert: false
       });
 
     if (uploadError) {
+      console.error('IMAGE_GENERATOR', 'Supabase Storage upload error', {
+        recipe_id: recipeId,
+        error: uploadError.message,
+        error_details: uploadError,
+        timestamp: new Date().toISOString()
+      });
       throw new Error(`Failed to upload to storage: ${uploadError.message}`);
     }
 
@@ -445,24 +463,24 @@ async function uploadImageToStorage(
 
     const permanentUrl = publicUrlData.publicUrl;
 
-    console.log('IMAGE_GENERATOR', 'Image uploaded to Supabase Storage successfully', {
+    console.log('IMAGE_GENERATOR', 'Base64 image uploaded to Supabase Storage successfully', {
       recipe_id: recipeId,
       filepath: filepath,
       permanent_url: permanentUrl,
+      buffer_size_bytes: imageBuffer.byteLength,
       timestamp: new Date().toISOString()
     });
 
     return permanentUrl;
 
   } catch (error) {
-    console.error('IMAGE_GENERATOR', 'Failed to upload image to storage', {
+    console.error('IMAGE_GENERATOR', 'Failed to upload base64 image to storage', {
       recipe_id: recipeId,
       error: error.message,
+      error_stack: error.stack,
       timestamp: new Date().toISOString()
     });
-
-    // Return original URL as fallback
-    return imageUrl;
+    throw error;
   }
 }
 
@@ -536,6 +554,7 @@ async function generateImageWithFallback(
       recipe_title: recipeDetails.title,
       has_openai_key: true,
       model: 'gpt-image-1',
+      response_format: 'b64_json',
       timestamp: new Date().toISOString()
     });
 
@@ -543,20 +562,20 @@ async function generateImageWithFallback(
 
     console.log('IMAGE_GENERATOR', 'GPT Image 1 generation successful', {
       recipe_title: recipeDetails.title,
-      temporary_url: aiResult.url,
+      b64_json_length: aiResult.b64_json.length,
       cost_usd: aiResult.cost,
       method: 'gpt_image_1',
       timestamp: new Date().toISOString()
     });
 
-    // Upload to Supabase Storage for permanent storage (OpenAI URLs expire in 60min)
-    const permanentUrl = await uploadImageToStorage(aiResult.url, recipeId, supabase);
+    // Upload base64 image to Supabase Storage for permanent storage
+    const permanentUrl = await uploadBase64ImageToStorage(aiResult.b64_json, recipeId, supabase);
 
     console.log('IMAGE_GENERATOR', 'Image permanently stored', {
       recipe_title: recipeDetails.title,
       recipe_id: recipeId,
-      temporary_url: aiResult.url,
       permanent_url: permanentUrl,
+      storage_method: 'base64_direct_upload',
       timestamp: new Date().toISOString()
     });
 
