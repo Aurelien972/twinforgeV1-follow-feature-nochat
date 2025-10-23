@@ -35,7 +35,7 @@
   transform: translate(-50%, -50%) translateZ(0) !important;
 }
 
-.performance-mode .forge-focus-overlay {
+.performance-mode .ai-focus-overlay {
   animation: none !important;
   opacity: 0.3 !important;
 }

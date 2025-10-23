@@ -673,7 +673,7 @@
    AI FOCUS OVERLAY
    ========================================== */
 
-.forge-focus-overlay {
+.ai-focus-overlay {
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 50% 50%,
@@ -685,14 +685,14 @@
   will-change: opacity;
 }
 
-.forge-focus-overlay--front {
+.ai-focus-overlay--front {
   background: radial-gradient(circle at 50% 50%,
     transparent 30%,
     color-mix(in srgb, var(--color-plasma-cyan) 6%, transparent) 100%
   );
 }
 
-.forge-focus-overlay--profile {
+.ai-focus-overlay--profile {
   background: radial-gradient(circle at 50% 50%,
     transparent 30%,
     color-mix(in srgb, #A855F7 6%, transparent) 100%
@@ -788,7 +788,7 @@
   .grid-cell,
   .keypoint,
   .analysis-zone,
-  .forge-focus-overlay,
+  .ai-focus-overlay,
   .data-particle,
   .status-dot {
     animation: none !important;

@@ -27,7 +27,7 @@ const UserGuideCard: React.FC = () => {
     <GlassCard className="fridge-glass-inventory p-8 text-center relative overflow-hidden rounded-3xl transform-gpu preserve-3d will-transform transition-all duration-300">
       <div className="flex flex-col items-center space-y-6">
         {/* Icône principale */}
-        <div className={`fridge-icon-inventory ${isPerformanceMode ? '' : 'fridge-forge-focus-inventory'} w-20 h-20 mx-auto`}>
+        <div className={`fridge-icon-inventory ${isPerformanceMode ? '' : 'fridge-ai-focus-inventory'} w-20 h-20 mx-auto`}>
           <SpatialIcon
             Icon={ICONS.Refrigerator}
             size={36}

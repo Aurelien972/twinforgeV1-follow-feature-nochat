@@ -84,7 +84,6 @@
 
 /* Training */
 @import './components/training/training-coach-notification.css';
-@import './components/training/training-loader.css';
 @import './components/training/training-prescription-card-mobile.css';
 @import './components/training/active-exercise-card.css';
 @import './components/training/functional-training.css';

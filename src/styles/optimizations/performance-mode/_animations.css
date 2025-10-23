@@ -118,7 +118,7 @@
 .performance-mode [class*="scan-line"],
 .performance-mode [class*="scanLine"],
 .performance-mode [class*="grid-pulse"],
-.performance-mode [class*="forge-focus"] {
+.performance-mode [class*="ai-focus"] {
   animation: none !important;
   opacity: 0.3 !important;
 }
