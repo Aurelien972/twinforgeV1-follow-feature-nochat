@@ -372,6 +372,44 @@ export const useRecipeData = ({
     }
   }, [userId]);
 
+  // Refetch recipes when component gains focus (e.g., switching tabs)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && userId) {
+        fetchPersistedRecipes();
+      }
+    };
+
+    const handleFocus = () => {
+      if (userId) {
+        fetchPersistedRecipes();
+      }
+    };
+
+    // Listen for custom event when recipes are updated
+    const handleRecipesUpdated = (event: CustomEvent) => {
+      logger.info('GENERATED_RECIPES_TAB', 'Received recipes-updated event, refetching recipes', {
+        sessionId: event.detail?.sessionId,
+        userId,
+        timestamp: new Date().toISOString()
+      });
+
+      if (userId) {
+        fetchPersistedRecipes();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('recipes-updated', handleRecipesUpdated as EventListener);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('recipes-updated', handleRecipesUpdated as EventListener);
+    };
+  }, [userId]);
+
   return {
     persistedRecipes,
     loadingPersistedRecipes,

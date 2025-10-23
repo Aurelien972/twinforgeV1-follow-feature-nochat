@@ -259,19 +259,25 @@ export const createSessionActions = (
         });
       }
 
-      // Invalidate React Query cache to update Scanner tab
+      // Invalidate React Query cache to update Scanner tab and Recipes tab
       try {
         const { queryClient } = await import('../../../../app/providers/AppProviders');
 
-        // Invalidate all fridge-scan-sessions queries to force refresh
+        // Invalidate all fridge-scan-sessions queries to force refresh Scanner tab
         await queryClient.invalidateQueries({
           queryKey: ['fridge-scan-sessions'],
           refetchType: 'all'
         });
 
-        logger.info('FRIDGE_SCAN_PIPELINE', 'React Query cache invalidated for Scanner tab', {
+        // Invalidate recipes queries to force refresh Recipes tab
+        await queryClient.invalidateQueries({
+          queryKey: ['persisted-recipes'],
+          refetchType: 'all'
+        });
+
+        logger.info('FRIDGE_SCAN_PIPELINE', 'React Query cache invalidated for all tabs', {
           sessionId: state.currentSessionId,
-          queriesInvalidated: ['fridge-scan-sessions'],
+          queriesInvalidated: ['fridge-scan-sessions', 'persisted-recipes'],
           timestamp: new Date().toISOString()
         });
       } catch (error) {
@@ -281,6 +287,11 @@ export const createSessionActions = (
           timestamp: new Date().toISOString()
         });
       }
+
+      // Dispatch custom event to notify RecipesTab to refetch
+      window.dispatchEvent(new CustomEvent('recipes-updated', {
+        detail: { sessionId: state.currentSessionId }
+      }));
 
       set({
         loadingState: 'idle',
