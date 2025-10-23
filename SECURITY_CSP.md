@@ -1,11 +1,15 @@
 # Content Security Policy (CSP) - TwinForge
 
-## Current Status: REPORT-ONLY MODE
+## Current Status: ✅ STRICT MODE ACTIVE (Sprint 2 Phase 2.3)
 
-The CSP is currently in **report-only mode**, which means:
-- ✅ Violations are logged to browser console
-- ✅ No functionality is blocked
-- ⚠️ Not yet enforcing security (testing phase)
+**Activation Date**: 2025-10-23
+**Previous Status**: Report-only mode (Sprint 1)
+
+The CSP is now in **strict enforcement mode**, which means:
+- ✅ Security policy actively enforced
+- ✅ Violations blocked in real-time
+- ✅ Protection against XSS and injection attacks active
+- ⚠️ Monitor browser console for any unexpected blocks
 
 ## What is CSP?
 
@@ -113,27 +117,65 @@ Refused to evaluate a string as JavaScript
 ```
 **Fix**: Refactor code to avoid eval() OR add 'unsafe-eval' (not recommended)
 
-## Roadmap to Strict CSP
+## Sprint 2 Changes (Phase 2.3)
 
-### Phase 1: Report-Only (Current) ✅
-- Monitor violations for 1-2 weeks
-- Identify all legitimate external resources
-- No blocking, only logging
+### ✅ Activated Strict Mode
 
-### Phase 2: Add Nonces (Future)
+**Change**: Switched from `Content-Security-Policy-Report-Only` to `Content-Security-Policy`
+
+**Additions**:
+- Added `worker-src 'self' blob:` for Service Worker and PWA support
+- Removed Google Fonts from `script-src` (not needed there)
+
+**Location**: `netlify.toml` line 69
+
+### Rollback Instructions
+
+If CSP blocks legitimate functionality after deployment:
+
+1. **Immediate Rollback** (< 5 minutes):
+   ```toml
+   # In netlify.toml, change line 69 from:
+   Content-Security-Policy = """
+   # To:
+   Content-Security-Policy-Report-Only = """
+   ```
+
+2. **Redeploy**:
+   ```bash
+   git add netlify.toml
+   git commit -m "Rollback CSP to report-only mode"
+   git push
+   ```
+
+3. **Monitor**: Check browser console for violation reports
+
+4. **Fix**: Add missing domains to appropriate directives
+
+5. **Re-activate**: Once fixed, switch back to strict mode
+
+## Roadmap to Stricter CSP
+
+### Phase 1: Report-Only ✅ COMPLETED (Sprint 1)
+- ✅ Monitored violations for 1-2 weeks
+- ✅ Identified all legitimate external resources
+- ✅ No blocking, only logging
+
+### Phase 2: Enforce CSP ✅ COMPLETED (Sprint 2 Phase 2.3)
+- ✅ Switched to Content-Security-Policy
+- ✅ Added worker-src for PWA
+- ✅ All violations blocked
+- ✅ Monitor error reports from production
+
+### Phase 3: Add Nonces (Future - Sprint 3+)
 - Generate unique nonces for inline scripts
 - Replace 'unsafe-inline' with nonce-based approach
 - Use Netlify Edge Functions for nonce generation
 
-### Phase 3: Remove unsafe-* (Future)
+### Phase 4: Remove unsafe-* (Future - Sprint 4+)
 - Eliminate 'unsafe-inline' and 'unsafe-eval'
 - Use strict-dynamic for better security
 - Achieve A+ rating on securityheaders.com
-
-### Phase 4: Enforce CSP (Future)
-- Switch from Content-Security-Policy-Report-Only to Content-Security-Policy
-- Block all violations
-- Monitor error reports from production
 
 ## Testing CSP
 

@@ -63,16 +63,18 @@
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Resource-Policy = "same-origin"
 
-    # Content Security Policy - Report Only Mode
-    # Start with report-only to identify violations before enforcing
-    Content-Security-Policy-Report-Only = """
+    # Content Security Policy - STRICT MODE (Sprint 2 Phase 2.3)
+    # Activated after Sprint 1 monitoring period
+    # ⚠️ If issues occur, temporarily revert to -Report-Only mode
+    Content-Security-Policy = """
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval';
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: https: blob: https://kwipydbtjagypocpvbwn.supabase.co;
       connect-src 'self' https://kwipydbtjagypocpvbwn.supabase.co wss://kwipydbtjagypocpvbwn.supabase.co https://api.openai.com;
       media-src 'self' blob: https://kwipydbtjagypocpvbwn.supabase.co;
+      worker-src 'self' blob:;
       object-src 'none';
       frame-src 'none';
       base-uri 'self';

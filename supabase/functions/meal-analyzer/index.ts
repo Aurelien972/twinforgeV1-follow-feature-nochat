@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.54.0';
 import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { validateMealAnalysisRequest } from './requestValidator.ts';
 
 interface ScannedProductData {
   barcode: string;
@@ -774,9 +775,31 @@ Deno.serve(async (req: Request) => {
 
     // Parse request body
     const requestBody: MealAnalysisRequest = await req.json();
-    
+
+    // Sprint 2 Phase 3.2: Validate request with unified validation system
+    const validationError = validateMealAnalysisRequest(requestBody);
+    if (validationError) {
+      console.error('MEAL_ANALYZER_VALIDATION', 'Request validation failed', {
+        error: validationError,
+        userId: requestBody.user_id,
+        timestamp: new Date().toISOString()
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: validationError,
+          ai_powered: false
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // DETAILED LOG: Complete request body for debugging
-    console.log('MEAL_ANALYZER_DEBUG', 'Complete request body received', {
+    console.log('MEAL_ANALYZER_DEBUG', 'Complete request body received and validated', {
       userId: requestBody.user_id,
       hasImageUrl: !!requestBody.image_url,
       hasImageData: !!requestBody.image_data,
@@ -804,35 +827,6 @@ Deno.serve(async (req: Request) => {
       fullRequestBodyStringified: JSON.stringify(requestBody, null, 2).substring(0, 1000) + '...',
       timestamp: new Date().toISOString()
     });
-    
-    // Validate required fields
-    if (!requestBody.user_id) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Missing required field: user_id',
-          ai_powered: false
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    if (!requestBody.image_url && !requestBody.image_data && (!requestBody.scanned_products || requestBody.scanned_products.length === 0)) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Missing required field: image_url, image_data, or scanned_products',
-          ai_powered: false
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
 
     // Generate unique analysis ID
     const analysisId = crypto.randomUUID();

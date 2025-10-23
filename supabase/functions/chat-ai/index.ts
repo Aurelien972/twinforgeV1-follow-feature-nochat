@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { consumeTokensAtomic, createInsufficientTokensResponse } from "../_shared/tokenMiddleware.ts";
+import { validateChatAIRequest } from "./requestValidator.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -88,19 +89,29 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { messages, mode, contextData, stream = false }: ChatRequest = await req.json();
+    const requestBody = await req.json();
+    const { messages, mode, contextData, stream = false }: ChatRequest = requestBody;
 
-    log('info', '✅ Request parsed successfully', requestId, {
+    // Sprint 2 Phase 3.2: Validate request with unified validation system
+    const validationError = validateChatAIRequest(requestBody);
+    if (validationError) {
+      log('error', 'Request validation failed', requestId, { error: validationError });
+
+      return new Response(
+        JSON.stringify({ error: validationError }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    log('info', '✅ Request parsed and validated successfully', requestId, {
       mode,
       messageCount: messages.length,
       stream,
       lastMessageRole: messages[messages.length - 1]?.role
     });
-
-    if (!messages || messages.length === 0) {
-      log('error', 'Empty messages array', requestId);
-      throw new Error("Messages array is required");
-    }
 
     // NOTE: With atomic consumption, we no longer check balance beforehand
     // The atomic function will handle verification and consumption in one transaction

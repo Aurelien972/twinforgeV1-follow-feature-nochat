@@ -8,6 +8,7 @@
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { checkTokenBalance, consumeTokensAtomic, createInsufficientTokensResponse } from '../_shared/tokenMiddleware.ts';
+import { validateActivityAnalysisRequest } from './requestValidator.ts';
 
 // CORS Headers
 const corsHeaders = {
@@ -170,8 +171,36 @@ Deno.serve(async (req: Request) => {
     // Import Supabase dynamically to avoid tslib issues
     const { createClient } = await import('npm:@supabase/supabase-js@2.54.0');
 
-    const { cleanText, userId, userProfile, clientTraceId } = await req.json();
+    const requestBody = await req.json();
+    const { cleanText, userId, userProfile, clientTraceId } = requestBody;
     const startTime = Date.now();
+
+    // Sprint 2 Phase 3.2: Validate request with unified validation system
+    const validationPayload = {
+      user_id: userId,
+      transcription: cleanText,
+      weight_kg: userProfile?.weight_kg
+    };
+
+    const validationError = validateActivityAnalysisRequest(validationPayload);
+    if (validationError) {
+      console.error('🔥 [ACTIVITY_ANALYZER_VALIDATION] Request validation failed', {
+        error: validationError,
+        userId,
+        timestamp: new Date().toISOString()
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: validationError
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
     console.log('🔥 [ACTIVITY_ANALYZER] Starting analysis', {
       userId,
@@ -184,11 +213,6 @@ Deno.serve(async (req: Request) => {
       },
       timestamp: new Date().toISOString()
     });
-
-    // Validation des données d'entrée
-    if (!cleanText || !userId || !userProfile?.weight_kg) {
-      throw new Error('Clean text, user ID, and user weight are required');
-    }
 
     // Calcul de l'âge pour personnaliser l'analyse
     const userAge = calculateAge(userProfile.birthdate);
