@@ -64,8 +64,8 @@
         background-blend-mode: screen, screen, soft-light, normal, normal;
         background-size: auto, auto, 100% 100%, auto, auto;
 
-        /* Animations : rotation conique + légère respiration */
-        animation: crucible-sweep 24s linear infinite, crucible-breathe 18s ease-in-out infinite;
+        /* Animations DÉSACTIVÉES : fond 100% statique */
+        animation: none !important;
       }
 
       /* Propriété CSS animable pour l’angle du conic-gradient */
@@ -79,7 +79,7 @@
 
       @keyframes crucible-breathe{
         0%,100%{ background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
-        50%{     background-position: -0.5% 0.6%, 0.6% -0.4%, 0 0, 0 0, 0 0; }
+        50%{     background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
       }
 
       /* Mobile : halos plus compacts, sweep plus lent */
@@ -99,7 +99,7 @@
               transparent 180deg, rgba(255,255,255,.035) 220deg, transparent 280deg),
             linear-gradient(180deg, rgba(0,0,0,.28), transparent 32%, transparent 70%, rgba(0,0,0,.42)),
             radial-gradient(circle at 50% 50%, var(--forge-medium) 0%, var(--forge-deep) 45%, var(--forge-void) 100%);
-          animation-duration: 30s, 22s;
+          animation: none !important;
         }
       }
 
