@@ -212,44 +212,31 @@ const EmptyRecipesState: React.FC<EmptyRecipesStateProps> = ({
           <div className="pt-4">
             <button
               onClick={buttonAction}
-              className="group relative px-8 py-4 text-white font-semibold rounded-2xl transform hover:scale-105 transition-all duration-300"
+              className="group relative px-8 py-4 text-white font-semibold rounded-xl transform hover:scale-105 transition-all duration-300"
               style={{
-                background: `linear-gradient(135deg,
-                  rgba(16, 185, 129, 0.8) 0%,
-                  rgba(52, 211, 153, 0.9) 100%)`,
-                border: '2px solid rgba(16, 185, 129, 0.6)',
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(34, 197, 94, 0.85) 100%)',
+                backdropFilter: 'blur(20px) saturate(160%)',
+                border: '2px solid color-mix(in srgb, #10B981 60%, transparent)',
                 boxShadow: `
-                  0 0 30px rgba(16, 185, 129, 0.4),
-                  0 8px 25px rgba(0, 0, 0, 0.3),
-                  inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                  inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+                  0 12px 40px color-mix(in srgb, #10B981 40%, transparent),
+                  0 0 60px color-mix(in srgb, #10B981 30%, transparent),
+                  inset 0 3px 0 rgba(255, 255, 255, 0.4),
+                  inset 0 -3px 0 rgba(0, 0, 0, 0.2),
+                  inset 2px 0 0 rgba(255, 255, 255, 0.1),
+                  inset -2px 0 0 rgba(0, 0, 0, 0.1)
                 `,
-                backdropFilter: 'blur(10px) saturate(1.2)'
+                transform: 'translateZ(0)',
+                WebkitBackdropFilter: 'blur(20px) saturate(160%)'
               }}
             >
               <div className="flex items-center gap-3">
-                <SpatialIcon 
+                <SpatialIcon
                   Icon={hasSelectedInventory ? ICONS.Sparkles : ICONS.Camera}
                   size={24}
                   className="group-hover:rotate-12 transition-transform duration-300"
-                  style={{
-                    color: 'white',
-                    filter: `drop-shadow(0 0 10px rgba(16, 185, 129, 0.8))
-                             drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3))`
-                  }}
                 />
                 <span className="text-lg">{buttonText}</span>
               </div>
-              
-              {/* 3D Effect */}
-              <div
-                className="absolute inset-0 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 -z-10"
-                style={{
-                  background: `linear-gradient(135deg,
-                    rgba(16, 185, 129, 0.6) 0%,
-                    rgba(52, 211, 153, 0.6) 100%)`
-                }}
-              ></div>
             </button>
           </div>
 

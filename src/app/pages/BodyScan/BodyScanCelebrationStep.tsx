@@ -144,9 +144,94 @@ const BodyScanCelebrationStep: React.FC = () => {
 
   return (
     <div className="relative overflow-visible pt-4 pb-6 md:pb-8">
-      {/* Celebration Background Effects - disabled in performance mode */}
-      {performanceConfig.enableParticleEffects && (
-        <div className="celebration-background-effects absolute inset-0 pointer-events-none overflow-visible">
+      {/* Modern Success Card */}
+      <ConditionalMotion
+        initial={performanceConfig.enableInitialAnimations ? { opacity: 0, y: 30, scale: 0.95 } : false}
+        animate={performanceConfig.enableInitialAnimations ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1 }}
+        transition={performanceConfig.enableFramerMotion ? { duration: 0.6, ease: [0.22, 1, 0.36, 1] } : undefined}
+        className="mb-8"
+      >
+        <GlassCard className="p-8 border-2" style={{
+          borderColor: `${celebration.color}40`,
+          background: `radial-gradient(ellipse at top, ${celebration.color}15 0%, transparent 60%)`
+        }}>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            {/* Icon Circle */}
+            <div className="relative flex-shrink-0">
+              <div
+                className="w-24 h-24 rounded-full flex items-center justify-center"
+                style={{
+                  background: `radial-gradient(circle at 30% 30%, ${celebration.color}40, ${celebration.color}20)`,
+                  border: `3px solid ${celebration.color}`,
+                  boxShadow: `0 0 40px ${celebration.color}60, 0 8px 32px rgba(0,0,0,0.3), inset 0 4px 0 rgba(255,255,255,0.3)`
+                }}
+              >
+                <SpatialIcon Icon={celebration.icon} size={48} style={{ color: celebration.color }} />
+              </div>
+              {/* Pulse rings */}
+              {performanceConfig.enablePulseAnimations && (
+                <>
+                  <div
+                    className="absolute inset-0 rounded-full border-2 animate-ping"
+                    style={{
+                      borderColor: `${celebration.color}40`,
+                      animationDuration: '2s'
+                    }}
+                  />
+                  <div
+                    className="absolute inset-0 rounded-full border-2"
+                    style={{
+                      borderColor: `${celebration.color}30`,
+                      animation: 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+                      animationDelay: '0.5s'
+                    }}
+                  />
+                </>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3" style={{ color: celebration.color }}>
+                {celebration.title}
+              </h2>
+              <p className="text-lg text-white/80 mb-2">
+                {celebration.subtitle}
+              </p>
+              <p className="text-sm text-white/60">
+                {celebration.motivationalQuote}
+              </p>
+            </div>
+          </div>
+
+          {/* Score badge if confidence available */}
+          {score > 0 && (
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-white/70 font-medium">Score de qualité</span>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-48 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-1000"
+                      style={{
+                        width: `${score * 100}%`,
+                        background: `linear-gradient(90deg, ${celebration.color}, ${celebration.color}CC)`,
+                        boxShadow: `0 0 10px ${celebration.color}`
+                      }}
+                    />
+                  </div>
+                  <span className="text-xl font-bold" style={{ color: celebration.color }}>
+                    {Math.round(score * 100)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </GlassCard>
+      </ConditionalMotion>
+      {/* Celebration Background Effects - Simplified */}
+      {performanceConfig.mode !== 'high-performance' && (
+        <div className="celebration-background-effects absolute inset-0 pointer-events-none overflow-visible -z-10">
         {/* Ambient Glow Background */}
         <div
           className="celebration-ambient-glow absolute inset-0 rounded-3xl"
@@ -189,128 +274,64 @@ const BodyScanCelebrationStep: React.FC = () => {
         </div>
       )}
 
-      {/* Main Celebration Content */}
-      <div className="celebration-main-content relative text-center py-8 md:py-12 z-10">
-        {/* Central Celebration Icon with Multi-Layer Effects */}
+      {/* Stats Grid */}
+      {score > 0 && (
         <ConditionalMotion
-          className="relative w-48 h-48 mx-auto mb-8"
-          initial={performanceConfig.enableInitialAnimations ? { scale: 0, rotate: -180 } : false}
-          animate={performanceConfig.enableInitialAnimations ? { scale: 1, rotate: 0 } : { scale: 1 }}
-          transition={performanceConfig.enableFramerMotion ? {
-            type: 'spring',
-            stiffness: 200,
-            damping: 15,
-            duration: 1.2
-          } : undefined}
-        >
-          {/* Outer Glow Ring */}
-          <div
-            className="celebration-icon-outer-glow absolute inset-0 rounded-full"
-            style={{
-              background: `radial-gradient(circle, ${celebration.color}40, transparent 70%)`,
-              filter: `blur(12px)`,
-              '--celebration-color': celebration.color
-            }}
-          />
-
-          {/* Inner Icon Container */}
-          <div
-            className="celebration-icon-inner-container absolute inset-8 rounded-full flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${celebration.color}30, ${celebration.color}60)`,
-              border: `3px solid ${celebration.color}`,
-              boxShadow: `0 0 80px ${celebration.color}90, inset 0 6px 0 rgba(255,255,255,0.35)`,
-              '--celebration-color': celebration.color
-            }}
-          >
-            <SpatialIcon Icon={celebration.icon} size={72} color={celebration.color} />
-          </div>
-
-          {/* Pulse Rings - disabled in performance mode, reduced in balanced */}
-          {performanceConfig.enablePulseAnimations && [
-            ...Array(performanceConfig.mode === 'quality' ? 3 : 1)
-          ].map((_, i) => (
-            <div
-              key={`pulse-${i}`}
-              className={`celebration-icon-pulse-ring celebration-icon-pulse-ring--${i + 1} absolute inset-0 rounded-full border-2`}
-              style={{
-                borderColor: `${celebration.color}40`,
-                '--celebration-color': celebration.color
-              }}
-            />
-          ))}
-        </ConditionalMotion>
-        
-        {/* Celebration Text - Optimized for Above the Fold */}
-        <ConditionalMotion
-          initial={performanceConfig.enableInitialAnimations ? { opacity: 0, y: 30 } : false}
+          initial={performanceConfig.enableInitialAnimations ? { opacity: 0, y: 20 } : false}
           animate={performanceConfig.enableInitialAnimations ? { opacity: 1, y: 0 } : { opacity: 1 }}
-          transition={performanceConfig.enableFramerMotion ? { delay: 0.6, duration: 0.8 } : undefined}
+          transition={performanceConfig.enableFramerMotion ? { delay: 0.3, duration: 0.5 } : undefined}
+          className="mb-8"
         >
-          <ConditionalMotion
-            as="h3"
-            className="celebration-title-glow text-5xl md:text-6xl font-bold text-white mb-4"
-            style={{ color: celebration.color }}
-          >
-            {celebration.title}
-          </ConditionalMotion>
-
-          <ConditionalMotion
-            as="p"
-            className="text-xl md:text-2xl text-white/90 mb-6 leading-relaxed max-w-2xl mx-auto"
-            initial={performanceConfig.enableStaggerAnimations ? { opacity: 0, y: 20 } : false}
-            animate={performanceConfig.enableStaggerAnimations ? { opacity: 1, y: 0 } : { opacity: 1 }}
-            transition={performanceConfig.enableFramerMotion ? { delay: 0.8, duration: 0.6 } : undefined}
-          >
-            {celebration.subtitle}
-          </ConditionalMotion>
+          <div className="grid grid-cols-2 gap-4">
+            <GlassCard className="p-6 text-center">
+              <div className="text-4xl font-bold mb-2" style={{ color: celebration.color }}>
+                {Math.round(score * 100)}%
+              </div>
+              <div className="text-sm text-white/70">Précision</div>
+            </GlassCard>
+            <GlassCard className="p-6 text-center">
+              <div className="text-4xl font-bold mb-2" style={{ color: celebration.color }}>
+                {celebration.celebrationLevel === 'legendary' ? 'A+' : celebration.celebrationLevel === 'exceptional' ? 'A' : 'B+'}
+              </div>
+              <div className="text-sm text-white/70">Qualité</div>
+            </GlassCard>
+          </div>
         </ConditionalMotion>
-      </div>
+      )}
 
-      {/* Call to Action */}
+      {/* Call to Action - Modern Style */}
       <ConditionalMotion
-        className="flex justify-center relative z-10 mt-4"
-        initial={performanceConfig.enableInitialAnimations ? { opacity: 0, y: 40 } : false}
+        className="flex justify-center relative z-10 mt-6"
+        initial={performanceConfig.enableInitialAnimations ? { opacity: 0, y: 20 } : false}
         animate={performanceConfig.enableInitialAnimations ? { opacity: 1, y: 0 } : { opacity: 1 }}
-        transition={performanceConfig.enableFramerMotion ? { delay: 1.0, duration: 0.8 } : undefined}
+        transition={performanceConfig.enableFramerMotion ? { delay: 0.5, duration: 0.6 } : undefined}
       >
-        <ConditionalMotion
-          as="button"
+        <button
           onClick={handleDiscoverAvatar}
-          className="btn-glass--primary px-12 py-6 text-xl font-bold relative overflow-hidden"
-          whileHover={performanceConfig.enableWhileHover ? { scale: 1.03 } : undefined}
-          whileTap={performanceConfig.enableWhileTap ? { scale: 0.97 } : undefined}
-          style={{
-            background: `linear-gradient(135deg, ${celebration.color}80, ${celebration.color}60)`,
-            boxShadow: `0 12px 40px ${celebration.color}40, 0 0 60px ${celebration.color}30`,
+          className="w-full max-w-md text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 flex items-center justify-center gap-3"
+          style={performanceConfig.mode === 'high-performance' ? {
+            background: `linear-gradient(145deg, ${celebration.color}90, ${celebration.color}70)`,
             border: `2px solid ${celebration.color}`,
-            color: '#0B0F1A'
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)'
+          } : {
+            background: `linear-gradient(135deg, ${celebration.color}80, ${celebration.color}60)`,
+            backdropFilter: 'blur(20px) saturate(160%)',
+            border: `2px solid ${celebration.color}`,
+            boxShadow: `
+              0 12px 40px ${celebration.color}40,
+              0 0 60px ${celebration.color}30,
+              inset 0 3px 0 rgba(255, 255, 255, 0.4),
+              inset 0 -3px 0 rgba(0, 0, 0, 0.2),
+              inset 2px 0 0 rgba(255, 255, 255, 0.1),
+              inset -2px 0 0 rgba(0, 0, 0, 0.1)
+            `,
+            transform: 'translateZ(0)',
+            WebkitBackdropFilter: 'blur(20px) saturate(160%)'
           }}
         >
-          {/* Shimmer Effect - disabled in performance mode */}
-          {performanceConfig.enableShimmerEffects && (
-            <div
-              className="celebration-cta-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-            />
-          )}
-
-          {/* Celebration Sparkles - disabled in performance mode */}
-          {performanceConfig.enableParticleEffects && [...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className={`celebration-cta-sparkle celebration-cta-sparkle--${i + 1} absolute w-2 h-2 rounded-full bg-white`}
-              style={{
-                left: `${20 + i * 20}%`,
-                top: `${30 + (i % 2) * 40}%`
-              }}
-            />
-          ))}
-          
-          <div className="relative flex items-center justify-center gap-4">
-            <SpatialIcon Icon={ICONS.Eye} size={32} color="#10B981" />
-            <span>Mon Avatar 3D</span>
-          </div>
-        </ConditionalMotion>
+          <SpatialIcon Icon={ICONS.Eye} size={24} />
+          <span className="text-lg">Découvrir mon Avatar 3D</span>
+        </button>
       </ConditionalMotion>
 
       {/* Celebration Confetti Effect - disabled in performance mode, reduced in balanced */}

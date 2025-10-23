@@ -507,6 +507,54 @@
 }
 
 /* ==========================================
+   LIGHTWEIGHT SCAN ANIMATION FOR PERFORMANCE MODE
+   Pure CSS, zero GPU cost
+   ========================================== */
+
+.lightweight-scan-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.lightweight-scan-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(139, 92, 246, 0.3) 20%,
+    rgba(139, 92, 246, 0.8) 50%,
+    rgba(139, 92, 246, 0.3) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+  animation: lightweightScanMove 3s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+@keyframes lightweightScanMove {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* ==========================================
    SCAN LINES
    ========================================== */
 

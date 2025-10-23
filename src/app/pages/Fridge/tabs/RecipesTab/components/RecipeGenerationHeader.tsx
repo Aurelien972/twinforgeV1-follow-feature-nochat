@@ -161,50 +161,36 @@ const RecipeGenerationHeader: React.FC<RecipeGenerationHeaderProps> = ({
         <button
           onClick={handleGenerateClick}
           disabled={!hasValidInventory || isGenerating}
-          className={`btn-glass btn-glass--primary w-full px-8 py-4 text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2 ${!hasValidInventory || isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 ${!hasValidInventory || isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
           style={hasValidInventory && !isGenerating ? (isPerformanceMode ? {
-            background: 'linear-gradient(145deg, color-mix(in srgb, #10B981 80%, #1e293b), color-mix(in srgb, #22C55E 70%, #0f172a))',
-            border: '2.5px solid color-mix(in srgb, #10B981 60%, transparent)',
-            boxShadow: '0 8px 32px rgba(16, 185, 129, 0.8), 0 4px 20px rgba(16, 185, 129, 0.6), 0 0 50px rgba(16, 185, 129, 0.4)',
-            color: 'white'
+            background: 'linear-gradient(145deg, color-mix(in srgb, #10B981 90%, #1e293b), color-mix(in srgb, #22C55E 85%, #0f172a))',
+            border: '2px solid color-mix(in srgb, #10B981 60%, transparent)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)'
           } : {
-            background: `
-              linear-gradient(135deg,
-                color-mix(in srgb, #10B981 80%, transparent),
-                color-mix(in srgb, #22C55E 70%, transparent)
-              )
-            `,
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(34, 197, 94, 0.85) 100%)',
+            backdropFilter: 'blur(20px) saturate(160%)',
             border: '2px solid color-mix(in srgb, #10B981 60%, transparent)',
             boxShadow: `
-              0 12px 40px rgba(16, 185, 129, 0.5),
-              0 8px 32px rgba(16, 185, 129, 0.4),
-              0 0 60px rgba(16, 185, 129, 0.3),
-              inset 0 2px 0 rgba(255, 255, 255, 0.4),
-              inset 0 -2px 0 rgba(0, 0, 0, 0.2)
+              0 12px 40px color-mix(in srgb, #10B981 40%, transparent),
+              0 0 60px color-mix(in srgb, #10B981 30%, transparent),
+              inset 0 3px 0 rgba(255, 255, 255, 0.4),
+              inset 0 -3px 0 rgba(0, 0, 0, 0.2),
+              inset 2px 0 0 rgba(255, 255, 255, 0.1),
+              inset -2px 0 0 rgba(0, 0, 0, 0.1)
             `,
-            backdropFilter: 'blur(20px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-            color: 'white'
+            transform: 'translateZ(0)',
+            WebkitBackdropFilter: 'blur(20px) saturate(160%)'
           }) : undefined}
         >
           {isGenerating ? (
             <>
-              <SpatialIcon 
-                Icon={ICONS.Loader2} 
-                size={16} 
-                className="animate-spin"
-                style={{ color: 'white' }}
-              />
-              Génération...
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Génération en cours...</span>
             </>
           ) : (
             <>
-              <SpatialIcon 
-                Icon={ICONS.Sparkles} 
-                size={16} 
-                style={{ color: 'white' }}
-              />
-              Générer les Recettes
+              <SpatialIcon Icon={ICONS.Sparkles} size={20} />
+              <span>Générer les Recettes</span>
             </>
           )}
         </button>

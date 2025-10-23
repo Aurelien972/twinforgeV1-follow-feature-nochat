@@ -189,6 +189,55 @@ const ImmersivePhotoAnalysis: React.FC<ImmersivePhotoAnalysisProps> = ({
       className="immersive-analysis-container twinforge visionos-26 space-y-8 -mt-2"
       style={{ '--analysis-color': analysisColor } as React.CSSProperties}
     >
+      {/* Patient Message - Always visible */}
+      <ConditionalMotion
+        initial={cardEnter}
+        animate={cardShow}
+        transition={performanceConfig.enableFramerMotion ? { duration: 0.5, ease } : undefined}
+      >
+        <GlassCard className="p-5 border-2 border-purple-400/30">
+          <div className="flex items-center gap-4">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{
+                background: `
+                  radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25) 0%, transparent 60%),
+                  linear-gradient(135deg, color-mix(in srgb, #8B5CF6 35%, transparent), color-mix(in srgb, #8B5CF6 25%, transparent))
+                `,
+                border: '3px solid color-mix(in srgb, #8B5CF6 70%, transparent)',
+                boxShadow: '0 0 30px color-mix(in srgb, #8B5CF6 50%, transparent)'
+              }}
+            >
+              <SpatialIcon Icon={ICONS.Clock} size={20} style={{ color: '#8B5CF6' }} variant="pure" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-semibold text-lg mb-1">
+                Analyse IA en cours...
+              </h3>
+              <p className="text-white/70 text-sm">
+                L'analyse morphologique prend environ 1 à 2 minutes. Restez patient, la précision en vaut la peine.
+              </p>
+            </div>
+          </div>
+          {/* Progress percentage */}
+          <div className="mt-4">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-white/70">Progression</span>
+              <span className="text-white font-medium">{Math.round(currentProgress)}%</span>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-2 rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${currentProgress}%`,
+                  background: 'linear-gradient(90deg, #8B5CF6, #A855F7)',
+                  boxShadow: '0 0 10px #8B5CF6'
+                }}
+              />
+            </div>
+          </div>
+        </GlassCard>
+      </ConditionalMotion>
       {/* Photos d'analyse */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Face */}
@@ -244,7 +293,12 @@ const ImmersivePhotoAnalysis: React.FC<ImmersivePhotoAnalysisProps> = ({
                 fetchpriority="high"
               />
 
-              {/* Overlays d'analyse — DÉSACTIVÉS en mode performance */}
+              {/* Lightweight scan animation - Always visible */}
+              <div className="lightweight-scan-overlay" aria-hidden="true">
+                <div className="lightweight-scan-line" />
+              </div>
+
+              {/* Full overlays - Only in quality mode */}
               {shouldAnimate && performanceConfig.enableScanLineOverlays && (
                 <>
                   <div className="scan-line-vertical" aria-hidden="true" />
@@ -351,6 +405,12 @@ const ImmersivePhotoAnalysis: React.FC<ImmersivePhotoAnalysisProps> = ({
                 decoding="async"
               />
 
+              {/* Lightweight scan animation - Always visible */}
+              <div className="lightweight-scan-overlay" aria-hidden="true">
+                <div className="lightweight-scan-line" style={{ animationDelay: '0.5s' }} />
+              </div>
+
+              {/* Full overlays - Only in quality mode */}
               {shouldAnimate && performanceConfig.enableScanLineOverlays && (
                 <>
                   <div className="scan-line-horizontal" aria-hidden="true" />
